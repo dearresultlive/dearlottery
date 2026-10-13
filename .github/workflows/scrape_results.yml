@@ -53,7 +53,7 @@ jobs:
 
       - name: Execute Extraction Pipeline
         env:
-          WORKER_API_URL: ${{ secrets.WORKER_API_URL || 'https://api.dearlottery.live/api/results' }}
+          WORKER_API_URL: ${{ secrets.WORKER_API_URL || 'https://api.dearresultlive.in/api/results' }}
           WORKER_API_KEY: ${{ secrets.WORKER_API_KEY || 'dear_lottery_secret_key_prod_2026' }}
           ONESIGNAL_APP_ID: ${{ secrets.ONESIGNAL_APP_ID }}
           ONESIGNAL_API_KEY: ${{ secrets.ONESIGNAL_API_KEY }}

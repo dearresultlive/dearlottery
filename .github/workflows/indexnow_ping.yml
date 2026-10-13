@@ -6,7 +6,7 @@ on:
       target_url:
         description: 'URL to submit for instant crawl'
         required: false
-        default: 'https://dearlottery.live/'
+        default: 'https://dearresultlive.in/'
 
 jobs:
   ping-indexnow:
@@ -15,7 +15,7 @@ jobs:
       - name: Ping IndexNow API
         run: |
           URL="${{ github.event.inputs.target_url }}"
-          HOST="dearlottery.live"
+          HOST="dearresultlive.in"
           KEY="${{ secrets.INDEXNOW_KEY || 'dearlotteryindexnowkey2026' }}"
 
           echo "Submitting $URL to IndexNow API..."

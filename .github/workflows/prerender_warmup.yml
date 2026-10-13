@@ -25,7 +25,7 @@ jobs:
 
       - name: Execute Edge Warmup
         env:
-          FRONTEND_URL: ${{ secrets.FRONTEND_URL || 'https://dearlottery.live' }}
+          FRONTEND_URL: ${{ secrets.FRONTEND_URL || 'https://dearresultlive.in' }}
           INDEXNOW_KEY: ${{ secrets.INDEXNOW_KEY || 'dearlotteryindexnowkey2026' }}
         run: |
           python scraper/prerender_warmup.py

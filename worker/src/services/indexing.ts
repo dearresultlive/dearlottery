@@ -10,7 +10,7 @@ export async function submitIndexNow(
   urlsToIndex: string[],
   drawId: string
 ): Promise<{ success: boolean; status: number; message: string }> {
-  const host = new URL(env.FRONTEND_URL || 'https://dearlottery.live').hostname;
+  const host = new URL(env.FRONTEND_URL || 'https://dearresultlive.in').hostname;
   const key = env.INDEXNOW_KEY || 'dearlotteryindexnowkey2026';
 
   const payload = {

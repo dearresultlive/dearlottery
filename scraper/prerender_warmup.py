@@ -10,7 +10,7 @@ import requests
 from datetime import datetime, timezone, timedelta
 
 IST = timezone(timedelta(hours=5, minutes=30))
-FRONTEND_BASE = os.environ.get("FRONTEND_URL", "https://dearlottery.live")
+FRONTEND_BASE = os.environ.get("FRONTEND_URL", "https://dearresultlive.in")
 INDEXNOW_KEY = os.environ.get("INDEXNOW_KEY", "dearlotteryindexnowkey2026")
 
 
@@ -45,7 +45,7 @@ def warmup_edge_nodes():
 
     # Pre-ping IndexNow to notify bots 30 minutes ahead of draw
     try:
-        host = requests.utils.urlparse(FRONTEND_BASE).hostname or "dearlottery.live"
+        host = requests.utils.urlparse(FRONTEND_BASE).hostname or "dearresultlive.in"
         payload = {
             "host": host,
             "key": INDEXNOW_KEY,

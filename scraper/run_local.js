@@ -146,8 +146,8 @@ export function generateMockDraw(dateStr, timeSlot) {
       fifth_prize: fifthPrize
     },
     source_url: `https://www.nagalandlotteries.com/results/${dateStr}_${timeSlot}.pdf`,
-    pdf_r2_url: `https://cdn.dearlottery.live/archive/${dateStr}/${timeSlot}.pdf`,
-    image_r2_url: `https://cdn.dearlottery.live/archive/${dateStr}/${timeSlot}.jpg`,
+    pdf_r2_url: `https://cdn.dearresultlive.in/archive/${dateStr}/${timeSlot}.pdf`,
+    image_r2_url: `https://cdn.dearresultlive.in/archive/${dateStr}/${timeSlot}.jpg`,
     checksum: checksum
   };
 

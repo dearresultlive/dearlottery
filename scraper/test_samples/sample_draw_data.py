@@ -79,8 +79,8 @@ def generate_mock_draw(date_str: str, time_slot: str) -> Dict[str, Any]:
             "fifth_prize": sorted(fifth_prize)
         },
         "source_url": f"https://www.nagalandlotteries.com/results/{date_str}_{time_slot}.pdf",
-        "pdf_r2_url": f"https://cdn.dearlottery.live/archive/{date_str}/{time_slot}.pdf",
-        "image_r2_url": f"https://cdn.dearlottery.live/archive/{date_str}/{time_slot}.jpg"
+        "pdf_r2_url": f"https://cdn.dearresultlive.in/archive/{date_str}/{time_slot}.pdf",
+        "image_r2_url": f"https://cdn.dearresultlive.in/archive/{date_str}/{time_slot}.jpg"
     }
 
 

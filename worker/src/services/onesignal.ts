@@ -16,7 +16,7 @@ export async function sendOneSignalDrawNotification(
 
   const title = `🎯 Dear Lottery ${draw.draw_time} Result is OUT!`;
   const body = `1st Prize (₹1 Crore): ${firstPrize.series || ''} ${firstPrize.ticket_number}. Tap to check your ticket now!`;
-  const targetUrl = `${env.FRONTEND_URL || 'https://dearlottery.live'}/results/${draw.draw_date}`;
+  const targetUrl = `${env.FRONTEND_URL || 'https://dearresultlive.in'}/results/${draw.draw_date}`;
 
   try {
     const response = await fetch('https://onesignal.com/api/v1/notifications', {

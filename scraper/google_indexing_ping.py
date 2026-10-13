@@ -128,8 +128,8 @@ def main():
     args = parser.parse_args()
 
     urls = args.url or [
-        f"{os.environ.get('FRONTEND_URL', 'https://dearlottery.live')}/",
-        f"{os.environ.get('FRONTEND_URL', 'https://dearlottery.live')}/results/{datetime.now().strftime('%Y-%m-%d')}"
+        f"{os.environ.get('FRONTEND_URL', 'https://dearresultlive.in')}/",
+        f"{os.environ.get('FRONTEND_URL', 'https://dearresultlive.in')}/results/{datetime.now().strftime('%Y-%m-%d')}"
     ]
 
     if not args.sa_key:

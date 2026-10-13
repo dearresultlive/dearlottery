@@ -65,7 +65,7 @@ app.post('/api/results', async (c) => {
     const firstPrize = prizes.find(p => p.prize_rank === '1st') || prizes[0];
 
     // Non-blocking background tasks via ExecutionContext
-    const frontendBase = c.env.FRONTEND_URL || 'https://dearlottery.live';
+    const frontendBase = c.env.FRONTEND_URL || 'https://dearresultlive.in';
     const drawSlug = draw.draw_name
       ? draw.draw_name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '')
       : 'result';
