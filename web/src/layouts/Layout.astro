@@ -1,0 +1,28 @@
+---
+import SEOHead from '../components/SEOHead.astro';
+import Header from '../components/Header.astro';
+import Footer from '../components/Footer.astro';
+import StickyDisclaimer from '../components/StickyDisclaimer.astro';
+
+interface Props {
+  title?: string;
+  description?: string;
+  drawDate?: string;
+}
+
+const { title, description, drawDate } = Astro.props;
+const currentPath = Astro.url.pathname;
+---
+
+<!doctype html>
+<html lang="en" class="scroll-smooth bg-slate-950 text-slate-100 antialiased">
+  <SEOHead title={title} description={description} drawDate={drawDate} />
+  <body class="min-h-screen flex flex-col font-sans selection:bg-emerald-500 selection:text-slate-950 pb-12 sm:pb-10">
+    <Header currentPath={currentPath} />
+    <main class="flex-1">
+      <slot />
+    </main>
+    <Footer />
+    <StickyDisclaimer />
+  </body>
+</html>

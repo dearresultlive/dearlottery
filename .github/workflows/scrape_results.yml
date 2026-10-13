@@ -1,0 +1,82 @@
+name: Scheduled Dear Lottery Ingestion Pipeline
+
+on:
+  schedule:
+    # 12:58 PM IST = 07:28 UTC
+    # 5:58 PM IST  = 12:28 UTC
+    # 7:58 PM IST  = 14:28 UTC
+    - cron: '28 7,12,14 * * *'
+  workflow_dispatch:
+    inputs:
+      slot:
+        description: 'Draw time slot (1PM, 6PM, 8PM)'
+        required: false
+        default: 'auto'
+        type: choice
+        options:
+          - 'auto'
+          - '1PM'
+          - '6PM'
+          - '8PM'
+      date:
+        description: 'Draw date (YYYY-MM-DD)'
+        required: false
+        default: ''
+      mock:
+        description: 'Run mock simulation mode'
+        required: false
+        default: false
+        type: boolean
+
+jobs:
+  scrape-and-publish:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Codebase
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+
+      - name: Install System OCR Packages
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y tesseract-ocr poppler-utils libtesseract-dev
+
+      - name: Install Python Dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r scraper/requirements.txt
+
+      - name: Execute Extraction Pipeline
+        env:
+          WORKER_API_URL: ${{ secrets.WORKER_API_URL || 'https://api.dearlottery.live/api/results' }}
+          WORKER_API_KEY: ${{ secrets.WORKER_API_KEY || 'dear_lottery_secret_key_prod_2026' }}
+          ONESIGNAL_APP_ID: ${{ secrets.ONESIGNAL_APP_ID }}
+          ONESIGNAL_API_KEY: ${{ secrets.ONESIGNAL_API_KEY }}
+        run: |
+          SLOT_ARG=""
+          if [ "${{ github.event.inputs.slot }}" != "" ] && [ "${{ github.event.inputs.slot }}" != "auto" ]; then
+            SLOT_ARG="--slot ${{ github.event.inputs.slot }}"
+          fi
+
+          DATE_ARG=""
+          if [ "${{ github.event.inputs.date }}" != "" ]; then
+            DATE_ARG="--date ${{ github.event.inputs.date }}"
+          fi
+
+          MOCK_ARG=""
+          if [ "${{ github.event.inputs.mock }}" == "true" ]; then
+            MOCK_ARG="--mock"
+          fi
+
+          echo "Running pipeline with: $SLOT_ARG $DATE_ARG $MOCK_ARG"
+          python scraper/run_pipeline.py $SLOT_ARG $DATE_ARG $MOCK_ARG
+
+      - name: Verify Health & Artifacts
+        if: always()
+        run: |
+          echo "Pipeline run completed at $(date -u)"

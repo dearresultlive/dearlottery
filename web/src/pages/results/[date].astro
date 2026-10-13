@@ -1,0 +1,40 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import ResultCard from '../../components/ResultCard.astro';
+import TicketChecker from '../../components/TicketChecker';
+import { fetchDrawsByDate } from '../../lib/api';
+
+const { date } = Astro.params;
+const targetDate = date || new Date().toISOString().slice(0, 10);
+const draws = await fetchDrawsByDate(targetDate);
+---
+
+<Layout
+  title={`Dear Lottery Result ${targetDate} (1PM, 6PM, 8PM) Official Archive | Lottery Sambad`}
+  description={`Official results archive for Dear Lottery draws on ${targetDate}. 1:00 PM Morning, 6:00 PM Day, and 8:00 PM Night 1st prize ₹1 Crore winning tickets.`}
+  drawDate={targetDate}
+>
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-10">
+    <div class="border-b border-slate-800 pb-4">
+      <div class="flex items-center gap-2 mb-2">
+        <a href="/" class="text-xs text-emerald-400 hover:underline">← Back to Today's Results</a>
+      </div>
+      <h1 class="text-3xl font-black text-white">
+        Dear Lottery Results for {targetDate}
+      </h1>
+      <p class="text-slate-400 text-sm mt-1">
+        Official archived results for Nagaland & Sikkim State Lotteries.
+      </p>
+    </div>
+
+    {/* Ticket Checker for this date */}
+    <TicketChecker client:load initialDraws={draws} />
+
+    {/* All Draws for this date */}
+    <div class="grid grid-cols-1 gap-8">
+      {draws.map((d) => (
+        <ResultCard draw={d} />
+      ))}
+    </div>
+  </div>
+</Layout>

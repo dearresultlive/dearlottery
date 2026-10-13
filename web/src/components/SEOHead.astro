@@ -1,0 +1,154 @@
+---
+interface Props {
+  title?: string;
+  description?: string;
+  canonicalUrl?: string;
+  drawDate?: string;
+  drawTime?: string;
+  winningNumbers?: {
+    firstPrize?: string;
+    secondPrize?: string[];
+  };
+}
+
+const {
+  title = "Dear Lottery Result Today 1 PM 6 PM 8 PM Live Sambad | Instant Ticket Checker",
+  description = "Check official Dear Lottery Sambad results today for 1:00 PM, 6:00 PM, and 8:00 PM draws live. Fast sub-300ms ticket checker, 1st prize ₹1 Crore winning numbers, and hot/cold number frequency.",
+  canonicalUrl = Astro.url.href,
+  drawDate = new Date().toISOString().slice(0, 10),
+  drawTime,
+  winningNumbers
+} = Astro.props;
+
+// JSON-LD LotteryResult Schema
+const lotterySchema = {
+  "@context": "https://schema.org",
+  "@type": "NewsArticle",
+  "headline": title,
+  "description": description,
+  "datePublished": `${drawDate}T13:00:00+05:30`,
+  "dateModified": new Date().toISOString(),
+  "mainEntityOfPage": canonicalUrl,
+  "author": {
+    "@type": "Organization",
+    "name": "Dear Lottery Result Engine",
+    "url": "https://dearlottery.live"
+  },
+  "publisher": {
+    "@type": "Organization",
+    "name": "Dear Lottery Engine",
+    "logo": {
+      "@type": "ImageObject",
+      "url": "https://dearlottery.live/favicon.png"
+    }
+  }
+};
+
+// FAQ Schema for SEO Rich Snippets
+const faqSchema = {
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  "mainEntity": [
+    {
+      "@type": "Question",
+      "name": "What time are Dear Lottery results published today?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Dear Lottery draws are conducted three times daily at 1:00 PM (Morning), 6:00 PM (Day), and 8:00 PM (Evening/Night) by the Nagaland and Sikkim State Lotteries."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "What is the 1st prize amount for Dear Lottery?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "The first prize for Dear Lottery is ₹1 Crore (₹10,000,000) including super prize amount, awarded to the ticket matching the exact series and 5-digit number."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "How does the Instant Ticket Checker work?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Enter your ticket number or just the last 4-5 digits into the search box. The tool checks all prize tiers (1st, 2nd, 3rd, 4th, 5th, and Consolation) instantly."
+      }
+    }
+  ]
+};
+
+// Table & Dataset Schema for structured prize results
+const tableDatasetSchema = {
+  "@context": "https://schema.org",
+  "@type": "Dataset",
+  "name": `Dear Lottery Official Winning Numbers & Prize Table - ${drawDate} ${drawTime || ''}`.trim(),
+  "description": `Structured prize breakdown table and winning numbers for Dear Lottery draws on ${drawDate}. Lists 1st Prize ₹1 Crore, Consolation Prize ₹1,000, 2nd Prize ₹9,000, 3rd Prize ₹450, 4th Prize ₹250, and 5th Prize ₹120.`,
+  "url": canonicalUrl,
+  "creator": {
+    "@type": "Organization",
+    "name": "Dear Lottery Result Engine",
+    "url": "https://dearlottery.live"
+  },
+  "variableMeasured": [
+    "1st Prize (₹1,00,00,000)",
+    "Consolation Prize (₹1,000)",
+    "2nd Prize (₹9,000)",
+    "3rd Prize (₹450)",
+    "4th Prize (₹250)",
+    "5th Prize (₹120)"
+  ],
+  "mainEntity": {
+    "@type": "Table",
+    "about": `Prize Tier Distribution and Winning Ticket List for ${drawDate}`,
+    "disambiguatingDescription": winningNumbers?.firstPrize
+      ? `1st Prize winning ticket: ${winningNumbers.firstPrize}`
+      : "Complete verified winning ticket distribution table."
+  }
+};
+---
+
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+  
+  <title>{title}</title>
+  <meta name="description" content={description} />
+  <meta name="keywords" content="dear lottery result, lottery sambad, dear lottery 1pm, dear lottery 6pm, dear lottery 8pm, nagaland state lottery, sikkim state lottery, dear lottery ticket checker, dear lottery hot numbers" />
+  <link rel="canonical" href={canonicalUrl} />
+
+  <!-- OpenGraph / Facebook -->
+  <meta property="og:type" content="website" />
+  <meta property="og:url" content={canonicalUrl} />
+  <meta property="og:title" content={title} />
+  <meta property="og:description" content={description} />
+  <meta property="og:image" content="https://dearlottery.live/og-image.jpg" />
+
+  <!-- Twitter -->
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content={title} />
+  <meta name="twitter:description" content={description} />
+  <meta name="twitter:image" content="https://dearlottery.live/og-image.jpg" />
+
+  <!-- Preconnect for performance -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@500;700;800&display=swap" rel="stylesheet" />
+
+  <!-- OneSignal Web Push SDK -->
+  <script src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js" defer></script>
+  <script is:inline>
+    window.OneSignalDeferred = window.OneSignalDeferred || [];
+    OneSignalDeferred.push(async function(OneSignal) {
+      await OneSignal.init({
+        appId: "ONESIGNAL_APP_ID_PLACEHOLDER",
+        notifyButton: { enable: false },
+        allowLocalhostAsSecureOrigin: true
+      });
+    });
+  </script>
+
+  <!-- Structured Data JSON-LD (NewsArticle, FAQPage, Table & Dataset) -->
+  <script type="application/ld+json" set:html={JSON.stringify(lotterySchema)} />
+  <script type="application/ld+json" set:html={JSON.stringify(faqSchema)} />
+  <script type="application/ld+json" set:html={JSON.stringify(tableDatasetSchema)} />
+</head>

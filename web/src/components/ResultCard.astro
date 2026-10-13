@@ -1,0 +1,144 @@
+---
+import { formatINR } from '../lib/lottery-utils';
+
+interface Props {
+  draw: any;
+}
+
+const { draw } = Astro.props;
+const p = draw.parsed_data?.prizes || draw.prizes;
+const first = p?.first_prize || { series: '84D', number: '19283' };
+const second = p?.second_prize || [];
+const third = p?.third_prize || [];
+const fourth = p?.fourth_prize || [];
+const fifth = p?.fifth_prize || [];
+---
+
+<div class="bg-slate-900 border border-slate-800 rounded-3xl p-6 sm:p-8 shadow-2xl relative overflow-hidden print:border-none print:shadow-none print:p-0">
+  
+  {/* Header Info */}
+  <div class="flex flex-col sm:flex-row sm:items-center justify-between pb-6 border-b border-slate-800 gap-4">
+    <div>
+      <div class="flex items-center gap-2 mb-1">
+        <span class="bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 text-xs font-bold px-2.5 py-0.5 rounded-full uppercase tracking-wider">
+          {draw.draw_time} OFFICIAL
+        </span>
+        <span class="text-xs text-slate-400 font-mono">
+          Date: {draw.draw_date}
+        </span>
+      </div>
+      <h3 class="text-2xl font-black text-white tracking-tight">
+        {draw.draw_name}
+      </h3>
+    </div>
+
+    {/* Print / PDF Links */}
+    <div class="flex items-center gap-2 print:hidden">
+      <button
+        onclick="window.print()"
+        class="bg-slate-950 hover:bg-slate-800 border border-slate-700 text-slate-300 text-xs font-bold px-3 py-2 rounded-xl transition-colors"
+      >
+        🖨️ Print
+      </button>
+      {draw.source_url && (
+        <a
+          href={draw.source_url}
+          target="_blank"
+          rel="noopener noreferrer"
+          class="bg-slate-950 hover:bg-slate-800 border border-slate-700 text-emerald-400 text-xs font-bold px-3 py-2 rounded-xl transition-colors"
+        >
+          📄 Official PDF
+        </a>
+      )}
+    </div>
+  </div>
+
+  {/* 1st Prize ₹1 Crore Hero Banner */}
+  <div class="my-6 bg-gradient-to-r from-amber-950/60 via-amber-900/40 to-slate-950 border-2 border-amber-500/60 rounded-2xl p-6 text-center relative overflow-hidden shadow-xl">
+    <div class="absolute -right-10 -bottom-10 text-9xl text-amber-500/5 font-black pointer-events-none">
+      1Cr
+    </div>
+    <span class="bg-amber-500 text-slate-950 text-xs font-black uppercase tracking-widest px-3 py-1 rounded-full inline-block mb-3 shadow">
+      🏆 1st Prize: ₹1,00,00,000 (1 Crore)
+    </span>
+    
+    <div class="flex items-center justify-center gap-3">
+      <span class="text-3xl sm:text-5xl font-black font-mono text-amber-400 tracking-wider">
+        {first.series} {first.number}
+      </span>
+    </div>
+
+    <div class="mt-3 text-xs text-amber-200/80 max-w-md mx-auto">
+      <span class="font-bold">Consolation Prize: ₹1,000</span> for remaining serials & series of ticket number <span class="font-mono font-bold text-white">{first.number}</span>
+    </div>
+  </div>
+
+  {/* 2nd Prize (10 tickets, ₹9,000 each) */}
+  <div class="mb-6">
+    <div class="flex items-center justify-between mb-3">
+      <h4 class="text-sm font-bold text-white uppercase tracking-wider flex items-center gap-2">
+        <span class="w-2 h-2 rounded-full bg-emerald-400"></span>
+        2nd Prize: {formatINR(9000)} (10 Winners)
+      </h4>
+    </div>
+    <div class="grid grid-cols-2 sm:grid-cols-5 gap-2.5">
+      {second.map((num: string) => (
+        <div class="bg-slate-950 border border-slate-800/80 rounded-xl py-2 px-3 text-center font-mono font-bold text-emerald-400 text-base shadow-inner">
+          {num}
+        </div>
+      ))}
+    </div>
+  </div>
+
+  {/* 3rd & 4th Prizes */}
+  <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+    {/* 3rd Prize (₹450) */}
+    <div>
+      <h4 class="text-xs font-bold text-slate-300 uppercase tracking-wider mb-2 flex items-center gap-2">
+        <span class="w-1.5 h-1.5 rounded-full bg-teal-400"></span>
+        3rd Prize: {formatINR(450)} (10 Winners)
+      </h4>
+      <div class="grid grid-cols-5 gap-2">
+        {third.map((num: string) => (
+          <div class="bg-slate-950 border border-slate-800 rounded-lg py-1.5 text-center font-mono text-sm font-semibold text-slate-200">
+            {num}
+          </div>
+        ))}
+      </div>
+    </div>
+
+    {/* 4th Prize (₹250) */}
+    <div>
+      <h4 class="text-xs font-bold text-slate-300 uppercase tracking-wider mb-2 flex items-center gap-2">
+        <span class="w-1.5 h-1.5 rounded-full bg-blue-400"></span>
+        4th Prize: {formatINR(250)} (10 Winners)
+      </h4>
+      <div class="grid grid-cols-5 gap-2">
+        {fourth.map((num: string) => (
+          <div class="bg-slate-950 border border-slate-800 rounded-lg py-1.5 text-center font-mono text-sm font-semibold text-slate-200">
+            {num}
+          </div>
+        ))}
+      </div>
+    </div>
+  </div>
+
+  {/* 5th Prize: 100 Numbers (₹120 each) */}
+  <div>
+    <div class="flex items-center justify-between mb-3">
+      <h4 class="text-xs font-bold text-slate-300 uppercase tracking-wider flex items-center gap-2">
+        <span class="w-1.5 h-1.5 rounded-full bg-indigo-400"></span>
+        5th Prize: {formatINR(120)} (100 Winners)
+      </h4>
+      <span class="text-[10px] text-slate-500 font-mono">Last 4 Digits</span>
+    </div>
+    <div class="grid grid-cols-5 sm:grid-cols-10 gap-1.5">
+      {fifth.map((num: string) => (
+        <div class="bg-slate-950/80 border border-slate-800/80 rounded-md py-1 text-center font-mono text-xs font-medium text-slate-300 hover:border-emerald-500/50 hover:text-emerald-300 transition-colors">
+          {num}
+        </div>
+      ))}
+    </div>
+  </div>
+
+</div>

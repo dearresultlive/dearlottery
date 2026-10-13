@@ -1,0 +1,31 @@
+name: Pre-Render Draw Page Warmup (30m Before Draws)
+
+on:
+  schedule:
+    # 12:30 PM IST = 07:00 UTC
+    # 5:30 PM IST  = 12:00 UTC
+    # 7:30 PM IST  = 14:00 UTC
+    - cron: '0 7,12,14 * * *'
+  workflow_dispatch:
+
+jobs:
+  warmup-pages:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install Dependencies
+        run: pip install requests
+
+      - name: Execute Edge Warmup
+        env:
+          FRONTEND_URL: ${{ secrets.FRONTEND_URL || 'https://dearlottery.live' }}
+          INDEXNOW_KEY: ${{ secrets.INDEXNOW_KEY || 'dearlotteryindexnowkey2026' }}
+        run: |
+          python scraper/prerender_warmup.py

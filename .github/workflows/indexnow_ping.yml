@@ -1,0 +1,29 @@
+name: Instant SEO IndexNow Ping
+
+on:
+  workflow_dispatch:
+    inputs:
+      target_url:
+        description: 'URL to submit for instant crawl'
+        required: false
+        default: 'https://dearlottery.live/'
+
+jobs:
+  ping-indexnow:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Ping IndexNow API
+        run: |
+          URL="${{ github.event.inputs.target_url }}"
+          HOST="dearlottery.live"
+          KEY="${{ secrets.INDEXNOW_KEY || 'dearlotteryindexnowkey2026' }}"
+
+          echo "Submitting $URL to IndexNow API..."
+          curl -X POST "https://api.indexnow.org/indexnow" \
+            -H "Content-Type: application/json; charset=utf-8" \
+            -d "{
+              \"host\": \"$HOST\",
+              \"key\": \"$KEY\",
+              \"keyLocation\": \"https://$HOST/$KEY.txt\",
+              \"urlList\": [\"$URL\"]
+            }" -i

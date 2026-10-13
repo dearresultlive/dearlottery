@@ -1,0 +1,28 @@
+name = "dear-lottery-api"
+main = "src/index.ts"
+compatibility_date = "2024-09-23"
+compatibility_flags = ["nodejs_compat"]
+account_id = "b80646cca3cd608739aab95124ecc718"
+workers_dev = true
+send_metrics = false
+
+[vars]
+API_KEY = "dear_lottery_secret_key_prod_2026"
+ENVIRONMENT = "production"
+FRONTEND_URL = "https://dearlottery.live"
+INDEXNOW_KEY = "dearlotteryindexnowkey2026"
+ONESIGNAL_APP_ID = "YOUR_ONESIGNAL_APP_ID"
+ONESIGNAL_REST_KEY = "YOUR_ONESIGNAL_REST_API_KEY"
+
+[[d1_databases]]
+binding = "DB"
+database_name = "dear_lottery_db"
+database_id = "372db2aa-7e12-4c0d-bbbb-bc0f50b0fb08"
+
+# Optional R2 bucket for raw PDF/Image storage (uncomment once R2 is enabled in Cloudflare Dashboard)
+# [[r2_buckets]]
+# binding = "RESULTS_BUCKET"
+# bucket_name = "dear-lottery-archives"
+
+[triggers]
+crons = ["0 8,13,15 * * *"]

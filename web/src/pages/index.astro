@@ -1,0 +1,132 @@
+---
+import Layout from '../layouts/Layout.astro';
+import DrawCountdown from '../components/DrawCountdown';
+import TicketChecker from '../components/TicketChecker';
+import PushNotifyBanner from '../components/PushNotifyBanner';
+import LiveResultsTabs from '../components/LiveResultsTabs';
+import { fetchLatestDraws, fetchFrequencyAnalytics } from '../lib/api';
+import { getISTDateString } from '../lib/lottery-utils';
+
+const draws = await fetchLatestDraws();
+const analytics = await fetchFrequencyAnalytics();
+const todayDateStr = getISTDateString();
+---
+
+<Layout
+  title={`Dear Lottery Result Today ${todayDateStr} Live (1PM, 6PM, 8PM) | Lottery Sambad`}
+  description={`Official Dear Lottery Result Today (${todayDateStr}) for 1:00 PM Morning, 6:00 PM Day, and 8:00 PM Night. Check 1st Prize ₹1 Crore winning ticket, last 4 digits instant checker.`}
+  drawDate={todayDateStr}
+>
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-10">
+    
+    {/* Hero Live Countdown & Edge Notification */}
+    <div class="space-y-4">
+      <DrawCountdown client:load />
+      <PushNotifyBanner client:load />
+    </div>
+
+    {/* Section 1: 1-Click Quick Ticket Search Bar */}
+    <section id="checker">
+      <TicketChecker client:load initialDraws={draws} />
+    </section>
+
+    {/* Section 2: Instant Live Result Tables */}
+    <section id="results" class="space-y-6">
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-800 pb-4">
+        <div>
+          <span class="text-xs uppercase font-bold tracking-widest text-emerald-400">
+            Official Live Gazette Sheets
+          </span>
+          <h2 class="text-3xl font-black text-white">
+            Today's Live Result Tables ({todayDateStr})
+          </h2>
+          <p class="text-slate-400 text-sm mt-0.5">
+            Nagaland & Sikkim State Lotteries official publication sheets for 1:00 PM, 6:00 PM, and 8:00 PM draws.
+          </p>
+        </div>
+
+        <div class="flex items-center gap-2">
+          <a
+            href="/analytics"
+            class="text-xs font-bold text-amber-400 hover:text-amber-300 bg-amber-500/10 border border-amber-500/30 px-3 py-2 rounded-xl transition-colors"
+          >
+            📊 View Hot & Cold Numbers →
+          </a>
+        </div>
+      </div>
+
+      <LiveResultsTabs client:load draws={draws} />
+    </section>
+
+    {/* Section 3: Hot & Cold Frequency Preview */}
+    <section class="bg-gradient-to-br from-slate-900 to-slate-950 border border-slate-800 rounded-3xl p-6 md:p-8 shadow-xl">
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+        <div>
+          <span class="text-xs font-bold text-amber-400 uppercase tracking-wider">
+            Player Analytics & Number Strategy
+          </span>
+          <h3 class="text-2xl font-black text-white">
+            Most Frequent Repeating Numbers
+          </h3>
+          <p class="text-slate-400 text-sm">
+            Top repeating 4-digit numbers appearing in recent 5th prize draws.
+          </p>
+        </div>
+        <a
+          href="/analytics"
+          class="bg-slate-950 border border-slate-700 hover:border-emerald-500 text-emerald-400 text-xs font-bold px-4 py-2.5 rounded-xl transition-all self-start sm:self-auto"
+        >
+          Full Analytics & Heatmap →
+        </a>
+      </div>
+
+      <div class="grid grid-cols-2 sm:grid-cols-5 gap-3">
+        {analytics.hotNumbers.map((item, idx) => (
+          <div class="bg-slate-950 border border-slate-800 rounded-2xl p-4 text-center">
+            <span class="text-[10px] text-slate-500 block font-mono">HOT #{idx + 1}</span>
+            <span class="text-2xl font-mono font-black text-amber-400 block my-1">{item.ticket_number}</span>
+            <span class="text-xs text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded-full font-bold">
+              {item.occurrences}x drawn
+            </span>
+          </div>
+        ))}
+      </div>
+    </section>
+
+    {/* Section 4: Comprehensive SEO FAQ Schema Content */}
+    <section class="bg-slate-900/50 border border-slate-800/80 rounded-3xl p-6 md:p-8 text-slate-300 space-y-6">
+      <h3 class="text-xl font-black text-white">Frequently Asked Questions (Dear Lottery FAQ)</h3>
+      
+      <div class="grid md:grid-cols-2 gap-6 text-sm">
+        <div class="space-y-1">
+          <h4 class="font-bold text-white">How much is the 1st prize in Dear Lottery?</h4>
+          <p class="text-slate-400 text-xs leading-relaxed">
+            The first prize for Dear Lottery is ₹1 Crore (₹10,000,000) including super prize amount. The prize is awarded to the ticket matching the exact series (e.g., 84D) and the 5-digit number.
+          </p>
+        </div>
+
+        <div class="space-y-1">
+          <h4 class="font-bold text-white">What is the Dear Lottery Consolation Prize?</h4>
+          <p class="text-slate-400 text-xs leading-relaxed">
+            The Consolation Prize is ₹1,000, awarded to all other tickets bearing the same 5-digit number as the 1st prize across remaining series.
+          </p>
+        </div>
+
+        <div class="space-y-1">
+          <h4 class="font-bold text-white">What are the daily Dear Lottery draw timings?</h4>
+          <p class="text-slate-400 text-xs leading-relaxed">
+            Draws are conducted thrice daily: 1:00 PM (Morning Draw), 6:00 PM (Day Draw), and 8:00 PM (Evening/Night Draw) under the authority of the Nagaland & Sikkim State Lotteries.
+          </p>
+        </div>
+
+        <div class="space-y-1">
+          <h4 class="font-bold text-white">How do I verify and claim my prize?</h4>
+          <p class="text-slate-400 text-xs leading-relaxed">
+            Prizes below ₹10,000 can be claimed through authorized state lottery agents. For claims above ₹10,000, submit the undamaged ticket, claim form, and government photo ID to the State Lottery Directorate.
+          </p>
+        </div>
+      </div>
+    </section>
+
+  </div>
+</Layout>

@@ -1,0 +1,71 @@
+---
+const currentYear = new Date().getFullYear();
+---
+
+<footer class="bg-slate-950 border-t border-slate-900 mt-20 pt-12 pb-8 text-slate-400 text-xs">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-8 mb-8 pb-8 border-b border-slate-900">
+      
+      <div class="md:col-span-2">
+        <div class="flex items-center gap-2 mb-3">
+          <div class="w-7 h-7 rounded-lg bg-emerald-500 flex items-center justify-center text-slate-950 font-black text-sm">
+            ₹
+          </div>
+          <span class="font-black text-base text-white">DEAR LOTTERY LIVE</span>
+        </div>
+        <p class="text-slate-400 leading-relaxed max-w-md">
+          Automated real-time result publishing and statistical frequency engine for Nagaland and Sikkim State Lotteries (Dear Lottery / Lottery Sambad). Hosted on the Cloudflare global edge network with sub-300ms latency.
+        </p>
+      </div>
+
+      <div>
+        <h4 class="font-bold text-white uppercase tracking-wider mb-3 text-xs">Daily Draws</h4>
+        <ul class="space-y-2">
+          <li><a href="/" class="hover:text-emerald-400 transition-colors">1:00 PM Morning Draw Result</a></li>
+          <li><a href="/" class="hover:text-emerald-400 transition-colors">6:00 PM Day Draw Result</a></li>
+          <li><a href="/" class="hover:text-emerald-400 transition-colors">8:00 PM Night Draw Result</a></li>
+          <li><a href="/checker" class="hover:text-emerald-400 transition-colors">Instant Ticket Checker</a></li>
+        </ul>
+      </div>
+
+      <div>
+        <h4 class="font-bold text-white uppercase tracking-wider mb-3 text-xs">Analytics & SEO</h4>
+        <ul class="space-y-2">
+          <li><a href="/analytics" class="hover:text-emerald-400 transition-colors">Hot & Cold Numbers</a></li>
+          <li><a href="/analytics" class="hover:text-emerald-400 transition-colors">Digit Frequency Heatmap</a></li>
+          <li><a href="/sitemap.xml" class="hover:text-emerald-400 transition-colors">Dynamic XML Sitemap</a></li>
+          <li><a href="/robots.txt" class="hover:text-emerald-400 transition-colors">Robots.txt Indexing</a></li>
+        </ul>
+      </div>
+
+    </div>
+
+    {/* Legal & Regulatory Disclaimer */}
+    <div class="bg-slate-900/80 border border-amber-500/20 rounded-2xl p-5 mb-6 leading-relaxed text-[11px] text-slate-300 space-y-2">
+      <div class="flex items-center gap-2 text-amber-400 font-bold uppercase tracking-wider text-xs">
+        <span>🛡️</span>
+        <span>Independent 3rd-Party & Regulatory Disclaimer</span>
+      </div>
+      <p>
+        <strong class="text-white">Non-Official Entity:</strong> This website is an independent information service and data analytics engine. We are <strong>not affiliated with, authorized, owned, or endorsed</strong> by the Government of Nagaland, Government of Sikkim, or the Directorate of State Lotteries. All Dear Lottery and Lottery Sambad results are aggregated from public government gazettes.
+      </p>
+      <p>
+        <strong class="text-white">No Ticket Sales or Wagering:</strong> We <strong>DO NOT sell lottery tickets</strong>, accept bets, process payments, or facilitate gambling in any form. This website does not encourage or induce any person to participate in state lotteries.
+      </p>
+      <p>
+        <strong class="text-white">Verification & Age Advisory:</strong> All published results should be cross-verified with the official printed Government Gazette before discarding tickets or making prize claims. Lottery participation is restricted to individuals aged <strong>18 years and above</strong> in jurisdictions where state lotteries are legally permitted. Please play responsibly.
+      </p>
+    </div>
+
+    <div class="flex flex-col sm:flex-row items-center justify-between gap-4 text-slate-500">
+      <p>© {currentYear} Dear Lottery Engine. 100% Free-Tier Architecture on Cloudflare.</p>
+      <div class="flex items-center gap-4">
+        <span>Sub-300ms Edge CDN</span>
+        <span>•</span>
+        <span>Cloudflare D1 SQLite</span>
+        <span>•</span>
+        <span>Zero Cost Hosting</span>
+      </div>
+    </div>
+  </div>
+</footer>

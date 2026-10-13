@@ -1,0 +1,56 @@
+---
+import Layout from '../layouts/Layout.astro';
+import TicketChecker from '../components/TicketChecker';
+import { fetchLatestDraws } from '../lib/api';
+
+const draws = await fetchLatestDraws();
+---
+
+<Layout
+  title="Dear Lottery Instant Ticket Checker Online | Check 1st to 5th Prize"
+  description="Check your Dear Lottery ticket number online instantly. Search by last 4-5 digits or full ticket number to see if you won 1st prize ₹1 Crore, 2nd, 3rd, 4th, or 5th prize."
+>
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-10">
+    <div class="text-center max-w-3xl mx-auto">
+      <span class="bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 text-xs font-bold uppercase tracking-wider px-3 py-1 rounded-full">
+        Instant Verification
+      </span>
+      <h1 class="text-3xl sm:text-4xl font-black text-white mt-3">
+        Online Dear Lottery Ticket Checker Tool
+      </h1>
+      <p class="text-slate-400 text-sm mt-2">
+        Validate your ticket in under 15ms. Matches across 1st prize (₹1 Crore), 2nd prize (₹9,000), 3rd prize (₹450), 4th prize (₹250), 5th prize (₹120), and Consolation prize (₹1,000).
+      </p>
+    </div>
+
+    {/* Interactive Ticket Checker Island */}
+    <TicketChecker client:load initialDraws={draws} />
+
+    {/* Educational Content to Boost SEO & Dwell-Time */}
+    <div class="bg-slate-900 border border-slate-800 rounded-3xl p-6 md:p-8 space-y-6 text-slate-300">
+      <h2 class="text-xl font-bold text-white">How Does the Instant Dear Lottery Checker Work?</h2>
+      <div class="grid md:grid-cols-3 gap-6 text-sm">
+        <div class="bg-slate-950 p-5 rounded-2xl border border-slate-800">
+          <div class="text-emerald-400 font-bold mb-2">1. Last 4 Digits Search</div>
+          <p class="text-xs text-slate-400 leading-relaxed">
+            3rd, 4th, and 5th prizes are awarded based exclusively on the last 4 digits of your ticket. Enter any 4-digit combination to instantly verify against 120 prize winners.
+          </p>
+        </div>
+
+        <div class="bg-slate-950 p-5 rounded-2xl border border-slate-800">
+          <div class="text-amber-400 font-bold mb-2">2. Full 5-Digit Matching</div>
+          <p class="text-xs text-slate-400 leading-relaxed">
+            2nd prize consists of 10 five-digit numbers worth ₹9,000 each. 1st prize requires both the 5-digit number and matching series letter.
+          </p>
+        </div>
+
+        <div class="bg-slate-950 p-5 rounded-2xl border border-slate-800">
+          <div class="text-teal-400 font-bold mb-2">3. Consolation Prize</div>
+          <p class="text-xs text-slate-400 leading-relaxed">
+            If your 5-digit number matches the 1st prize winning number but has a different series letter, you automatically win the ₹1,000 Consolation Prize.
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+</Layout>
