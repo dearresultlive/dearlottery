@@ -19,7 +19,7 @@ const currentPath = Astro.url.pathname;
 ---
 
 <!doctype html>
-<html lang="bn" data-lang="bn" class="scroll-smooth bg-slate-100 text-slate-900 antialiased">
+<html lang="bn" data-lang="bn" translate="no" class="notranslate scroll-smooth bg-slate-100 text-slate-900 antialiased">
   <SEOHead
     title={title}
     description={description}
@@ -39,7 +39,7 @@ const currentPath = Astro.url.pathname;
       }
     } catch (e) {}
   </script>
-  <body class="min-h-screen flex flex-col font-sans bg-slate-100 text-slate-900 selection:bg-amber-400 selection:text-slate-950">
+  <body class="notranslate min-h-screen flex flex-col font-sans bg-slate-100 text-slate-900 selection:bg-amber-400 selection:text-slate-950">
     <Header currentPath={currentPath} />
     <main class="flex-1">
       <slot />
