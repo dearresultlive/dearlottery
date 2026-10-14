@@ -6,26 +6,26 @@ interface Props {
 const { currentPath = '/' } = Astro.props;
 ---
 
-<header class="sticky top-0 z-50 bg-slate-950/80 backdrop-blur-md border-b border-slate-800">
+<header class="sticky top-0 z-50 bg-slate-950/95 backdrop-blur-md border-b-2 border-amber-500/30 shadow-xl">
   <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-    <div class="flex items-center justify-between h-16">
+    <div class="flex items-center justify-between h-16 sm:h-18">
       
-      {/* Brand Logo */}
-      <a href="/" class="flex items-center gap-3 group">
-        <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-emerald-600 to-teal-400 flex items-center justify-center text-slate-950 font-black text-xl shadow-lg shadow-emerald-500/20 group-hover:scale-105 transition-transform">
+      {/* Brand Logo - Authentic Local Lottery Portal Identity */}
+      <a href="/" class="flex items-center gap-2.5 sm:gap-3 group">
+        <div class="w-10 h-10 sm:w-11 sm:h-11 rounded-2xl bg-gradient-to-tr from-amber-500 via-yellow-400 to-amber-600 flex items-center justify-center text-slate-950 font-black text-2xl shadow-lg shadow-amber-500/25 group-hover:scale-105 transition-transform">
           ₹
         </div>
         <div>
           <div class="flex items-center gap-1.5">
-            <span class="font-black text-lg tracking-tight text-white group-hover:text-emerald-400 transition-colors">
-              DEAR LOTTERY
+            <span class="font-black text-base sm:text-lg tracking-tight text-white group-hover:text-amber-400 transition-colors">
+              DEAR RESULT LIVE
             </span>
-            <span class="bg-red-500/20 text-red-400 border border-red-500/30 text-[10px] font-bold px-1.5 py-0.2 rounded-full uppercase tracking-wider animate-pulse">
+            <span class="bg-red-600 text-white font-black text-[9px] sm:text-[10px] px-1.5 py-0.2 rounded-full uppercase tracking-wider animate-pulse shadow-sm">
               LIVE
             </span>
           </div>
-          <span class="text-[10px] text-slate-400 tracking-wider block font-mono">
-            RESULT & ANALYTICS ENGINE
+          <span class="text-[11px] text-amber-400 font-bold tracking-wide block">
+            লটারি সংবাদ • Official Results
           </span>
         </div>
       </a>
@@ -34,19 +34,29 @@ const { currentPath = '/' } = Astro.props;
       <nav class="hidden md:flex items-center gap-1">
         <a
           href="/"
-          class={`px-3 py-2 rounded-xl text-sm font-semibold transition-colors ${
+          class={`px-3 py-2 rounded-xl text-xs sm:text-sm font-bold transition-colors ${
             currentPath === '/'
-              ? 'text-emerald-400 bg-slate-900'
+              ? 'text-amber-300 bg-slate-900 border border-amber-500/30'
               : 'text-slate-300 hover:text-white hover:bg-slate-900/60'
           }`}
         >
-          Today's Results
+          Today's Results (আজকের রেজাল্ট)
+        </a>
+        <a
+          href="/old-results"
+          class={`px-3 py-2 rounded-xl text-xs sm:text-sm font-bold transition-colors ${
+            currentPath === '/old-results'
+              ? 'text-amber-300 bg-slate-900 border border-amber-500/30'
+              : 'text-slate-300 hover:text-white hover:bg-slate-900/60'
+          }`}
+        >
+          Old Results (পুরনো রেজাল্ট)
         </a>
         <a
           href="/checker"
-          class={`px-3 py-2 rounded-xl text-sm font-semibold transition-colors ${
+          class={`px-3 py-2 rounded-xl text-xs sm:text-sm font-bold transition-colors ${
             currentPath === '/checker'
-              ? 'text-emerald-400 bg-slate-900'
+              ? 'text-amber-300 bg-slate-900 border border-amber-500/30'
               : 'text-slate-300 hover:text-white hover:bg-slate-900/60'
           }`}
         >
@@ -54,9 +64,9 @@ const { currentPath = '/' } = Astro.props;
         </a>
         <a
           href="/analytics"
-          class={`px-3 py-2 rounded-xl text-sm font-semibold transition-colors ${
+          class={`px-3 py-2 rounded-xl text-xs sm:text-sm font-bold transition-colors ${
             currentPath === '/analytics'
-              ? 'text-emerald-400 bg-slate-900'
+              ? 'text-amber-300 bg-slate-900 border border-amber-500/30'
               : 'text-slate-300 hover:text-white hover:bg-slate-900/60'
           }`}
         >
@@ -65,12 +75,14 @@ const { currentPath = '/' } = Astro.props;
       </nav>
 
       {/* CTA Button */}
-      <div class="flex items-center gap-3">
+      <div class="flex items-center gap-2">
         <a
           href="/checker"
-          class="hidden sm:inline-flex items-center gap-2 bg-emerald-500 hover:bg-emerald-400 text-slate-950 text-xs font-black uppercase tracking-wider px-4 py-2 rounded-xl shadow-md transition-all active:scale-95"
+          class="inline-flex items-center gap-1.5 bg-gradient-to-r from-amber-400 to-yellow-500 hover:from-amber-300 hover:to-yellow-400 text-slate-950 text-xs font-black uppercase tracking-wider px-3 sm:px-4 py-2 rounded-xl shadow-md transition-all active:scale-95"
         >
-          <span>🔍 Check Ticket</span>
+          <span>🔍</span>
+          <span class="hidden sm:inline">Check Ticket</span>
+          <span class="sm:hidden">Search</span>
         </a>
       </div>
 
