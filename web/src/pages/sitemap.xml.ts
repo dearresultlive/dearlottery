@@ -12,7 +12,13 @@ export const GET: APIRoute = async ({ request }) => {
     { loc: `${host}/results/${today}`, priority: '0.9', changefreq: 'hourly', lastmod: today },
     { loc: `${host}/results/${today}/1pm`, priority: '0.9', changefreq: 'hourly', lastmod: today },
     { loc: `${host}/results/${today}/6pm`, priority: '0.9', changefreq: 'hourly', lastmod: today },
-    { loc: `${host}/results/${today}/8pm`, priority: '0.9', changefreq: 'hourly', lastmod: today }
+    { loc: `${host}/results/${today}/8pm`, priority: '0.9', changefreq: 'hourly', lastmod: today },
+    { loc: `${host}/old-results`, priority: '0.8', changefreq: 'daily', lastmod: today },
+    { loc: `${host}/about`, priority: '0.5', changefreq: 'monthly', lastmod: today },
+    { loc: `${host}/contact`, priority: '0.5', changefreq: 'monthly', lastmod: today },
+    { loc: `${host}/privacy-policy`, priority: '0.4', changefreq: 'monthly', lastmod: today },
+    { loc: `${host}/terms`, priority: '0.4', changefreq: 'monthly', lastmod: today },
+    { loc: `${host}/disclaimer`, priority: '0.4', changefreq: 'monthly', lastmod: today }
   ];
 
   // Include past 30 days historical dates and their individual draw URLs

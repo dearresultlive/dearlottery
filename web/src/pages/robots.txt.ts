@@ -5,8 +5,8 @@ export const GET: APIRoute = async ({ request }) => {
 
   const robots = `User-agent: *
 Allow: /
+Allow: /_astro/
 Disallow: /api/
-Disallow: /_astro/
 
 Sitemap: ${host}/sitemap.xml
 `;

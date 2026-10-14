@@ -12,7 +12,7 @@ interface Props {
 }
 
 const {
-  title = "Dear Lottery Result Today 1 PM 6 PM 8 PM Live Sambad | Instant Ticket Checker",
+  title = "Dear Lottery Result Today 1 PM 6 PM 8 PM Live | Lottery Sambad লটারি সংবাদ",
   description = "Check official Dear Lottery Sambad results today for 1:00 PM, 6:00 PM, and 8:00 PM draws live. Fast sub-300ms ticket checker, 1st prize ₹1 Crore winning numbers, and hot/cold number frequency.",
   canonicalUrl = Astro.url.href,
   drawDate = new Date().toISOString().slice(0, 10),
@@ -20,10 +20,13 @@ const {
   winningNumbers
 } = Astro.props;
 
+const currentPath = Astro.url.pathname;
+const host = Astro.url.origin;
+
 // Determine exact publication timestamp based on slot in IST (+05:30)
 const pubHour = drawTime?.includes('6') ? '18:00:00+05:30' : drawTime?.includes('8') ? '20:00:00+05:30' : '13:00:00+05:30';
 
-// JSON-LD NewsArticle Schema
+// 1. JSON-LD NewsArticle Schema
 const lotterySchema = {
   "@context": "https://schema.org",
   "@type": "NewsArticle",
@@ -47,7 +50,50 @@ const lotterySchema = {
   }
 };
 
-// FAQ Schema for SEO Rich Snippets
+// 2. JSON-LD WebSite & SearchAction Schema (Enables Google SERP Sitelinks Search Box)
+const websiteSchema = {
+  "@context": "https://schema.org",
+  "@type": "WebSite",
+  "name": "Dear Result Live",
+  "alternateName": ["Lottery Sambad", "ডিয়ার লটারি রেজাল্ট লাইভ", "Dear Lottery Result"],
+  "url": "https://dearresultlive.in",
+  "potentialAction": {
+    "@type": "SearchAction",
+    "target": "https://dearresultlive.in/checker?number={search_term_string}",
+    "query-input": "required name=search_term_string"
+  }
+};
+
+// 3. JSON-LD BreadcrumbList Schema (Clean SERP URL Hierarchy)
+const pathSegments = currentPath.split('/').filter(Boolean);
+const breadcrumbItems = [
+  {
+    "@type": "ListItem",
+    "position": 1,
+    "name": "Home",
+    "item": `${host}/`
+  }
+];
+
+let accumulatedPath = host;
+pathSegments.forEach((segment, idx) => {
+  accumulatedPath += `/${segment}`;
+  const formattedName = segment.replace(/-/g, ' ').toUpperCase();
+  breadcrumbItems.push({
+    "@type": "ListItem",
+    "position": idx + 2,
+    "name": formattedName,
+    "item": accumulatedPath
+  });
+});
+
+const breadcrumbSchema = {
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": breadcrumbItems
+};
+
+// 4. FAQ Schema for Rich Snippets
 const faqSchema = {
   "@context": "https://schema.org",
   "@type": "FAQPage",
@@ -57,29 +103,29 @@ const faqSchema = {
       "name": "What time are Dear Lottery results published today?",
       "acceptedAnswer": {
         "@type": "Answer",
-        "text": "Dear Lottery draws are conducted three times daily at 1:00 PM (Morning), 6:00 PM (Day), and 8:00 PM (Evening/Night) by the Nagaland and Sikkim State Lotteries."
+        "text": "Dear Lottery draws are conducted three times daily at 1:00 PM (Morning), 6:00 PM (Day), and 8:00 PM (Evening/Night) under the authority of the Nagaland & Sikkim State Lotteries."
       }
     },
     {
       "@type": "Question",
-      "name": "What is the 1st prize amount for Dear Lottery?",
+      "name": "How much is the 1st prize in Dear Lottery Sambad?",
       "acceptedAnswer": {
         "@type": "Answer",
-        "text": "The first prize for Dear Lottery is ₹1 Crore (₹10,000,000) including super prize amount, awarded to the ticket matching the exact series and 5-digit number."
+        "text": "The first prize for Dear Lottery is ₹1 Crore (₹10,000,000) including super prize amount, awarded to the ticket matching the exact series (e.g., 84D) and 5-digit number."
       }
     },
     {
       "@type": "Question",
-      "name": "How does the Instant Ticket Checker work?",
+      "name": "How to check Dear Lottery ticket online?",
       "acceptedAnswer": {
         "@type": "Answer",
-        "text": "Enter your ticket number or just the last 4-5 digits into the search box. The tool checks all prize tiers (1st, 2nd, 3rd, 4th, 5th, and Consolation) instantly."
+        "text": "Visit https://dearresultlive.in/checker and enter your ticket number or just the last 4-5 digits to verify against 1st, 2nd, 3rd, 4th, 5th, and Consolation prizes instantly."
       }
     }
   ]
 };
 
-// JSON-LD Table & Dataset Schema for structured prize results
+// 5. JSON-LD Table & Dataset Schema
 const tableDatasetSchema = {
   "@context": "https://schema.org",
   "@type": "Dataset",
@@ -116,8 +162,12 @@ const tableDatasetSchema = {
   
   <title>{title}</title>
   <meta name="description" content={description} />
-  <meta name="keywords" content="dear lottery result, lottery sambad, dear lottery 1pm, dear lottery 6pm, dear lottery 8pm, nagaland state lottery, sikkim state lottery, dear lottery ticket checker, dear lottery hot numbers" />
+  <meta name="keywords" content="lottery sambad, লটারি সংবাদ, dear lottery result, dear lottery result today, nagaland state lottery, sikkim state lottery, dear lottery 1pm, dear lottery 6pm, dear lottery 8pm, dhankesari, dear lottery ticket checker, dear lottery live, dear lottery 1 crore winner" />
   <link rel="canonical" href={canonicalUrl} />
+  <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1" />
+
+  <!-- Google Search Console Site Verification -->
+  <meta name="google-site-verification" content="GOOGLE_SEARCH_CONSOLE_VERIFICATION_TOKEN" />
 
   <!-- OpenGraph / Facebook -->
   <meta property="og:type" content="website" />
@@ -125,14 +175,18 @@ const tableDatasetSchema = {
   <meta property="og:title" content={title} />
   <meta property="og:description" content={description} />
   <meta property="og:image" content="https://dearresultlive.in/og-image.jpg" />
+  <meta property="og:image:width" content="1200" />
+  <meta property="og:image:height" content="630" />
+  <meta property="og:site_name" content="Dear Result Live" />
+  <meta property="og:locale" content="en_IN" />
 
-  <!-- Twitter -->
+  <!-- Twitter Card -->
   <meta name="twitter:card" content="summary_large_image" />
   <meta name="twitter:title" content={title} />
   <meta name="twitter:description" content={description} />
   <meta name="twitter:image" content="https://dearresultlive.in/og-image.jpg" />
 
-  <!-- Preconnect for performance -->
+  <!-- High-Performance Web Font Preconnects -->
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@500;700;800&display=swap" rel="stylesheet" />
@@ -150,7 +204,9 @@ const tableDatasetSchema = {
     });
   </script>
 
-  <!-- Structured Data JSON-LD (NewsArticle, FAQPage, Table & Dataset) -->
+  <!-- Complete Structured Data Schemas -->
+  <script type="application/ld+json" set:html={JSON.stringify(websiteSchema)} />
+  <script type="application/ld+json" set:html={JSON.stringify(breadcrumbSchema)} />
   <script type="application/ld+json" set:html={JSON.stringify(lotterySchema)} />
   <script type="application/ld+json" set:html={JSON.stringify(faqSchema)} />
   <script type="application/ld+json" set:html={JSON.stringify(tableDatasetSchema)} />

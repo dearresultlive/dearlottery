@@ -1,0 +1,99 @@
+---
+import Layout from '../layouts/Layout.astro';
+import { getISTNow, getISTDateString } from '../lib/lottery-utils';
+
+const istNow = getISTNow();
+const todayStr = getISTDateString(istNow);
+
+// Generate past 30 days list
+const datesList: Array<{ date: string; displayDate: string; dayName: string }> = [];
+
+for (let i = 1; i <= 30; i++) {
+  const d = new Date(istNow);
+  d.setDate(d.getDate() - i);
+  const iso = getISTDateString(d);
+  const display = d.toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' });
+  const dayName = d.toLocaleDateString('en-IN', { weekday: 'long' });
+  datesList.push({ date: iso, displayDate: display, dayName });
+}
+---
+
+<Layout
+  title="Dear Lottery Old Result Archive (Past 30 Days) | Lottery Sambad পুরোনো রেজাল্ট"
+  description="Check Dear Lottery old results and past winning sheets for the last 30 days. Daily 1:00 PM Morning, 6:00 PM Day, and 8:00 PM Night 1st prize ₹1 Crore numbers."
+>
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-8">
+    
+    <div class="border-b border-slate-800 pb-6">
+      <span class="text-xs font-bold text-amber-400 uppercase tracking-widest">Historical Archives</span>
+      <h1 class="text-3xl sm:text-4xl font-black text-white mt-1">
+        Dear Lottery Old Results Archive (পুরোনো রেজাল্ট)
+      </h1>
+      <p class="text-slate-400 text-sm mt-2">
+        Browse past 30 days official Nagaland and Sikkim State Lottery Sambad result sheets and winning numbers.
+      </p>
+    </div>
+
+    {/* Quick Filter Yesterday */}
+    <div class="bg-gradient-to-r from-amber-500/15 via-slate-900 to-amber-500/15 border border-amber-400/40 rounded-3xl p-6 flex flex-col sm:flex-row items-center justify-between gap-4">
+      <div>
+        <span class="text-xs font-bold text-amber-400 uppercase">High-Priority Search</span>
+        <h2 class="text-xl font-black text-white">Looking for Yesterday's Result? (গতকালকের রেজাল্ট)</h2>
+        <p class="text-xs text-slate-300 mt-1">Check verified winning numbers for all 3 draws conducted yesterday.</p>
+      </div>
+      <a
+        href={`/results/${datesList[0]?.date}`}
+        class="bg-gradient-to-r from-amber-500 to-yellow-500 hover:from-amber-400 hover:to-yellow-400 text-slate-950 font-black text-xs sm:text-sm px-6 py-3 rounded-2xl shadow-lg shadow-amber-500/20 transition-all whitespace-nowrap"
+      >
+        View Yesterday's Results ({datesList[0]?.displayDate}) →
+      </a>
+    </div>
+
+    {/* 30-Day Grid */}
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+      {datesList.map((item) => (
+        <div class="bg-slate-900 border border-slate-800 hover:border-amber-400/60 rounded-2xl p-5 space-y-3 transition-colors shadow">
+          <div class="flex items-center justify-between border-b border-slate-800 pb-2.5">
+            <div>
+              <span class="text-base font-black text-white block">{item.displayDate}</span>
+              <span class="text-[11px] text-amber-400 font-semibold">{item.dayName}</span>
+            </div>
+            <a
+              href={`/results/${item.date}`}
+              class="text-xs font-bold text-slate-400 hover:text-white bg-slate-950 border border-slate-800 px-2.5 py-1 rounded-lg transition-colors"
+            >
+              All Draws →
+            </a>
+          </div>
+
+          <div class="grid grid-cols-3 gap-2 pt-1">
+            <a
+              href={`/results/${item.date}/1pm`}
+              class="bg-slate-950 hover:bg-slate-800 border border-slate-800 hover:border-amber-400/50 text-slate-300 hover:text-white rounded-xl py-2 px-1 text-center transition-colors flex flex-col items-center"
+            >
+              <span class="text-xs font-bold text-amber-300">1:00 PM</span>
+              <span class="text-[10px] text-slate-500">দুপুর</span>
+            </a>
+
+            <a
+              href={`/results/${item.date}/6pm`}
+              class="bg-slate-950 hover:bg-slate-800 border border-slate-800 hover:border-amber-400/50 text-slate-300 hover:text-white rounded-xl py-2 px-1 text-center transition-colors flex flex-col items-center"
+            >
+              <span class="text-xs font-bold text-amber-300">6:00 PM</span>
+              <span class="text-[10px] text-slate-500">সন্ধ্যা</span>
+            </a>
+
+            <a
+              href={`/results/${item.date}/8pm`}
+              class="bg-slate-950 hover:bg-slate-800 border border-slate-800 hover:border-amber-400/50 text-slate-300 hover:text-white rounded-xl py-2 px-1 text-center transition-colors flex flex-col items-center"
+            >
+              <span class="text-xs font-bold text-amber-300">8:00 PM</span>
+              <span class="text-[10px] text-slate-500">রাত</span>
+            </a>
+          </div>
+        </div>
+      ))}
+    </div>
+
+  </div>
+</Layout>
