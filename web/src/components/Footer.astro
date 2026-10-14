@@ -8,63 +8,74 @@ const currentYear = new Date().getFullYear();
       
       <div class="md:col-span-2">
         <div class="flex items-center gap-2 mb-3">
-          <div class="w-7 h-7 rounded-lg bg-emerald-500 flex items-center justify-center text-slate-950 font-black text-sm">
+          <div class="w-8 h-8 rounded-lg bg-gradient-to-tr from-amber-500 to-yellow-400 flex items-center justify-center text-slate-950 font-black text-base shadow-md">
             ₹
           </div>
-          <span class="font-black text-base text-white">DEAR LOTTERY LIVE</span>
+          <div>
+            <span class="font-black text-base text-white tracking-wide">DEAR RESULT LIVE</span>
+            <span class="block text-[10px] text-amber-400 font-medium">ডিয়ার লটারি রেজাল্ট লাইভ পোর্টাল</span>
+          </div>
         </div>
-        <p class="text-slate-400 leading-relaxed max-w-md">
-          Automated real-time result publishing and statistical frequency engine for Nagaland and Sikkim State Lotteries (Dear Lottery / Lottery Sambad). Hosted on the Cloudflare global edge network with sub-300ms latency.
+        <p class="text-slate-400 leading-relaxed max-w-md text-xs">
+          Dear Result Live (<strong>dearresultlive.in</strong>) is a fast, trusted, independent public utility portal for checking official Nagaland, Sikkim, and West Bengal Dear State Lottery results. We publish winning numbers accurately for all daily 1:00 PM (দুপুর), 6:00 PM (সন্ধ্যা), and 8:00 PM (রাত) draws.
         </p>
       </div>
 
       <div>
-        <h4 class="font-bold text-white uppercase tracking-wider mb-3 text-xs">Daily Draws</h4>
+        <h4 class="font-bold text-white uppercase tracking-wider mb-3 text-xs flex items-center gap-1.5">
+          <span>📅</span>
+          <span>Daily Draws / দৈনিক ড্র</span>
+        </h4>
         <ul class="space-y-2">
-          <li><a href="/" class="hover:text-emerald-400 transition-colors">1:00 PM Morning Draw Result</a></li>
-          <li><a href="/" class="hover:text-emerald-400 transition-colors">6:00 PM Day Draw Result</a></li>
-          <li><a href="/" class="hover:text-emerald-400 transition-colors">8:00 PM Night Draw Result</a></li>
-          <li><a href="/checker" class="hover:text-emerald-400 transition-colors">Instant Ticket Checker</a></li>
+          <li><a href="/results/2026-10-14/1pm" class="hover:text-amber-400 transition-colors">1:00 PM Morning (দুপুর ১টা)</a></li>
+          <li><a href="/results/2026-10-14/6pm" class="hover:text-amber-400 transition-colors">6:00 PM Day (সন্ধ্যা ৬টা)</a></li>
+          <li><a href="/results/2026-10-14/8pm" class="hover:text-amber-400 transition-colors">8:00 PM Night (রাত ৮টা)</a></li>
+          <li><a href="/checker" class="hover:text-amber-400 transition-colors">Instant Ticket Checker (টিকিট চেক)</a></li>
+          <li><a href="/analytics" class="hover:text-amber-400 transition-colors">Hot & Cold Numbers (নম্বর অ্যানালিটিক্স)</a></li>
         </ul>
       </div>
 
       <div>
-        <h4 class="font-bold text-white uppercase tracking-wider mb-3 text-xs">Analytics & SEO</h4>
+        <h4 class="font-bold text-white uppercase tracking-wider mb-3 text-xs flex items-center gap-1.5">
+          <span>⚖️</span>
+          <span>Trust & Legal / নিয়মাবলী</span>
+        </h4>
         <ul class="space-y-2">
-          <li><a href="/analytics" class="hover:text-emerald-400 transition-colors">Hot & Cold Numbers</a></li>
-          <li><a href="/analytics" class="hover:text-emerald-400 transition-colors">Digit Frequency Heatmap</a></li>
-          <li><a href="/sitemap.xml" class="hover:text-emerald-400 transition-colors">Dynamic XML Sitemap</a></li>
-          <li><a href="/robots.txt" class="hover:text-emerald-400 transition-colors">Robots.txt Indexing</a></li>
+          <li><a href="/about" class="hover:text-amber-400 transition-colors">About Us (আমাদের সম্পর্কে)</a></li>
+          <li><a href="/contact" class="hover:text-amber-400 transition-colors">Contact Us (যোগাযোগ)</a></li>
+          <li><a href="/privacy-policy" class="hover:text-amber-400 transition-colors">Privacy Policy (গোপনীয়তা নীতি)</a></li>
+          <li><a href="/terms" class="hover:text-amber-400 transition-colors">Terms of Service (ব্যবহারের শর্তাবলী)</a></li>
+          <li><a href="/disclaimer" class="hover:text-amber-400 transition-colors">Official Disclaimer (দাবি পরিত্যাগ)</a></li>
         </ul>
       </div>
 
     </div>
 
     {/* Legal & Regulatory Disclaimer */}
-    <div class="bg-slate-900/80 border border-amber-500/20 rounded-2xl p-5 mb-6 leading-relaxed text-[11px] text-slate-300 space-y-2">
+    <div class="bg-slate-900/90 border border-amber-500/30 rounded-2xl p-5 mb-6 leading-relaxed text-[11px] text-slate-300 space-y-2">
       <div class="flex items-center gap-2 text-amber-400 font-bold uppercase tracking-wider text-xs">
         <span>🛡️</span>
-        <span>Independent 3rd-Party & Regulatory Disclaimer</span>
+        <span>Independent 3rd-Party & Legal Advisory (স্বতন্ত্র ও আইনি বিজ্ঞপ্তি)</span>
       </div>
       <p>
-        <strong class="text-white">Non-Official Entity:</strong> This website is an independent information service and data analytics engine. We are <strong>not affiliated with, authorized, owned, or endorsed</strong> by the Government of Nagaland, Government of Sikkim, or the Directorate of State Lotteries. All Dear Lottery and Lottery Sambad results are aggregated from public government gazettes.
+        <strong class="text-white">Independent 3rd-Party Status:</strong> This website is an independent information service and data publication portal. We are <strong>not affiliated with, authorized, owned, or endorsed</strong> by the Government of Nagaland, Government of Sikkim, Government of West Bengal, or the Directorate of State Lotteries. All Dear Lottery and Lottery Sambad results are aggregated from officially published gazette records.
       </p>
       <p>
-        <strong class="text-white">No Ticket Sales or Wagering:</strong> We <strong>DO NOT sell lottery tickets</strong>, accept bets, process payments, or facilitate gambling in any form. This website does not encourage or induce any person to participate in state lotteries.
+        <strong class="text-white">Strict No Ticket Sales Policy:</strong> We <strong>DO NOT sell lottery tickets</strong>, accept bets, process wagers, collect payments, or facilitate gambling in any form. This website does not induce, encourage, or promote lottery participation.
       </p>
       <p>
-        <strong class="text-white">Verification & Age Advisory:</strong> All published results should be cross-verified with the official printed Government Gazette before discarding tickets or making prize claims. Lottery participation is restricted to individuals aged <strong>18 years and above</strong> in jurisdictions where state lotteries are legally permitted. Please play responsibly.
+        <strong class="text-white">Verification & 18+ Advisory:</strong> All published numbers must be cross-verified with the official printed Government Gazette before discarding tickets or claiming prizes. Lottery participation is strictly restricted to adults aged <strong>18 years and older (১৮ বছর বা তার বেশি)</strong> in legal jurisdictions only. Play responsibly.
       </p>
     </div>
 
-    <div class="flex flex-col sm:flex-row items-center justify-between gap-4 text-slate-500">
-      <p>© {currentYear} Dear Lottery Engine. 100% Free-Tier Architecture on Cloudflare.</p>
-      <div class="flex items-center gap-4">
-        <span>Sub-300ms Edge CDN</span>
+    <div class="flex flex-col sm:flex-row items-center justify-between gap-4 text-slate-500 text-[11px]">
+      <p>© {currentYear} Dear Result Live (dearresultlive.in). All rights reserved.</p>
+      <div class="flex items-center gap-3">
+        <span class="text-slate-400 font-medium">18+ Only</span>
         <span>•</span>
-        <span>Cloudflare D1 SQLite</span>
+        <span class="text-slate-400 font-medium">No Ticket Sales</span>
         <span>•</span>
-        <span>Zero Cost Hosting</span>
+        <span class="text-slate-400 font-medium">Independent Information Service</span>
       </div>
     </div>
   </div>

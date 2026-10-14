@@ -20,23 +20,26 @@ const {
   winningNumbers
 } = Astro.props;
 
-// JSON-LD LotteryResult Schema
+// Determine exact publication timestamp based on slot in IST (+05:30)
+const pubHour = drawTime?.includes('6') ? '18:00:00+05:30' : drawTime?.includes('8') ? '20:00:00+05:30' : '13:00:00+05:30';
+
+// JSON-LD NewsArticle Schema
 const lotterySchema = {
   "@context": "https://schema.org",
   "@type": "NewsArticle",
   "headline": title,
   "description": description,
-  "datePublished": `${drawDate}T13:00:00+05:30`,
+  "datePublished": `${drawDate}T${pubHour}`,
   "dateModified": new Date().toISOString(),
   "mainEntityOfPage": canonicalUrl,
   "author": {
     "@type": "Organization",
-    "name": "Dear Lottery Result Engine",
+    "name": "Dear Result Live",
     "url": "https://dearresultlive.in"
   },
   "publisher": {
     "@type": "Organization",
-    "name": "Dear Lottery Engine",
+    "name": "Dear Result Live",
     "logo": {
       "@type": "ImageObject",
       "url": "https://dearresultlive.in/favicon.svg"
@@ -76,7 +79,7 @@ const faqSchema = {
   ]
 };
 
-// Table & Dataset Schema for structured prize results
+// JSON-LD Table & Dataset Schema for structured prize results
 const tableDatasetSchema = {
   "@context": "https://schema.org",
   "@type": "Dataset",
@@ -85,7 +88,7 @@ const tableDatasetSchema = {
   "url": canonicalUrl,
   "creator": {
     "@type": "Organization",
-    "name": "Dear Lottery Result Engine",
+    "name": "Dear Result Live",
     "url": "https://dearresultlive.in"
   },
   "variableMeasured": [
@@ -98,7 +101,7 @@ const tableDatasetSchema = {
   ],
   "mainEntity": {
     "@type": "Table",
-    "about": `Prize Tier Distribution and Winning Ticket List for ${drawDate}`,
+    "about": `Prize Tier Distribution and Winning Ticket List for ${drawDate} ${drawTime || ''}`.trim(),
     "disambiguatingDescription": winningNumbers?.firstPrize
       ? `1st Prize winning ticket: ${winningNumbers.firstPrize}`
       : "Complete verified winning ticket distribution table."

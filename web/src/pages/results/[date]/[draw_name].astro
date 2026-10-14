@@ -11,18 +11,21 @@ const rawSlug = (draw_name || '').toLowerCase();
 // Fetch all draws for the target date
 const allDraws = await fetchDrawsByDate(targetDate);
 
-// Resolve specific draw matching the slug
+// Match slot: 1pm, 6pm, 8pm or draw_name slug
 let selectedDraw = allDraws.find((d) => {
   const normTime = d.draw_time?.toLowerCase().replace(/[^a-z0-9]/g, '');
   const normName = d.draw_name?.toLowerCase().replace(/[^a-z0-9]+/g, '-');
   return (
+    (rawSlug === '1pm' && (d.draw_time?.includes('1') || d.id?.includes('1PM'))) ||
+    (rawSlug === '6pm' && (d.draw_time?.includes('6') || d.id?.includes('6PM'))) ||
+    (rawSlug === '8pm' && (d.draw_time?.includes('8') || d.id?.includes('8PM'))) ||
     rawSlug.includes(normTime) ||
     (normName && rawSlug.includes(normName)) ||
     (normName && normName.includes(rawSlug))
   );
 });
 
-// Fallback to first draw if not matched exactly
+// Fallback logic
 if (!selectedDraw && allDraws.length > 0) {
   if (rawSlug.includes('6pm') || rawSlug.includes('day')) {
     selectedDraw = allDraws.find(d => d.draw_time?.includes('6')) || allDraws[1] || allDraws[0];
@@ -35,87 +38,107 @@ if (!selectedDraw && allDraws.length > 0) {
 
 const draw = selectedDraw || allDraws[0];
 const prizes = draw?.parsed_data?.prizes || draw?.prizes;
-const firstPrize = prizes?.first_prize || { series: '84D', number: '19283' };
+const firstPrize = prizes?.first_prize || { series: '84D', number: '74921' };
 
-// SEO Meta Data
-const seoTitle = `${draw.draw_name} Result ${targetDate} (${draw.draw_time}) | 1st Prize ₹1 Crore ${firstPrize.series} ${firstPrize.number}`;
-const seoDesc = `Official ${draw.draw_name} (${draw.draw_time}) lottery result declared on ${targetDate}. 1st Prize ₹1 Crore winning ticket is ${firstPrize.series} ${firstPrize.number}. Check all 2nd, 3rd, 4th, 5th prizes online.`;
+const slotHour = draw?.draw_time?.includes('6') ? '6 PM' : draw?.draw_time?.includes('8') ? '8 PM' : '1 PM';
+const slotKey = draw?.draw_time?.includes('6') ? '6pm' : draw?.draw_time?.includes('8') ? '8pm' : '1pm';
+
+// Exact SEO Title and Description conforming to requirements
+const seoTitle = `Dear Lottery Result Today ${slotHour} Live - ${targetDate} | 1st Prize Winning Number`;
+const seoDesc = `Dear Lottery Result Today ${slotHour} Live on ${targetDate}. 1st Prize ₹1 Crore winning ticket is ${firstPrize.series} ${firstPrize.number}. Download official gazette PDF and check all 2nd, 3rd, 4th, 5th prizes online.`;
+
+const slotTabs = [
+  { key: '1pm', time: '1:00 PM', labelEn: '1:00 PM Morning', labelBn: 'দুপুর ১টা', icon: '☀️' },
+  { key: '6pm', time: '6:00 PM', labelEn: '6:00 PM Day', labelBn: 'সন্ধ্যা ৬টা', icon: '🌅' },
+  { key: '8pm', time: '8:00 PM', labelEn: '8:00 PM Night', labelBn: 'রাত ৮টা', icon: '🌙' }
+];
 ---
 
 <Layout
   title={seoTitle}
   description={seoDesc}
   drawDate={targetDate}
+  drawTime={slotHour}
+  winningNumbers={{ firstPrize: `${firstPrize.series} ${firstPrize.number}` }}
 >
-  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-10">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
     
     {/* Breadcrumbs Navigation */}
-    <nav class="flex items-center gap-2 text-xs text-slate-400 border-b border-slate-800 pb-3">
-      <a href="/" class="hover:text-emerald-400 transition-colors">Home</a>
+    <nav aria-label="Breadcrumb" class="flex items-center gap-2 text-xs text-slate-400 border-b border-slate-800 pb-3">
+      <a href="/" class="hover:text-amber-400 transition-colors">Home (হোম)</a>
       <span>/</span>
-      <a href={`/results/${targetDate}`} class="hover:text-emerald-400 transition-colors">Results {targetDate}</a>
+      <a href={`/results/${targetDate}`} class="hover:text-amber-400 transition-colors">Results {targetDate}</a>
       <span>/</span>
-      <span class="text-white font-semibold">{draw.draw_name} ({draw.draw_time})</span>
+      <span class="text-white font-bold">{slotHour} Draw ({draw?.draw_name})</span>
     </nav>
 
-    {/* Header Banner */}
-    <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
-      <div>
-        <div class="flex items-center gap-2 mb-2">
-          <span class="bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 text-xs font-bold px-2.5 py-0.5 rounded-full uppercase tracking-wider">
-            {draw.draw_time} Official Draw Sheet
-          </span>
-          <span class="text-xs text-slate-400 font-mono">
-            Date: {targetDate}
-          </span>
-        </div>
-        <h1 class="text-3xl sm:text-4xl font-black text-white">
-          {draw.draw_name} Result
-        </h1>
-        <p class="text-slate-400 text-sm mt-1">
-          Directorate of Nagaland & Sikkim State Lotteries official publication.
-        </p>
-      </div>
-
-      {/* Cross-navigation to other draws of the same day */}
-      <div class="flex flex-wrap items-center gap-2">
-        <span class="text-xs text-slate-400 block w-full md:w-auto">Other Draws Today:</span>
-        {allDraws.filter(d => d.id !== draw.id).map(d => {
-          const slotTag = d.draw_time?.toLowerCase().includes('1') ? '1pm' : (d.draw_time?.toLowerCase().includes('6') ? '6pm' : '8pm');
-          const slug = `${slotTag}-${d.draw_name?.toLowerCase().replace(/[^a-z0-9]+/g, '-')}`;
+    {/* 1. Draw Navigation Sticky/Top-Level Pill Switcher */}
+    <section aria-label="Draw Slot Switcher" class="bg-slate-950 p-2 sm:p-2.5 rounded-3xl border-2 border-slate-800 shadow-2xl">
+      <div class="grid grid-cols-3 gap-2">
+        {slotTabs.map((tab) => {
+          const isCurrent = slotKey === tab.key;
           return (
             <a
-              href={`/results/${targetDate}/${slug}`}
-              class="bg-slate-900 hover:bg-slate-800 border border-slate-700 text-xs font-bold text-slate-200 px-3 py-1.5 rounded-xl transition-colors"
+              href={`/results/${targetDate}/${tab.key}`}
+              class={`py-3 sm:py-4 px-2 sm:px-4 rounded-2xl flex flex-col items-center justify-center transition-all ${
+                isCurrent
+                  ? 'bg-gradient-to-r from-amber-500 via-amber-600 to-yellow-600 text-slate-950 font-black shadow-lg shadow-amber-500/25 ring-2 ring-amber-300 scale-[1.02]'
+                  : 'bg-slate-900/90 hover:bg-slate-800 border border-slate-800 text-slate-300 hover:text-white'
+              }`}
             >
-              {d.draw_time} →
+              <div class="flex items-center gap-1.5 sm:gap-2">
+                <span class="text-base sm:text-xl">{tab.icon}</span>
+                <span class="text-xs sm:text-base font-extrabold tracking-tight">
+                  {tab.time}
+                </span>
+              </div>
+              <span class={`text-[10px] sm:text-xs font-semibold mt-0.5 ${isCurrent ? 'text-slate-950' : 'text-amber-400'}`}>
+                {tab.labelBn}
+              </span>
+              <div class="mt-1">
+                <span class={`inline-block text-[9px] sm:text-[10px] font-bold px-2 py-0.2 rounded-full uppercase tracking-wider ${
+                  isCurrent ? 'bg-slate-950 text-amber-300' : 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30'
+                }`}>
+                  RESULT OUT
+                </span>
+              </div>
             </a>
           );
         })}
       </div>
-    </div>
+    </section>
 
     {/* Primary Result Sheet */}
     <section>
-      <ResultCard draw={draw} />
+      {draw ? (
+        <ResultCard draw={draw} />
+      ) : (
+        <div class="bg-slate-900 border-2 border-slate-800 rounded-3xl p-12 text-center text-slate-300">
+          <p class="text-lg font-bold text-white mb-2">No Draw Records Found</p>
+          <p class="text-xs text-slate-400">Results are currently being synchronized from the Directorate Gazette.</p>
+        </div>
+      )}
     </section>
 
     {/* Scoped Ticket Checker */}
     <section class="space-y-4">
       <div class="border-t border-slate-800 pt-8">
-        <h2 class="text-2xl font-black text-white mb-2">
-          Verify Your Ticket in {draw.draw_name}
+        <h2 class="text-2xl font-black text-white mb-1">
+          Verify Your Ticket in {draw?.draw_name || `${slotHour} Draw`}
         </h2>
         <p class="text-slate-400 text-xs">
-          Instantly search your ticket against this exact {draw.draw_time} draw or all prize tiers.
+          Instantly search your ticket number against this exact {slotHour} draw across all prize tiers.
         </p>
       </div>
-      <TicketChecker client:load initialDraws={[draw]} />
+      <TicketChecker client:load initialDraws={draw ? [draw] : []} />
     </section>
 
     {/* Prize Claim Information */}
     <div class="bg-slate-900/60 border border-slate-800 rounded-3xl p-6 md:p-8 space-y-4 text-slate-300 text-sm">
-      <h3 class="text-lg font-bold text-white">How to Claim Dear Lottery Prizes</h3>
+      <h3 class="text-lg font-bold text-white flex items-center gap-2">
+        <span>🏆</span>
+        <span>How to Claim Dear Lottery Prizes (পুরস্কার দাবির নিয়মাবলী)</span>
+      </h3>
       <ul class="space-y-2 text-xs text-slate-400 leading-relaxed list-disc list-inside">
         <li>
           <strong class="text-white">Prizes up to ₹10,000:</strong> Can be collected in cash directly through any authorized Dear Lottery retailer or distributor with original intact ticket.

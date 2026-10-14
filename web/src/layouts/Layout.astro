@@ -8,15 +8,26 @@ interface Props {
   title?: string;
   description?: string;
   drawDate?: string;
+  drawTime?: string;
+  winningNumbers?: {
+    firstPrize?: string;
+    secondPrize?: string[];
+  };
 }
 
-const { title, description, drawDate } = Astro.props;
+const { title, description, drawDate, drawTime, winningNumbers } = Astro.props;
 const currentPath = Astro.url.pathname;
 ---
 
 <!doctype html>
 <html lang="en" class="scroll-smooth bg-slate-950 text-slate-100 antialiased">
-  <SEOHead title={title} description={description} drawDate={drawDate} />
+  <SEOHead
+    title={title}
+    description={description}
+    drawDate={drawDate}
+    drawTime={drawTime}
+    winningNumbers={winningNumbers}
+  />
   <body class="min-h-screen flex flex-col font-sans selection:bg-emerald-500 selection:text-slate-950 pb-12 sm:pb-10">
     <Header currentPath={currentPath} />
     <main class="flex-1">
