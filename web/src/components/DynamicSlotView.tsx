@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import DrawCountdown from './DrawCountdown';
 import PushNotifyBanner from './PushNotifyBanner';
+import LotteryTicketVoucher from './LotteryTicketVoucher';
 
 interface PrizeData {
   first_prize?: { series: string; number: string };
@@ -85,30 +86,14 @@ export default function DynamicSlotView({
             setIsUpcoming(false);
           }} />
 
-          {/* Pre-Publish Expected 1st Prize Golden Card */}
-          <div className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-amber-100 via-amber-50 to-yellow-100 border-2 border-amber-300 p-5 sm:p-7 shadow-sm text-center">
-            <div className="inline-block bg-red-600 text-white font-black text-xs sm:text-sm uppercase tracking-wider px-4 py-1 rounded-full shadow-sm mb-3">
-              🏆 1st Prize: ₹1,00,00,000 (1 Crore Winner / ১ম পুরস্কার)
-            </div>
-
-            <div className="py-4">
-              <div className="text-3xl sm:text-5xl font-black font-mono text-slate-900 tracking-wider animate-pulse select-none">
-                DRAW PENDING • ফলাফল আসছে
-              </div>
-              <p className="text-xs sm:text-sm text-slate-600 mt-2">
-                Official draw will be conducted at {slotHour}. Winning numbers and official signed sheet will appear dynamically without page refresh.
-              </p>
-            </div>
-
-            <div className="mt-2 pt-4 border-t border-amber-300/80 flex flex-col sm:flex-row items-center justify-center gap-2 text-xs sm:text-sm text-slate-700">
-              <span className="bg-amber-100 text-amber-900 border border-amber-300 font-bold px-3 py-0.5 rounded-full text-xs">
-                Consolation Prize: ₹1,000 (সান্ত্বনা পুরস্কার)
-              </span>
-              <span>
-                Awarded across all remaining series matching the 1st prize winning 5-digit number.
-              </span>
-            </div>
-          </div>
+          {/* Authentic Physical Pending Ticket Voucher */}
+          <LotteryTicketVoucher
+            status="PENDING"
+            drawName={currentDraw?.draw_name || `Dear ${slotHour} Draw`}
+            drawTime={currentDraw?.draw_time || slotHour}
+            drawDate={targetDate}
+            drawNumber={currentDraw?.draw_number || '74'}
+          />
 
           {/* Prize Structure Grid */}
           <div className="bg-white border border-slate-200 rounded-2xl p-5 sm:p-7 space-y-4 shadow-sm">
@@ -206,35 +191,16 @@ export default function DynamicSlotView({
             </div>
           </div>
 
-          {/* 1st Prize Golden Hero Card */}
-          <div className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-amber-100 via-amber-50 to-yellow-100 border-2 border-amber-300 p-5 sm:p-7 shadow-sm">
-            
-            <div className="bg-white border-2 border-dashed border-amber-400 rounded-xl p-4 sm:p-6 text-center shadow-inner relative">
-              
-              <div className="inline-block bg-red-600 text-white font-black text-xs sm:text-sm uppercase tracking-wider px-4 py-1 rounded-full shadow-sm mb-2">
-                🏆 1st Prize: ₹1,00,00,000 (1 Crore Winner / ১ম পুরস্কার)
-              </div>
-
-              <div className="py-2 flex items-center justify-center gap-3 sm:gap-4 flex-wrap">
-                <span className="bg-slate-900 text-white font-mono text-3xl sm:text-5xl md:text-6xl font-black px-3.5 py-1 rounded-xl shadow border-2 border-slate-800">
-                  {first.series}
-                </span>
-                <span className="font-mono text-4xl sm:text-6xl md:text-7xl font-black text-slate-950 tracking-wider select-all">
-                  {first.number}
-                </span>
-              </div>
-
-              <div className="mt-3 pt-3 border-t border-slate-200 text-xs sm:text-sm text-slate-700 flex flex-col sm:flex-row items-center justify-center gap-2">
-                <span className="bg-amber-100 text-amber-900 border border-amber-300 font-bold px-3 py-0.5 rounded-full text-xs">
-                  Consolation Prize: ₹1,000 (সান্ত্বনা পুরস্কার)
-                </span>
-                <span>
-                  Applicable to all remaining series of ticket <strong className="font-mono text-slate-950 text-sm underline decoration-amber-500 font-black">{first.number}</strong>
-                </span>
-              </div>
-
-            </div>
-          </div>
+          {/* 1st Prize Authentic Physical Ticket Voucher */}
+          <LotteryTicketVoucher
+            status="DECLARED"
+            series={first.series}
+            number={first.number}
+            drawName={currentDraw?.draw_name || `${slotHour} Draw`}
+            drawTime={currentDraw?.draw_time || slotHour}
+            drawDate={targetDate}
+            drawNumber={currentDraw?.draw_number || '74'}
+          />
 
           {/* Official Gazette Sheet Preview & Utility Bar */}
           <div className="bg-white border border-slate-200 rounded-2xl p-4 sm:p-5 shadow-sm space-y-4">

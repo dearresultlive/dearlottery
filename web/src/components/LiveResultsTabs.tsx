@@ -7,6 +7,7 @@ import {
   getSlotCountdown
 } from '../lib/lottery-utils';
 import PushNotifyBanner from './PushNotifyBanner';
+import LotteryTicketVoucher from './LotteryTicketVoucher';
 
 interface PrizeData {
   first_prize?: { series: string; number: string };
@@ -262,62 +263,15 @@ export default function LiveResultsTabs({
       {activeStatus === 'UPCOMING' && (
         <div className="space-y-5 sm:space-y-6">
           
-          {/* 1. Golden Draw Pending Physical Ticket Card */}
-          <div className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-amber-100 via-amber-50 to-yellow-100 border-2 border-amber-300 p-5 sm:p-7 shadow-sm">
-            
-            <div className="flex flex-wrap items-center justify-between gap-2 border-b border-amber-300/80 pb-3 mb-4">
-              <div className="flex items-center gap-2">
-                <span className="bg-amber-500 text-slate-950 font-black text-[10px] sm:text-xs px-2.5 py-0.5 rounded-full uppercase tracking-wider flex items-center gap-1 shadow-xs">
-                  <span className="w-1.5 h-1.5 rounded-full bg-slate-950 animate-ping"></span>
-                  DRAW PENDING • আসন্ন ড্র
-                </span>
-                <span className="text-xs sm:text-sm font-black text-slate-900 font-mono">
-                  {currentSlotInfo.time} Draw ({currentSlotInfo.labelBn})
-                </span>
-              </div>
-
-              <div className="text-xs text-slate-700 font-mono bg-white border border-amber-300 px-2.5 py-1 rounded-lg font-bold">
-                Draw Date: <strong className="text-slate-950">{todayStr}</strong>
-              </div>
-            </div>
-
-            {/* Ticket Box */}
-            <div className="bg-white border-2 border-dashed border-amber-400 rounded-xl p-5 sm:p-8 text-center shadow-inner relative space-y-3">
-              
-              <div className="inline-block bg-red-600 text-white font-black text-xs sm:text-sm uppercase tracking-wider px-4 py-1 rounded-full shadow-sm">
-                🏆 1st Prize: ₹1,00,00,000 (1 Crore Winner / ১ম পুরস্কার)
-              </div>
-
-              <div className="py-2">
-                <div className="text-2xl sm:text-4xl md:text-5xl font-black font-mono text-slate-900 tracking-wider">
-                  DRAW PENDING • ফলাফল আসছে
-                </div>
-                
-                {/* Live Reverse Countdown specifically for this slot */}
-                <div className="mt-3 inline-flex items-center gap-2 bg-slate-900 text-amber-300 px-4 py-2 rounded-xl font-mono text-sm sm:text-base font-black shadow-md border border-slate-800">
-                  <span className="text-white text-xs sm:text-sm font-medium">ড্র শুরু হতে বাকি / Starts in:</span>
-                  <span className="tracking-widest">
-                    {String(slotCountdown.hours).padStart(2, '0')}h {String(slotCountdown.minutes).padStart(2, '0')}m {String(slotCountdown.seconds).padStart(2, '0')}s
-                  </span>
-                </div>
-
-                <p className="text-xs sm:text-sm text-slate-600 mt-3 max-w-2xl mx-auto leading-relaxed">
-                  আজকের {currentSlotInfo.time} ড্র সম্পন্ন হওয়ার পর অফিসিয়াল রেজাল্ট শিট এবং বিজয়ী নম্বর এখানে অটোমেটিক চলে আসবে (পেজ রিফ্রেশ করার প্রয়োজন নেই)।
-                </p>
-              </div>
-
-              {/* Consolation Prize Notice */}
-              <div className="pt-3 border-t border-slate-200 text-xs sm:text-sm text-slate-700 flex flex-col sm:flex-row items-center justify-center gap-2">
-                <span className="bg-amber-100 text-amber-900 border border-amber-300 font-bold px-3 py-0.5 rounded-full text-xs">
-                  Consolation Prize: ₹1,000 (সান্ত্বনা পুরস্কার)
-                </span>
-                <span>
-                  ১ম পুরস্কারের শেষ ৫ সংখ্যা মিললে বাকি সব সিরিজের টিকিটে প্রযোজ্য।
-                </span>
-              </div>
-
-            </div>
-          </div>
+          {/* 1. Authentic Physical Pending Ticket Voucher */}
+          <LotteryTicketVoucher
+            status="PENDING"
+            drawName={currentDrawForToday?.draw_name || currentSlotInfo.labelEn}
+            drawTime={currentSlotInfo.time}
+            drawDate={todayStr}
+            drawNumber={currentDrawForToday?.draw_number || '74'}
+            countdownText={`${String(slotCountdown.hours).padStart(2, '0')}h ${String(slotCountdown.minutes).padStart(2, '0')}m ${String(slotCountdown.seconds).padStart(2, '0')}s`}
+          />
 
           {/* 2. Official Prize Structure Grid for this Slot */}
           <div className="bg-white border border-slate-200 rounded-2xl p-4 sm:p-6 space-y-4 shadow-sm">
@@ -377,48 +331,38 @@ export default function LiveResultsTabs({
               </a>
             </div>
 
-            {/* Yesterday 1st Prize Winner Ticket Card */}
-            <div className="bg-slate-50 border border-slate-200 rounded-xl p-3.5 sm:p-5 flex flex-col md:flex-row items-center justify-between gap-4">
-              <div className="text-center md:text-left space-y-1">
-                <div className="flex items-center justify-center md:justify-start gap-2">
-                  <span className="bg-emerald-100 text-emerald-800 border border-emerald-300 text-[10px] font-black px-2 py-0.5 rounded-full uppercase">
-                    ✓ Verified Result ({yesterdayDateStr})
-                  </span>
-                  <span className="text-xs font-bold text-slate-600">
-                    {yesterdayDraw?.draw_name || `${currentSlotInfo.time} Draw`}
-                  </span>
-                </div>
-                <div className="text-xs text-slate-500">
-                  ১ম পুরস্কার বিজয়ী টিকিট (₹1 Crore Winner):
-                </div>
-                <div className="flex items-center justify-center md:justify-start gap-2 pt-0.5">
-                  <span className="bg-slate-900 text-white font-mono text-xl sm:text-2xl font-black px-2.5 py-0.5 rounded-lg">
-                    {yesterdayFirstPrize.series}
-                  </span>
-                  <span className="font-mono text-2xl sm:text-3xl font-black text-slate-950 tracking-wider">
-                    {yesterdayFirstPrize.number}
-                  </span>
-                </div>
-              </div>
+            {/* Yesterday 1st Prize Authentic Ticket Voucher */}
+            <LotteryTicketVoucher
+              status="DECLARED"
+              isYesterday={true}
+              series={yesterdayFirstPrize.series}
+              number={yesterdayFirstPrize.number}
+              drawName={yesterdayDraw?.draw_name || `${currentSlotInfo.time} Draw`}
+              drawTime={yesterdayDraw?.draw_time || currentSlotInfo.time}
+              drawDate={yesterdayDateStr}
+              drawNumber={yesterdayDraw?.draw_number || '74'}
+            />
 
-              {/* Action Buttons for Yesterday */}
-              <div className="flex items-center gap-2 w-full md:w-auto">
-                <button
-                  type="button"
-                  onClick={() => setShowYesterdaySheet(prev => !prev)}
-                  className="flex-1 md:flex-none bg-blue-700 hover:bg-blue-800 text-white font-black text-xs sm:text-sm py-2 px-3.5 rounded-xl transition-all shadow-sm"
-                >
-                  {showYesterdaySheet ? '▲ Hide Details' : '👁️ View Yesterday Sheet & All Prizes'}
-                </button>
-                <a
-                  href={yesterdayPdfUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="bg-white hover:bg-slate-100 border border-slate-300 text-slate-700 font-bold text-xs sm:text-sm py-2 px-3 rounded-xl transition-colors"
-                >
-                  📥 PDF
-                </a>
-              </div>
+            {/* Action Buttons for Yesterday */}
+            <div className="flex flex-wrap items-center gap-2 pt-1">
+              <button
+                type="button"
+                onClick={() => setShowYesterdaySheet(prev => !prev)}
+                className="flex-1 sm:flex-none bg-blue-700 hover:bg-blue-800 text-white font-black text-xs sm:text-sm py-2 px-4 rounded-xl transition-all shadow-sm active:scale-95 flex items-center justify-center gap-1.5"
+              >
+                <span>{showYesterdaySheet ? '▲' : '👁️'}</span>
+                <span>{showYesterdaySheet ? 'Hide Details' : 'View Yesterday Gazette Sheet & All Prizes'}</span>
+              </button>
+              <a
+                href={yesterdayPdfUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                download={`Dear_Lottery_${yesterdayDateStr}_${activeSlot}.pdf`}
+                className="bg-white hover:bg-slate-100 border border-slate-300 text-slate-800 font-bold text-xs sm:text-sm py-2 px-4 rounded-xl transition-colors shadow-2xs flex items-center justify-center gap-1.5"
+              >
+                <span>📥</span>
+                <span>Download PDF</span>
+              </a>
             </div>
 
             {/* Expandable Yesterday Complete Prize Sheet */}
@@ -524,55 +468,16 @@ export default function LiveResultsTabs({
       {activeStatus === 'RESULT_OUT' && (
         <div className="space-y-5 sm:space-y-6">
           
-          {/* 1. HERO: Authentic Golden Lottery Ticket (Paper Style, Ultra High-Contrast) */}
-          <div className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-amber-100 via-amber-50 to-yellow-100 border-2 border-amber-300 p-5 sm:p-7 shadow-sm">
-            
-            {/* Top Header Badge */}
-            <div className="flex flex-wrap items-center justify-between gap-2 border-b border-amber-300/80 pb-3 mb-4">
-              <div className="flex items-center gap-2">
-                <span className="bg-red-600 text-white font-black text-[10px] sm:text-xs px-2.5 py-0.5 rounded-full uppercase tracking-wider animate-pulse flex items-center gap-1 shadow-sm">
-                  <span className="w-1.5 h-1.5 rounded-full bg-white"></span>
-                  ১ম পুরস্কার • 1ST PRIZE
-                </span>
-                <span className="text-xs sm:text-sm font-black text-slate-900 font-mono">
-                  {currentDraw.draw_name} ({currentDraw.draw_time})
-                </span>
-              </div>
-
-              <div className="text-xs text-slate-700 font-mono bg-white border border-amber-300 px-2.5 py-1 rounded-lg font-bold">
-                Draw Date: <strong className="text-slate-950">{todayStr}</strong>
-              </div>
-            </div>
-
-            {/* Realistic Physical Ticket Card */}
-            <div className="bg-white border-2 border-dashed border-amber-400 rounded-xl p-4 sm:p-6 text-center shadow-inner relative">
-              
-              <div className="inline-block bg-red-600 text-white font-black text-xs sm:text-sm uppercase tracking-wider px-4 py-1 rounded-full shadow-sm mb-2">
-                🏆 1st Prize: ₹1,00,00,000 (1 Crore Winner / ১ম পুরস্কার)
-              </div>
-
-              {/* Big Bold Ticket Number (Series + 5 Digits) in Crisp Black Ink */}
-              <div className="py-2 flex items-center justify-center gap-3 sm:gap-4 flex-wrap">
-                <span className="bg-slate-900 text-white font-mono text-3xl sm:text-5xl md:text-6xl font-black px-3.5 py-1 rounded-xl shadow border-2 border-slate-800">
-                  {firstPrize.series}
-                </span>
-                <span className="font-mono text-4xl sm:text-6xl md:text-7xl font-black text-slate-950 tracking-wider select-all">
-                  {firstPrize.number}
-                </span>
-              </div>
-
-              {/* Consolation Prize Notice */}
-              <div className="mt-3 pt-3 border-t border-slate-200 text-xs sm:text-sm text-slate-700 flex flex-col sm:flex-row items-center justify-center gap-2">
-                <span className="bg-amber-100 text-amber-900 border border-amber-300 font-bold px-3 py-0.5 rounded-full text-xs">
-                  Consolation Prize: ₹1,000 (সান্ত্বনা পুরস্কার)
-                </span>
-                <span>
-                  Applicable to all remaining series of ticket <strong className="font-mono text-slate-950 text-sm underline decoration-amber-500 font-black">{firstPrize.number}</strong>
-                </span>
-              </div>
-
-            </div>
-          </div>
+          {/* 1. HERO: Authentic Physical Lottery Ticket Voucher (Paper Style, Ultra High-Trust) */}
+          <LotteryTicketVoucher
+            status="DECLARED"
+            series={firstPrize.series}
+            number={firstPrize.number}
+            drawName={currentDraw.draw_name}
+            drawTime={currentDraw.draw_time || currentSlotInfo.time}
+            drawDate={todayStr}
+            drawNumber={currentDraw.draw_number || '74'}
+          />
 
           {/* 2. Official Gazette Sheet (Image Preview) & Action Bar */}
           <div className="bg-white border border-slate-200 rounded-2xl p-4 sm:p-5 shadow-sm space-y-4">
