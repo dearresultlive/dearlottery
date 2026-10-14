@@ -42,13 +42,50 @@ export default function LiveResultsTabs({ draws = [] }: LiveResultsTabsProps) {
 
   // Determine active slot based on current IST time or default to 1PM
   const [activeSlot, setActiveSlot] = useState<string>('1PM');
+  const [drawsList, setDrawsList] = useState<DrawRecord[]>(draws);
   const [showImageModal, setShowImageModal] = useState<boolean>(false);
   const [selectedImageUrl, setSelectedImageUrl] = useState<string>('');
   const [copiedLink, setCopiedLink] = useState<boolean>(false);
 
+  useEffect(() => {
+    setDrawsList(draws);
+  }, [draws]);
+
+  // Listen for auto-polling zero-refresh event from DrawCountdown
+  useEffect(() => {
+    const handleNewResult = (e: any) => {
+      if (e.detail) {
+        const newDraw = e.detail;
+        setDrawsList(prev => {
+          const index = prev.findIndex(d => d.id === newDraw.id);
+          if (index >= 0) {
+            const nextList = [...prev];
+            nextList[index] = newDraw;
+            return nextList;
+          }
+          return [newDraw, ...prev];
+        });
+
+        // Auto switch tab to the newly declared draw slot
+        if (newDraw.draw_time?.includes('6') || newDraw.id?.includes('6PM')) {
+          setActiveSlot('6PM');
+        } else if (newDraw.draw_time?.includes('8') || newDraw.id?.includes('8PM')) {
+          setActiveSlot('8PM');
+        } else {
+          setActiveSlot('1PM');
+        }
+      }
+    };
+
+    if (typeof window !== 'undefined') {
+      window.addEventListener('dearlottery:new_result', handleNewResult);
+      return () => window.removeEventListener('dearlottery:new_result', handleNewResult);
+    }
+  }, []);
+
   // Auto-select latest published slot on mount
   useEffect(() => {
-    if (draws.length > 0) {
+    if (drawsList.length > 0) {
       const now = new Date();
       // IST is UTC + 5:30
       const istHours = (now.getUTCHours() + 5 + Math.floor((now.getUTCMinutes() + 30) / 60)) % 24;
@@ -60,13 +97,13 @@ export default function LiveResultsTabs({ draws = [] }: LiveResultsTabsProps) {
         setActiveSlot('1PM');
       }
     }
-  }, [draws]);
+  }, [drawsList]);
 
   // Find the active draw matching the slot
-  const currentDraw = draws.find(d => 
+  const currentDraw = drawsList.find(d => 
     d.draw_time?.includes(activeSlot.replace('PM', '')) || 
     d.id?.includes(activeSlot)
-  ) || draws[0];
+  ) || drawsList[0];
 
   const prizes: PrizeData = currentDraw?.parsed_data?.prizes || currentDraw?.prizes || {};
   const firstPrize = prizes.first_prize || { series: '84D', number: '74921' };
@@ -104,7 +141,7 @@ export default function LiveResultsTabs({ draws = [] }: LiveResultsTabsProps) {
         <div className="grid grid-cols-3 gap-2">
           {slots.map(slot => {
             const isActive = activeSlot === slot.key;
-            const drawForSlot = draws.find(d => d.draw_time?.includes(slot.key.replace('PM', '')) || d.id?.includes(slot.key));
+            const drawForSlot = drawsList.find(d => d.draw_time?.includes(slot.key.replace('PM', '')) || d.id?.includes(slot.key));
             const isResultOut = Boolean(drawForSlot);
 
             return (
