@@ -62,7 +62,7 @@ export default function DynamicSlotView({
   const fourth = p?.fourth_prize || [];
   const fifth = p?.fifth_prize || [];
 
-  const pdfUrl = currentDraw?.pdf_r2_url || `/pdf/${targetDate}/${slotKey}.pdf`;
+  const pdfUrl = `/pdf/${targetDate}/${slotKey}.pdf`;
   const jpgUrl = currentDraw?.image_r2_url || `/og-image.jpg?date=${targetDate}&slot=${slotKey}`;
 
   const whatsappMessage = `🎯 *Dear Lottery Result Today (${currentDraw?.draw_time || slotHour})*\n📅 তারিখ: ${targetDate}\n\n🏆 *১ম পুরস্কার (₹1 Crore Winner)*: *${first.series} ${first.number}*\n\n👉 সম্পূর্ণ অফিসিয়াল রেজাল্ট শিট ও সব প্রাইজ নম্বর দেখুন:\nhttps://dearresultlive.in/results/${targetDate}/${slotKey}`;
@@ -96,6 +96,34 @@ export default function DynamicSlotView({
             drawDate={targetDate}
             drawNumber={currentDraw?.draw_number || '74'}
           />
+
+          {/* Pending Draw PDF Status & Official Notice Bar */}
+          <div className="bg-amber-50 border border-amber-300 rounded-2xl p-3.5 sm:p-4 flex flex-col sm:flex-row items-center justify-between gap-3 shadow-xs">
+            <div className="flex items-center gap-2.5 text-center sm:text-left">
+              <span className="w-3 h-3 rounded-full bg-amber-500 animate-pulse flex-shrink-0"></span>
+              <div>
+                <p className="text-xs sm:text-sm font-black text-amber-950">
+                  {lang === 'bn' 
+                    ? `আজকের ${slotHour} অফিসিয়াল রেজাল্ট শিট ও পিডিএফ ড্র ঘোষণার সাথে সাথে চলে আসবে`
+                    : `Today's ${slotHour} Official Gazette PDF will be available right after draw`}
+                </p>
+                <p className="text-[11px] text-amber-800">
+                  {lang === 'bn' ? 'ড্র সম্পন্ন হওয়া পর্যন্ত অপেক্ষা করুন অথবা সরকারি ড্র শিডিউল নোটিশ ডাউনলোড করুন' : 'Draw is scheduled. You can download the official schedule notice PDF.'}
+                </p>
+              </div>
+            </div>
+
+            <a
+              href={pdfUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              download={`Dear_Lottery_${targetDate}_${slotKey}_Notice.pdf`}
+              className="inline-flex items-center gap-1.5 bg-white hover:bg-amber-100 border border-amber-400 text-amber-950 font-bold text-xs sm:text-sm px-4 py-2 rounded-xl transition-colors shadow-2xs whitespace-nowrap"
+            >
+              <span>📋</span>
+              <span>{lang === 'bn' ? 'ড্র শিডিউল নোটিশ (PDF)' : 'Draw Notice (PDF)'}</span>
+            </a>
+          </div>
 
           {/* Prize Structure Grid */}
           <div className="bg-white border border-slate-200 rounded-2xl p-5 sm:p-7 space-y-4 shadow-sm">

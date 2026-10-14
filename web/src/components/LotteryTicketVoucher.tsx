@@ -168,14 +168,18 @@ export default function LotteryTicketVoucher({
               <rect x="98" y="0" width="2" height="24"/>
             </svg>
             <span className="font-mono text-[9px] sm:text-[10px] text-slate-500 font-bold tracking-tight">
-              DL-{drawDate.replace(/[^0-9]/g, '')}-{series}-{number}
+              DL-{drawDate.replace(/[^0-9]/g, '')}-{isPending ? 'PENDING' : `${series}-${number}`}
             </span>
           </div>
 
           {/* Security Verification Stamp */}
-          <div className="flex items-center gap-1.5 text-emerald-800 bg-emerald-50 border border-emerald-300 px-2.5 py-0.5 rounded-full font-bold text-[10px] uppercase shadow-2xs">
-            <span className="w-1.5 h-1.5 rounded-full bg-emerald-600 animate-pulse"></span>
-            ✓ সরকারি ডিরেক্টরেট ভেরিফায়েড
+          <div className={`flex items-center gap-1.5 px-2.5 py-0.5 rounded-full font-bold text-[10px] uppercase shadow-2xs ${
+            isPending
+              ? 'text-amber-800 bg-amber-50 border border-amber-300'
+              : 'text-emerald-800 bg-emerald-50 border border-emerald-300'
+          }`}>
+            <span className={`w-1.5 h-1.5 rounded-full ${isPending ? 'bg-amber-500' : 'bg-emerald-600'} animate-pulse`}></span>
+            {isPending ? '⏳ ড্র প্রক্রিয়াধীন (Draw Pending)' : '✓ সরকারি ডিরেক্টরেট ভেরিফায়েড'}
           </div>
 
         </div>

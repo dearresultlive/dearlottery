@@ -60,7 +60,7 @@ export default function ResultPage({ date, slot = '1pm', initialDraws = [] }: Re
   const fourthPrizes = prizes.fourth_prize || ['1242', '1728', '2139', '2685', '5093', '7563', '8526', '8592', '8870', '9227'];
   const fifthPrizes = prizes.fifth_prize || Array.from({ length: 100 }, (_, i) => String(1000 + i * 89).slice(-4));
 
-  const pdfUrl = currentDraw?.pdf_r2_url || `/pdf/${date}/${activeSlot.toLowerCase()}.pdf`;
+  const pdfUrl = `/pdf/${date}/${activeSlot.toLowerCase()}.pdf`;
   const jpgUrl = currentDraw?.image_r2_url || `/og-image.jpg?date=${date}&slot=${activeSlot}`;
 
   const whatsappMessage = `🎯 *Dear Lottery Result Today (${currentDraw?.draw_time || activeSlot})*\n📅 তারিখ: ${date}\n\n🏆 *১ম পুরস্কার (₹1 Crore Winner)*: *${firstPrize.series} ${firstPrize.number}*\n\n👉 আজকের সম্পূর্ণ ফলাফল দেখুন:\nhttps://dearresultlive.in/results/${date}/${activeSlot.toLowerCase()}`;

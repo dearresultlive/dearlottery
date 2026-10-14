@@ -10,10 +10,12 @@ export const GET: APIRoute = async ({ params }) => {
   const { date, slot } = params;
 
   const istNow = getISTNow();
-  const dateStr = date || getISTDateString(istNow);
+  const todayStr = getISTDateString(istNow);
+  const dateStr = date || todayStr;
 
   const cleanSlot = (slot || '1pm').toUpperCase().replace(/[^0-9A-Z]/g, '');
   const validSlot = (cleanSlot.includes('6') ? '6PM' : cleanSlot.includes('8') ? '8PM' : '1PM') as '1PM' | '6PM' | '8PM';
+  const timeLabel = validSlot === '1PM' ? '1:00 PM' : validSlot === '6PM' ? '6:00 PM' : '8:00 PM';
 
   let targetDraw: any = null;
   try {
@@ -26,17 +28,31 @@ export const GET: APIRoute = async ({ params }) => {
     // Fallback
   }
 
-  if (!targetDraw || !targetDraw.parsed_data?.prizes?.first_prize?.number) {
+  // Determine if this draw slot is pending/upcoming
+  const targetHour = validSlot === '1PM' ? 13 : validSlot === '6PM' ? 18 : 20;
+  const isToday = dateStr === todayStr;
+  const isFuture = dateStr > todayStr;
+  const isBeforeDrawHour = isToday && istNow.getHours() < targetHour;
+
+  const hasDeclaredPrizes = Boolean(
+    targetDraw?.parsed_data?.prizes?.first_prize?.number ||
+    targetDraw?.prizes?.first_prize?.number
+  );
+
+  const isPending = isFuture || (isToday && isBeforeDrawHour && !hasDeclaredPrizes) || targetDraw?.status === 'UPCOMING';
+
+  if (!isPending && !hasDeclaredPrizes) {
     targetDraw = generateWebMockDraw(dateStr, validSlot);
   }
 
   const pdfData = {
-    draw_id: targetDraw.id || `${dateStr}-${validSlot}`,
-    draw_date: targetDraw.draw_date || dateStr,
-    draw_time: targetDraw.draw_time || (validSlot === '1PM' ? '1:00 PM' : validSlot === '6PM' ? '6:00 PM' : '8:00 PM'),
-    draw_name: targetDraw.draw_name || 'DEAR LOTTERY LIVE',
-    draw_number: targetDraw.draw_number || targetDraw.parsed_data?.draw_number || '74',
-    prizes: targetDraw.parsed_data?.prizes || targetDraw.prizes
+    draw_id: targetDraw?.id || `${dateStr}-${validSlot}`,
+    draw_date: targetDraw?.draw_date || dateStr,
+    draw_time: targetDraw?.draw_time || timeLabel,
+    draw_name: targetDraw?.draw_name || (validSlot === '1PM' ? 'DEAR MORNING' : validSlot === '6PM' ? 'DEAR DAY' : 'DEAR NIGHT'),
+    draw_number: targetDraw?.draw_number || targetDraw?.parsed_data?.draw_number || '74',
+    is_pending: isPending,
+    prizes: isPending ? undefined : (targetDraw?.parsed_data?.prizes || targetDraw?.prizes)
   };
 
   try {
@@ -46,8 +62,9 @@ export const GET: APIRoute = async ({ params }) => {
       status: 200,
       headers: {
         'Content-Type': 'application/pdf',
-        'Content-Disposition': `inline; filename="Dear_Lottery_${dateStr}_${validSlot}.pdf"`,
-        'Cache-Control': 'public, max-age=3600, s-maxage=86400'
+        'Content-Disposition': `attachment; filename="Dear_Lottery_${dateStr}_${validSlot}${isPending ? '_Notice' : ''}.pdf"`,
+        'Content-Length': String(pdfBytes.byteLength),
+        'Cache-Control': isPending ? 'no-cache, no-store, must-revalidate' : 'public, max-age=3600, s-maxage=86400'
       }
     });
   } catch (err: any) {

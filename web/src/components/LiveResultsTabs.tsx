@@ -155,7 +155,7 @@ export default function LiveResultsTabs({
   const yesterdayFourthPrizes = yesterdayPrizes.fourth_prize || [];
   const yesterdayFifthPrizes = yesterdayPrizes.fifth_prize || [];
 
-  const yesterdayPdfUrl = yesterdayDraw?.pdf_r2_url || `/pdf/${yesterdayDateStr}/${activeSlot.toLowerCase()}.pdf`;
+  const yesterdayPdfUrl = `/pdf/${yesterdayDateStr}/${activeSlot.toLowerCase()}.pdf`;
   const yesterdayJpgUrl = yesterdayDraw?.image_r2_url || `/og-image.jpg?date=${yesterdayDateStr}&slot=${activeSlot}`;
 
   // If results are out today, use today's declared data
@@ -167,7 +167,7 @@ export default function LiveResultsTabs({
   const fourthPrizes = declaredPrizes.fourth_prize || [];
   const fifthPrizes = declaredPrizes.fifth_prize || [];
 
-  const pdfUrl = currentDraw?.pdf_r2_url || `/pdf/${todayStr}/${activeSlot.toLowerCase()}.pdf`;
+  const pdfUrl = `/pdf/${todayStr}/${activeSlot.toLowerCase()}.pdf`;
   const jpgUrl = currentDraw?.image_r2_url || `/og-image.jpg?date=${todayStr}&slot=${activeSlot}`;
 
   const whatsappShareText = `🎯 *Dear Lottery Result Today (${currentDraw?.draw_time || activeSlot})*\n📅 তারিখ: ${todayStr}\n\n🏆 *১ম পুরস্কার (₹1 Crore Winner)*: *${firstPrize.series} ${firstPrize.number}*\n\n👉 সম্পূর্ণ অফিসিয়াল রেজাল্ট শিট ও সব প্রাইজ নম্বর দেখুন:\nhttps://dearresultlive.in/results/${todayStr}/${activeSlot.toLowerCase()}`;
@@ -279,6 +279,34 @@ export default function LiveResultsTabs({
             countdownText={`${String(slotCountdown.hours).padStart(2, '0')}h ${String(slotCountdown.minutes).padStart(2, '0')}m ${String(slotCountdown.seconds).padStart(2, '0')}s`}
           />
 
+          {/* Pending Draw PDF Status & Official Notice Bar */}
+          <div className="bg-amber-50 border border-amber-300 rounded-2xl p-3.5 sm:p-4 flex flex-col sm:flex-row items-center justify-between gap-3 shadow-xs">
+            <div className="flex items-center gap-2.5 text-center sm:text-left">
+              <span className="w-3 h-3 rounded-full bg-amber-500 animate-pulse flex-shrink-0"></span>
+              <div>
+                <p className="text-xs sm:text-sm font-black text-amber-950">
+                  {lang === 'bn' 
+                    ? `আজকের ${currentSlotInfo.time} অফিসিয়াল রেজাল্ট শিট ও পিডিএফ ড্র সম্পন্ন হওয়ার পর প্রকাশিত হবে`
+                    : `Today's ${currentSlotInfo.time} Official Gazette PDF will be available right after draw`}
+                </p>
+                <p className="text-[11px] text-amber-800">
+                  {lang === 'bn' ? 'ড্র শুরু হওয়া পর্যন্ত অপেক্ষা করুন অথবা সরকারি ড্র শিডিউল নোটিশ ডাউনলোড করুন' : 'Draw is scheduled. You can download the official schedule notice PDF.'}
+                </p>
+              </div>
+            </div>
+
+            <a
+              href={pdfUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              download={`Dear_Lottery_${todayStr}_${activeSlot}_Notice.pdf`}
+              className="inline-flex items-center gap-1.5 bg-white hover:bg-amber-100 border border-amber-400 text-amber-950 font-bold text-xs sm:text-sm px-4 py-2 rounded-xl transition-colors shadow-2xs whitespace-nowrap"
+            >
+              <span>📋</span>
+              <span>{lang === 'bn' ? 'ড্র শিডিউল নোটিশ (PDF)' : 'Draw Notice (PDF)'}</span>
+            </a>
+          </div>
+
           {/* 2. Official Prize Structure Grid for this Slot */}
           <div className="bg-white border border-slate-200 rounded-2xl p-4 sm:p-6 space-y-4 shadow-sm">
             <h3 className="text-base sm:text-lg font-black text-slate-900 flex items-center gap-2">
@@ -369,7 +397,7 @@ export default function LiveResultsTabs({
                 className="bg-white hover:bg-slate-100 border border-slate-300 text-slate-800 font-bold text-xs sm:text-sm py-2 px-4 rounded-xl transition-colors shadow-2xs flex items-center justify-center gap-1.5"
               >
                 <span>📥</span>
-                <span>{t('btn_download_pdf')}</span>
+                <span>{lang === 'bn' ? `গতকালকের পিডিএফ ডাউনলোড (${yesterdayDateStr})` : `Download Yesterday PDF (${yesterdayDateStr})`}</span>
               </a>
             </div>
 
