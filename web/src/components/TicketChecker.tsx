@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { parseTicketInput, formatINR } from '../lib/lottery-utils';
+import { useLanguage } from '../lib/i18n';
 import confetti from 'canvas-confetti';
 
 interface MatchResult {
@@ -18,6 +19,7 @@ interface TicketCheckerProps {
 }
 
 export default function TicketChecker({ initialDraws = [] }: TicketCheckerProps) {
+  const { lang, t } = useLanguage();
   const [ticketInput, setTicketInput] = useState('');
   const [selectedSlot, setSelectedSlot] = useState<string>('ALL');
   const [isSearching, setIsSearching] = useState(false);
@@ -194,13 +196,17 @@ export default function TicketChecker({ initialDraws = [] }: TicketCheckerProps)
       <div className="max-w-2xl mx-auto">
         <div className="text-center mb-6">
           <span className="inline-block bg-blue-50 border border-blue-200 text-blue-700 text-xs font-bold uppercase tracking-wider px-3 py-1 rounded-full mb-2">
-            ⚡ Instant Ticket Search / সরাসরি টিকিট চেক
+            {lang === 'bn' ? '⚡ সরাসরি টিকিট চেক' : '⚡ Instant Ticket Search'}
           </span>
           <h3 className="text-2xl md:text-3xl font-black text-slate-900">
-            Check Your Dear Lottery Ticket (টিকিট নম্বর মেলান)
+            {t('ticket_check_hero')}
           </h3>
           <p className="text-slate-600 text-xs sm:text-sm mt-1">
-            পুরো টিকিট নম্বর (<span className="text-blue-700 font-mono font-bold">84D 19283</span>) অথবা শেষ ৪-৫ সংখ্যা (<span className="text-blue-700 font-mono font-bold">4829</span>) লিখুন।
+            {lang === 'bn' ? (
+              <>পুরো টিকিট নম্বর (<span className="text-blue-700 font-mono font-bold">84D 19283</span>) অথবা শেষ ৪-৫ সংখ্যা (<span className="text-blue-700 font-mono font-bold">4829</span>) লিখুন।</>
+            ) : (
+              <>Enter full ticket number (<span className="text-blue-700 font-mono font-bold">84D 19283</span>) or last 4-5 digits (<span className="text-blue-700 font-mono font-bold">4829</span>).</>
+            )}
           </p>
         </div>
 
@@ -212,7 +218,7 @@ export default function TicketChecker({ initialDraws = [] }: TicketCheckerProps)
                 type="text"
                 value={ticketInput}
                 onChange={(e) => setTicketInput(e.target.value.toUpperCase())}
-                placeholder="যেমন: 84D 19283 অথবা 4829"
+                placeholder={t('ticket_input_ph')}
                 className="w-full bg-slate-50 border-2 border-slate-300 focus:border-blue-600 text-slate-900 rounded-xl px-4 py-3.5 text-lg font-mono tracking-widest placeholder:text-slate-400 outline-none transition-all uppercase shadow-inner"
               />
               {ticketInput && (
@@ -233,9 +239,9 @@ export default function TicketChecker({ initialDraws = [] }: TicketCheckerProps)
               className="bg-blue-700 hover:bg-blue-800 text-white font-black px-7 py-3.5 rounded-xl shadow-sm flex items-center justify-center gap-2 text-base transition-transform active:scale-95 disabled:opacity-50"
             >
               {isSearching ? (
-                <span className="inline-block animate-spin">⏳ খোঁজা হচ্ছে...</span>
+                <span className="inline-block animate-spin">{t('searching_txt')}</span>
               ) : (
-                <span>টিকিট চেক করুন (Check)</span>
+                <span>{t('btn_check_ticket')}</span>
               )}
             </button>
           </div>
@@ -243,7 +249,7 @@ export default function TicketChecker({ initialDraws = [] }: TicketCheckerProps)
           {/* Draw Slot Filters */}
           <div className="flex flex-wrap items-center justify-between gap-2 text-xs text-slate-600 pt-1">
             <div className="flex items-center gap-1.5 flex-wrap">
-              <span className="font-semibold">ড্র ফিল্টার (Draw):</span>
+              <span className="font-semibold">{lang === 'bn' ? 'ড্র ফিল্টার:' : 'Draw Filter:'}</span>
               {(['ALL', '1:00 PM', '6:00 PM', '8:00 PM'] as const).map((slot) => (
                 <button
                   key={slot}
@@ -262,7 +268,7 @@ export default function TicketChecker({ initialDraws = [] }: TicketCheckerProps)
 
             {/* Quick Demo Pre-fills */}
             <div className="flex items-center gap-1">
-              <span>Try:</span>
+              <span>{lang === 'bn' ? 'নমুনা:' : 'Try:'}</span>
               <button
                 type="button"
                 onClick={() => {
@@ -298,13 +304,14 @@ export default function TicketChecker({ initialDraws = [] }: TicketCheckerProps)
                 <div className="bg-emerald-50 border-2 border-emerald-300 rounded-2xl p-5 text-center shadow-xs">
                   <span className="text-3xl block mb-1">🎉</span>
                   <h4 className="text-xl font-black text-emerald-900 tracking-wide">
-                    🎉 অভিনন্দন! আপনি পুরস্কার জিতেছেন
+                    {t('congrats_won')}
                   </h4>
-                  <p className="text-sm font-bold text-emerald-950 mt-0.5">
-                    Congratulations! You Won!
-                  </p>
-                  <p className="text-emerald-800 text-xs mt-1">
-                    আপনার টিকিট নম্বরটি <strong className="font-black text-slate-950">{matches.length} টি পুরস্কার স্তরে</strong> মিলেছে! (Matched {matches.length} prize tier{matches.length > 1 ? 's' : ''})
+                  <p className="text-emerald-800 text-xs sm:text-sm mt-1">
+                    {lang === 'bn' ? (
+                      <>আপনার টিকিট নম্বরটি <strong className="font-black text-slate-950">{matches.length} টি পুরস্কার স্তরে</strong> মিলেছে!</>
+                    ) : (
+                      <>Your ticket matched <strong className="font-black text-slate-950">{matches.length} prize tier{matches.length > 1 ? 's' : ''}</strong>!</>
+                    )}
                   </p>
                 </div>
 
@@ -317,24 +324,30 @@ export default function TicketChecker({ initialDraws = [] }: TicketCheckerProps)
                       <div>
                         <div className="flex items-center gap-2">
                           <span className="bg-emerald-700 text-white text-xs font-black px-2.5 py-0.5 rounded-full uppercase">
-                            {m.prizeRank} ({m.prizeRank.includes('1st') ? '১ম পুরস্কার' : m.prizeRank.includes('2nd') ? '২য় পুরস্কার' : m.prizeRank.includes('3rd') ? '৩য় পুরস্কার' : m.prizeRank.includes('4th') ? '৪র্থ পুরস্কার' : '৫ম পুরস্কার'})
+                            {lang === 'bn' 
+                              ? (m.prizeRank.includes('1st') ? '১ম পুরস্কার' : m.prizeRank.includes('2nd') ? '২য় পুরস্কার' : m.prizeRank.includes('3rd') ? '৩য় পুরস্কার' : m.prizeRank.includes('4th') ? '৪র্থ পুরস্কার' : '৫ম পুরস্কার')
+                              : m.prizeRank}
                           </span>
                           <span className="text-xs text-slate-500 font-medium">
                             {m.drawName} ({m.drawTime})
                           </span>
                         </div>
                         <p className="text-base font-mono font-bold text-slate-900 mt-1">
-                          Winning Ticket (বিজয়ী টিকিট): <span className="text-blue-700 font-black">{m.ticketNumber}</span>
+                          {lang === 'bn' ? 'বিজয়ী টিকিট:' : 'Winning Ticket:'} <span className="text-blue-700 font-black">{m.ticketNumber}</span>
                         </p>
                         {m.requiredSeries && !m.seriesMatched && (
                           <p className="text-xs text-amber-800 mt-0.5 font-medium">
-                            ⚠️ Note: ১ম পুরস্কারের জন্য সিরিজ {m.requiredSeries} প্রয়োজন। অন্যান্য সকল সিরিজ ₹১,০০০ সান্ত্বনা পুরস্কার (Consolation Prize) পাবে।
+                            {lang === 'bn' 
+                              ? `⚠️ Note: ১ম পুরস্কারের জন্য সিরিজ ${m.requiredSeries} প্রয়োজন। অন্যান্য সকল সিরিজ ₹১,০০০ সান্ত্বনা পুরস্কার পাবে।`
+                              : `⚠️ Note: 1st Prize requires Series ${m.requiredSeries}. All other series win ₹1,000 Consolation prize.`}
                           </p>
                         )}
                       </div>
 
                       <div className="sm:text-right">
-                        <span className="text-xs text-slate-500 block">Prize Amount (পুরস্কার মূল্য)</span>
+                        <span className="text-xs text-slate-500 block">
+                          {lang === 'bn' ? 'পুরস্কার মূল্য' : 'Prize Amount'}
+                        </span>
                         <span className="text-xl font-black text-emerald-800 font-mono">
                           {formatINR(m.prizeAmount)}
                         </span>
@@ -344,15 +357,19 @@ export default function TicketChecker({ initialDraws = [] }: TicketCheckerProps)
                 </div>
 
                 <div className="bg-slate-50 border border-slate-200 rounded-xl p-3 text-xs text-slate-600 text-center leading-relaxed">
-                  💡 <strong className="text-slate-900">পুরস্কার নেওয়ার নিয়ম (How to Claim):</strong> ১০,০০০ টাকা পর্যন্ত পুরস্কার যেকোনো অনুমোদিত লটারি দোকানে টিকিট দেখিয়ে সঙ্গে সঙ্গে পাওয়া যায়। ১ম পুরস্কার (₹১ কোটি) মূল টিকিট, প্যান ও আধার কার্ড সহ ডিরেক্টরেট অফিসে জমা দিতে হয়।
+                  💡 <strong className="text-slate-900">{t('claim_rules_title')}</strong> {t('claim_rules_desc')}
                 </div>
               </div>
             ) : (
               <div className="bg-slate-50 border border-slate-200 rounded-2xl p-6 text-center">
                 <span className="text-2xl block mb-1">☘️</span>
-                <h4 className="text-base font-bold text-slate-900">কোনো পুরস্কার মেলেনি (No Winning Match Found)</h4>
+                <h4 className="text-base font-bold text-slate-900">{t('no_match_found')}</h4>
                 <p className="text-slate-600 text-xs sm:text-sm mt-1 max-w-md mx-auto">
-                  টিকিট নম্বর <span className="text-blue-700 font-mono font-bold">{ticketInput}</span> নির্বাচিত ড্র-এর কোনো বিজয়ী নম্বরের সাথে মেলেনি। পরবর্তী ড্র-এর জন্য শুভকামনা রইলো! (Better luck in the next draw!)
+                  {lang === 'bn' ? (
+                    <>টিকিট নম্বর <span className="text-blue-700 font-mono font-bold">{ticketInput}</span> নির্বাচিত ড্র-এর কোনো বিজয়ী নম্বরের সাথে মেলেনি। পরবর্তী ড্র-এর জন্য শুভকামনা রইলো!</>
+                  ) : (
+                    <>Ticket <span className="text-blue-700 font-mono font-bold">{ticketInput}</span> did not match any winning number for the selected draw. Better luck next draw!</>
+                  )}
                 </p>
               </div>
             )}

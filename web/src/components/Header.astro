@@ -1,4 +1,6 @@
 ---
+import LanguageToggle from './LanguageToggle';
+
 interface Props {
   currentPath?: string;
 }
@@ -74,11 +76,13 @@ const { currentPath = '/' } = Astro.props;
         </a>
       </nav>
 
-      {/* CTA Button */}
-      <div class="flex items-center gap-2">
+      {/* Controls: Language Toggle + CTA */}
+      <div class="flex items-center gap-2 sm:gap-3">
+        <LanguageToggle client:load />
+
         <a
           href="/checker"
-          class="inline-flex items-center gap-1.5 bg-blue-700 hover:bg-blue-800 text-white text-xs font-black uppercase tracking-wider px-3.5 sm:px-4 py-2 rounded-xl shadow-sm transition-all active:scale-95"
+          class="inline-flex items-center gap-1.5 bg-blue-700 hover:bg-blue-800 text-white text-xs font-black uppercase tracking-wider px-3 sm:px-4 py-2 rounded-xl shadow-sm transition-all active:scale-95"
         >
           <span>🔍</span>
           <span class="hidden sm:inline">টিকিট চেক (Check)</span>

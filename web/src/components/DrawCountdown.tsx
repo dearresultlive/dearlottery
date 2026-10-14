@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { getNextUpcomingDraw, getISTNow } from '../lib/lottery-utils';
+import { useLanguage } from '../lib/i18n';
 
 interface DrawCountdownProps {
   onResultDetected?: (draw: any) => void;
@@ -7,6 +8,7 @@ interface DrawCountdownProps {
 }
 
 export default function DrawCountdown({ onResultDetected, compact = false }: DrawCountdownProps) {
+  const { lang } = useLanguage();
   const [timeLeft, setTimeLeft] = useState<{ hours: number; minutes: number; seconds: number } | null>(null);
   const [nextDraw, setNextDraw] = useState(getNextUpcomingDraw());
   const [istTimeStr, setIstTimeStr] = useState<string>('');
@@ -138,7 +140,7 @@ export default function DrawCountdown({ onResultDetected, compact = false }: Dra
           </div>
 
           <div className="text-xs sm:text-sm font-bold text-slate-900 truncate">
-            <span className="hidden sm:inline">Next: </span>
+            <span className="hidden sm:inline">{lang === 'bn' ? 'পরবর্তী ড্র: ' : 'Next: '}</span>
             <span className="text-blue-700 font-black">{nextDraw.timeLabel}</span>
             <span className="hidden md:inline text-slate-500 font-medium text-xs ml-1.5">
               ({nextDraw.name})
@@ -154,19 +156,19 @@ export default function DrawCountdown({ onResultDetected, compact = false }: Dra
         <div className="flex items-center gap-1.5 sm:gap-2 flex-shrink-0">
           {newResultData ? (
             <div className="flex items-center gap-2 bg-emerald-50 border border-emerald-300 text-emerald-800 px-3 py-1 rounded-xl text-xs font-black shadow-sm">
-              <span>🎉 রেজাল্ট আউট:</span>
+              <span>{lang === 'bn' ? '🎉 রেজাল্ট আউট:' : '🎉 Result Out:'}</span>
               <span className="font-mono text-slate-950 text-sm font-black">
                 {newResultData.parsed_data?.prizes?.first_prize?.series} {newResultData.parsed_data?.prizes?.first_prize?.number}
               </span>
             </div>
           ) : isLive ? (
             <div className="flex items-center gap-2 bg-red-50 border border-red-300 text-red-700 px-3 py-1 rounded-xl text-xs font-black animate-pulse">
-              <span>🚀 ড্র চলছে • Auto-updating in {pollCountdown}s</span>
+              <span>{lang === 'bn' ? `🚀 ড্র চলছে • ${pollCountdown}s এ অটো-আপডেট` : `🚀 Drawing Live • Auto-updating in ${pollCountdown}s`}</span>
             </div>
           ) : (
             <div className="flex items-center gap-1.5 bg-slate-50 border border-slate-200 px-3 py-1 rounded-xl">
               <span className="text-[10px] text-slate-500 font-bold uppercase tracking-wider mr-1">
-                বাকি / Left:
+                {lang === 'bn' ? 'বাকি:' : 'Left:'}
               </span>
               
               {/* Hours */}

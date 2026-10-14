@@ -8,6 +8,7 @@ import {
 } from '../lib/lottery-utils';
 import PushNotifyBanner from './PushNotifyBanner';
 import LotteryTicketVoucher from './LotteryTicketVoucher';
+import { useLanguage } from '../lib/i18n';
 
 interface PrizeData {
   first_prize?: { series: string; number: string };
@@ -56,6 +57,7 @@ export default function LiveResultsTabs({
   ];
 
   const todayStr = todayDateStr || getISTDateString();
+  const { lang, t } = useLanguage();
   const [activeSlot, setActiveSlot] = useState<'1PM' | '6PM' | '8PM'>('1PM');
   const [drawsList, setDrawsList] = useState<DrawRecord[]>(draws);
   const [showImageModal, setShowImageModal] = useState<boolean>(false);
@@ -231,7 +233,7 @@ export default function LiveResultsTabs({
                 </div>
                 
                 <span className={`text-[10px] sm:text-xs font-bold mt-0.5 ${isActive ? 'text-blue-100' : 'text-blue-700'}`}>
-                  {slot.labelBn}
+                  {lang === 'bn' ? slot.labelBn : slot.labelEn.replace(slot.time + ' ', '')}
                 </span>
 
                 <div className="mt-1">
@@ -248,7 +250,11 @@ export default function LiveResultsTabs({
                       ? 'bg-red-100 text-red-700 border border-red-300 animate-pulse'
                       : 'bg-slate-200 text-slate-700'
                   }`}>
-                    {slotStatus === 'RESULT_OUT' ? 'RESULT OUT' : slotStatus === 'DRAWING' ? 'PUBLISHING...' : 'UPCOMING'}
+                    {slotStatus === 'RESULT_OUT' 
+                      ? (lang === 'bn' ? 'রেজাল্ট আউট' : 'RESULT OUT')
+                      : slotStatus === 'DRAWING' 
+                      ? (lang === 'bn' ? 'ড্র চলছে...' : 'PUBLISHING...') 
+                      : (lang === 'bn' ? 'আসন্ন ড্র' : 'UPCOMING')}
                   </span>
                 </div>
               </button>
@@ -277,32 +283,32 @@ export default function LiveResultsTabs({
           <div className="bg-white border border-slate-200 rounded-2xl p-4 sm:p-6 space-y-4 shadow-sm">
             <h3 className="text-base sm:text-lg font-black text-slate-900 flex items-center gap-2">
               <span>📋</span>
-              <span>Official Prize Structure for {currentSlotInfo.time} ({todayStr})</span>
+              <span>{lang === 'bn' ? `অফিসিয়াল পুরস্কার কাঠামো (${currentSlotInfo.time})` : `Official Prize Structure for ${currentSlotInfo.time}`}</span>
             </h3>
             
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-center">
               <div className="bg-slate-50 border border-slate-200 rounded-xl p-3">
-                <span className="text-[11px] text-slate-500 block font-bold">2nd Prize (২য় পুরস্কার)</span>
+                <span className="text-[11px] text-slate-500 block font-bold">{lang === 'bn' ? '২য় পুরস্কার (১০ জন)' : '2nd Prize (10 Winners)'}</span>
                 <span className="text-lg sm:text-xl font-mono font-black text-emerald-800 block my-1">₹9,000</span>
-                <span className="text-[10px] text-slate-400 font-medium">10 Winners</span>
+                <span className="text-[10px] text-slate-400 font-medium">5 Digits</span>
               </div>
 
               <div className="bg-slate-50 border border-slate-200 rounded-xl p-3">
-                <span className="text-[11px] text-slate-500 block font-bold">3rd Prize (৩য় পুরস্কার)</span>
+                <span className="text-[11px] text-slate-500 block font-bold">{lang === 'bn' ? '৩য় পুরস্কার (১০ জন)' : '3rd Prize (10 Winners)'}</span>
                 <span className="text-lg sm:text-xl font-mono font-black text-blue-700 block my-1">₹450</span>
-                <span className="text-[10px] text-slate-400 font-medium">10 Winners</span>
+                <span className="text-[10px] text-slate-400 font-medium">Last 4 Digits</span>
               </div>
 
               <div className="bg-slate-50 border border-slate-200 rounded-xl p-3">
-                <span className="text-[11px] text-slate-500 block font-bold">4th Prize (৪র্থ পুরস্কার)</span>
+                <span className="text-[11px] text-slate-500 block font-bold">{lang === 'bn' ? '৪র্থ পুরস্কার (১০ জন)' : '4th Prize (10 Winners)'}</span>
                 <span className="text-lg sm:text-xl font-mono font-black text-indigo-700 block my-1">₹250</span>
-                <span className="text-[10px] text-slate-400 font-medium">10 Winners</span>
+                <span className="text-[10px] text-slate-400 font-medium">Last 4 Digits</span>
               </div>
 
               <div className="bg-slate-50 border border-slate-200 rounded-xl p-3">
-                <span className="text-[11px] text-slate-500 block font-bold">5th Prize (৫ম পুরস্কার)</span>
+                <span className="text-[11px] text-slate-500 block font-bold">{lang === 'bn' ? '৫ম পুরস্কার (১০০ জন)' : '5th Prize (100 Winners)'}</span>
                 <span className="text-lg sm:text-xl font-mono font-black text-slate-900 block my-1">₹120</span>
-                <span className="text-[10px] text-slate-400 font-medium">100 Winners</span>
+                <span className="text-[10px] text-slate-400 font-medium">Last 4 Digits</span>
               </div>
             </div>
           </div>
@@ -314,11 +320,13 @@ export default function LiveResultsTabs({
                 <div className="flex items-center gap-2">
                   <span className="text-base sm:text-lg">📅</span>
                   <h4 className="text-sm sm:text-base font-black text-slate-900">
-                    Looking for Yesterday's Result? (গতকালকের রেজাল্ট)
+                    {t('yesterday_looking')}
                   </h4>
                 </div>
                 <p className="text-xs text-slate-500 mt-0.5">
-                  আজকের {currentSlotInfo.time} ড্র এখনো প্রকাশ হয়নি। নিচে গতকালকের ({yesterdayDateStr}) রেজাল্ট দেওয়া হলো:
+                  {lang === 'bn' 
+                    ? `আজকের ${currentSlotInfo.time} ড্র এখনো প্রকাশ হয়নি। নিচে গতকালকের (${yesterdayDateStr}) রেজাল্ট দেওয়া হলো:`
+                    : `Today's ${currentSlotInfo.time} draw has not declared yet. Here is yesterday's (${yesterdayDateStr}) official result:`}
                 </p>
               </div>
 
@@ -326,7 +334,7 @@ export default function LiveResultsTabs({
                 href={`/results/${yesterdayDateStr}`}
                 className="inline-flex items-center gap-1.5 text-xs font-bold text-blue-700 hover:text-blue-800 bg-blue-50 border border-blue-200 hover:border-blue-400 px-3.5 py-2 rounded-xl transition-all shadow-2xs self-start sm:self-auto"
               >
-                <span>All Yesterday Results ({yesterdayDateStr})</span>
+                <span>{lang === 'bn' ? `গতকালকের সব রেজাল্ট (${yesterdayDateStr})` : `All Yesterday Results (${yesterdayDateStr})`}</span>
                 <span>→</span>
               </a>
             </div>
@@ -351,7 +359,7 @@ export default function LiveResultsTabs({
                 className="flex-1 sm:flex-none bg-blue-700 hover:bg-blue-800 text-white font-black text-xs sm:text-sm py-2 px-4 rounded-xl transition-all shadow-sm active:scale-95 flex items-center justify-center gap-1.5"
               >
                 <span>{showYesterdaySheet ? '▲' : '👁️'}</span>
-                <span>{showYesterdaySheet ? 'Hide Details' : 'View Yesterday Gazette Sheet & All Prizes'}</span>
+                <span>{showYesterdaySheet ? t('btn_hide_sheet') : t('btn_yesterday_sheet')}</span>
               </button>
               <a
                 href={yesterdayPdfUrl}
@@ -361,7 +369,7 @@ export default function LiveResultsTabs({
                 className="bg-white hover:bg-slate-100 border border-slate-300 text-slate-800 font-bold text-xs sm:text-sm py-2 px-4 rounded-xl transition-colors shadow-2xs flex items-center justify-center gap-1.5"
               >
                 <span>📥</span>
-                <span>Download PDF</span>
+                <span>{t('btn_download_pdf')}</span>
               </a>
             </div>
 
@@ -486,10 +494,10 @@ export default function LiveResultsTabs({
               <div>
                 <h3 className="text-base sm:text-lg font-black text-slate-900 flex items-center gap-2">
                   <span>📄</span>
-                  <span>Official Government Gazette Sheet (অফিসিয়াল শিট)</span>
+                  <span>{t('gazette_sheet_title')}</span>
                 </h3>
                 <p className="text-xs text-slate-500 mt-0.5">
-                  Nagaland & Sikkim State Lotteries verified signed publication sheet.
+                  {t('gazette_sheet_sub')}
                 </p>
               </div>
 
@@ -499,8 +507,7 @@ export default function LiveResultsTabs({
                   onClick={() => openImageLightbox(jpgUrl)}
                   className="flex-1 sm:flex-none flex items-center justify-center gap-1.5 bg-blue-700 hover:bg-blue-800 text-white font-black text-xs sm:text-sm py-2 px-3.5 rounded-xl transition-all shadow-sm active:scale-95"
                 >
-                  <span>🔍</span>
-                  <span>Open Full Sheet (জুম শিট)</span>
+                  <span>{t('btn_open_sheet')}</span>
                 </button>
                 <a
                   href={pdfUrl}
@@ -509,7 +516,7 @@ export default function LiveResultsTabs({
                   download={`${todayStr}_${activeSlot}.pdf`}
                   className="flex-1 sm:flex-none flex items-center justify-center gap-1.5 bg-slate-100 hover:bg-slate-200 text-slate-800 font-bold text-xs sm:text-sm py-2 px-3.5 rounded-xl transition-all border border-slate-300"
                 >
-                  <span>📥 PDF</span>
+                  <span>{t('btn_download_pdf')}</span>
                 </a>
                 <a
                   href={whatsappUrl}
@@ -517,7 +524,7 @@ export default function LiveResultsTabs({
                   rel="noopener noreferrer"
                   className="flex-1 sm:flex-none flex items-center justify-center gap-1.5 bg-emerald-600 hover:bg-emerald-700 text-white font-black text-xs sm:text-sm py-2 px-3.5 rounded-xl transition-all shadow-sm active:scale-95"
                 >
-                  <span>📲 WhatsApp</span>
+                  <span>{t('btn_share_whatsapp')}</span>
                 </a>
               </div>
             </div>
@@ -545,7 +552,7 @@ export default function LiveResultsTabs({
                 />
                 <div className="absolute inset-0 bg-slate-900/10 group-hover:bg-transparent transition-colors flex items-center justify-center">
                   <span className="bg-white/95 text-blue-900 text-[11px] font-black px-2.5 py-1 rounded-md shadow-sm border border-slate-200">
-                    🔍 Click to Zoom
+                    {lang === 'bn' ? '🔍 বড় করে দেখুন' : '🔍 Click to Zoom'}
                   </span>
                 </div>
               </div>
@@ -553,17 +560,19 @@ export default function LiveResultsTabs({
               <div className="space-y-1.5 text-center sm:text-left flex-1">
                 <div className="flex items-center justify-center sm:justify-start gap-2">
                   <span className="bg-emerald-100 text-emerald-800 border border-emerald-300 text-[10px] font-bold px-2 py-0.5 rounded-full uppercase">
-                    ✓ Official Certified Result
+                    {t('verified_certified')}
                   </span>
                   <span className="text-xs text-slate-500 font-mono">
                     Draw #{currentDraw.draw_number || '74'}
                   </span>
                 </div>
                 <h4 className="text-sm sm:text-base font-bold text-slate-900">
-                  {currentDraw.draw_name} Official Signed Result Document
+                  {currentDraw.draw_name} {lang === 'bn' ? 'অফিসিয়াল গেজেট ফলাফল শিট' : 'Official Signed Result Document'}
                 </h4>
                 <p className="text-xs text-slate-600 leading-relaxed">
-                  Authentic scanned copy with directorate seals, judges signatures, and complete 5 prize tiers. Tap anywhere on this card to open in high-resolution full screen.
+                  {lang === 'bn' 
+                    ? 'সরকারি সিল ও স্বাক্ষর সম্বলিত আসল স্ক্যান কপি। সম্পূর্ণ শিটটি হাই-রেজোলিউশনে দেখতে এখানে ট্যাপ করুন।'
+                    : 'Authentic scanned copy with directorate seals, judges signatures, and complete prize tiers. Tap anywhere to open in high-resolution full screen.'}
                 </p>
               </div>
             </div>
@@ -577,9 +586,11 @@ export default function LiveResultsTabs({
             <div className="flex items-center justify-between border-b border-slate-100 pb-2.5">
               <h3 className="text-sm sm:text-base font-black text-slate-900 flex items-center gap-2">
                 <span className="w-2.5 h-2.5 rounded-full bg-emerald-600"></span>
-                <span>2nd Prize: {formatINR(9000)} (২য় পুরস্কার - ১০ জন বিজয়ী)</span>
+                <span>{t('second_prize_title')}</span>
               </h3>
-              <span className="text-xs text-emerald-700 font-bold font-mono">5 Digits / ৫ সংখ্যা</span>
+              <span className="text-xs text-emerald-700 font-bold font-mono">
+                {lang === 'bn' ? '৫ সংখ্যার টিকিট' : '5 Digits'}
+              </span>
             </div>
 
             <div className="grid grid-cols-2 sm:grid-cols-5 gap-2.5">
@@ -602,9 +613,11 @@ export default function LiveResultsTabs({
               <div className="flex items-center justify-between border-b border-slate-100 pb-2">
                 <h4 className="text-xs sm:text-sm font-black text-slate-900 flex items-center gap-2">
                   <span className="w-2 h-2 rounded-full bg-blue-600"></span>
-                  <span>3rd Prize: {formatINR(450)} (৩য় পুরস্কার)</span>
+                  <span>{t('third_prize_title')}</span>
                 </h4>
-                <span className="text-[11px] text-slate-500 font-mono">Last 4 Digits</span>
+                <span className="text-[11px] text-slate-500 font-mono">
+                  {lang === 'bn' ? 'শেষ ৪ সংখ্যা' : 'Last 4 Digits'}
+                </span>
               </div>
               <div className="grid grid-cols-5 gap-2">
                 {thirdPrizes.map((num: string, idx: number) => (
@@ -623,9 +636,11 @@ export default function LiveResultsTabs({
               <div className="flex items-center justify-between border-b border-slate-100 pb-2">
                 <h4 className="text-xs sm:text-sm font-black text-slate-900 flex items-center gap-2">
                   <span className="w-2 h-2 rounded-full bg-indigo-600"></span>
-                  <span>4th Prize: {formatINR(250)} (৪র্থ পুরস্কার)</span>
+                  <span>{t('fourth_prize_title')}</span>
                 </h4>
-                <span className="text-[11px] text-slate-500 font-mono">Last 4 Digits</span>
+                <span className="text-[11px] text-slate-500 font-mono">
+                  {lang === 'bn' ? 'শেষ ৪ সংখ্যা' : 'Last 4 Digits'}
+                </span>
               </div>
               <div className="grid grid-cols-5 gap-2">
                 {fourthPrizes.map((num: string, idx: number) => (
@@ -647,11 +662,11 @@ export default function LiveResultsTabs({
               <div className="flex items-center gap-2">
                 <span className="w-2.5 h-2.5 rounded-full bg-amber-500"></span>
                 <h4 className="text-sm sm:text-base font-black text-slate-900">
-                  5th Prize: {formatINR(120)} (৫ম পুরস্কার - ১০০ জন বিজয়ী)
+                  {t('fifth_prize_title')}
                 </h4>
               </div>
               <span className="text-xs text-blue-700 font-mono font-bold">
-                Matches Last 4 Digits / শেষ ৪ সংখ্যা
+                {lang === 'bn' ? 'শেষ ৪ সংখ্যা মিলেছে' : 'Matches Last 4 Digits'}
               </span>
             </div>
 

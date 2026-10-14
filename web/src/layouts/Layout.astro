@@ -19,7 +19,7 @@ const currentPath = Astro.url.pathname;
 ---
 
 <!doctype html>
-<html lang="en" class="scroll-smooth bg-slate-100 text-slate-900 antialiased">
+<html lang="bn" data-lang="bn" class="scroll-smooth bg-slate-100 text-slate-900 antialiased">
   <SEOHead
     title={title}
     description={description}
@@ -27,6 +27,18 @@ const currentPath = Astro.url.pathname;
     drawTime={drawTime}
     winningNumbers={winningNumbers}
   />
+  <script is:inline>
+    try {
+      var savedLang = localStorage.getItem('dearlottery_lang');
+      if (savedLang === 'en') {
+        document.documentElement.lang = 'en';
+        document.documentElement.setAttribute('data-lang', 'en');
+      } else {
+        document.documentElement.lang = 'bn';
+        document.documentElement.setAttribute('data-lang', 'bn');
+      }
+    } catch (e) {}
+  </script>
   <body class="min-h-screen flex flex-col font-sans bg-slate-100 text-slate-900 selection:bg-amber-400 selection:text-slate-950">
     <Header currentPath={currentPath} />
     <main class="flex-1">

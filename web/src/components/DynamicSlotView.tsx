@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import DrawCountdown from './DrawCountdown';
 import PushNotifyBanner from './PushNotifyBanner';
 import LotteryTicketVoucher from './LotteryTicketVoucher';
+import { useLanguage } from '../lib/i18n';
 
 interface PrizeData {
   first_prize?: { series: string; number: string };
@@ -27,6 +28,7 @@ export default function DynamicSlotView({
   initialDraw,
   isInitiallyUpcoming
 }: DynamicSlotViewProps) {
+  const { lang, t } = useLanguage();
   const [currentDraw, setCurrentDraw] = useState<any>(initialDraw);
   const [isUpcoming, setIsUpcoming] = useState<boolean>(isInitiallyUpcoming);
   const [showImageModal, setShowImageModal] = useState<boolean>(false);
@@ -208,10 +210,10 @@ export default function DynamicSlotView({
               <div>
                 <h3 className="text-base sm:text-lg font-black text-slate-900 flex items-center gap-2">
                   <span>📄</span>
-                  <span>Official Signed Gazette Sheet (অফিসিয়াল শিট)</span>
+                  <span>{t('gazette_sheet_title')}</span>
                 </h3>
                 <p className="text-xs text-slate-500 mt-0.5">
-                  Official government verified publication sheet for {slotHour} draw.
+                  {t('gazette_sheet_sub')}
                 </p>
               </div>
 
@@ -221,8 +223,7 @@ export default function DynamicSlotView({
                   onClick={() => setShowImageModal(true)}
                   className="flex-1 sm:flex-none flex items-center justify-center gap-1.5 bg-blue-700 hover:bg-blue-800 text-white font-black text-xs sm:text-sm py-2 px-3.5 rounded-xl transition-all shadow-sm active:scale-95"
                 >
-                  <span>🔍</span>
-                  <span>Open Full Sheet (জুম শিট)</span>
+                  <span>{t('btn_open_sheet')}</span>
                 </button>
                 <a
                   href={pdfUrl}
@@ -231,7 +232,7 @@ export default function DynamicSlotView({
                   download={`Dear_Lottery_${targetDate}_${slotKey}.pdf`}
                   className="flex-1 sm:flex-none flex items-center justify-center gap-1.5 bg-slate-100 hover:bg-slate-200 text-slate-800 font-bold text-xs sm:text-sm py-2 px-3.5 rounded-xl transition-all border border-slate-300"
                 >
-                  <span>📥 PDF</span>
+                  <span>{t('btn_download_pdf')}</span>
                 </a>
                 <a
                   href={whatsappUrl}
@@ -239,7 +240,7 @@ export default function DynamicSlotView({
                   rel="noopener noreferrer"
                   className="flex-1 sm:flex-none flex items-center justify-center gap-1.5 bg-emerald-600 hover:bg-emerald-700 text-white font-black text-xs sm:text-sm py-2 px-3.5 rounded-xl transition-all shadow-sm active:scale-95"
                 >
-                  <span>📲 WhatsApp</span>
+                  <span>{t('btn_share_whatsapp')}</span>
                 </a>
               </div>
             </div>
@@ -266,7 +267,7 @@ export default function DynamicSlotView({
                 />
                 <div className="absolute inset-0 bg-slate-900/10 group-hover:bg-transparent transition-colors flex items-center justify-center">
                   <span className="bg-white/95 text-blue-900 text-[11px] font-black px-2.5 py-1 rounded-md shadow-sm border border-slate-200">
-                    🔍 Click to Zoom
+                    {lang === 'bn' ? '🔍 বড় করে দেখুন' : '🔍 Click to Zoom'}
                   </span>
                 </div>
               </div>
@@ -274,17 +275,19 @@ export default function DynamicSlotView({
               <div className="space-y-1.5 text-center sm:text-left flex-1">
                 <div className="flex items-center justify-center sm:justify-start gap-2">
                   <span className="bg-emerald-100 text-emerald-800 border border-emerald-300 text-[10px] font-bold px-2 py-0.5 rounded-full uppercase">
-                    ✓ Official Certified Result
+                    {t('verified_certified')}
                   </span>
                   <span className="text-xs text-slate-500 font-mono">
                     Draw #{currentDraw?.draw_number || '74'}
                   </span>
                 </div>
                 <h4 className="text-sm sm:text-base font-bold text-slate-900">
-                  {currentDraw?.draw_name || `${slotHour} Draw`} Official Signed Result Document
+                  {currentDraw?.draw_name || `${slotHour} Draw`} {lang === 'bn' ? 'অফিসিয়াল স্বাক্ষরিত গেজেট' : 'Official Signed Result Document'}
                 </h4>
                 <p className="text-xs text-slate-600 leading-relaxed">
-                  Authentic scanned copy with directorate seals, judges signatures, and complete 5 prize tiers. Tap anywhere on this card to open in high-resolution full screen.
+                  {lang === 'bn'
+                    ? 'সরকারি সিল ও স্বাক্ষর সম্বলিত আসল স্ক্যান কপি। সম্পূর্ণ শিটটি হাই-রেজোলিউশনে দেখতে এখানে ট্যাপ করুন।'
+                    : 'Authentic scanned copy with directorate seals, judges signatures, and complete 5 prize tiers. Tap anywhere on this card to open in high-resolution full screen.'}
                 </p>
               </div>
             </div>
@@ -295,9 +298,11 @@ export default function DynamicSlotView({
             <div className="flex items-center justify-between border-b border-slate-100 pb-2.5">
               <h4 className="text-sm sm:text-base font-black text-slate-900 flex items-center gap-2">
                 <span className="w-2.5 h-2.5 rounded-full bg-emerald-600"></span>
-                <span>2nd Prize: ₹9,000 (১০ জন বিজয়ী)</span>
+                <span>{t('second_prize_title')}</span>
               </h4>
-              <span className="text-xs text-emerald-700 font-bold font-mono">5 Digits / ৫ সংখ্যা</span>
+              <span className="text-xs text-emerald-700 font-bold font-mono">
+                {lang === 'bn' ? '৫ সংখ্যার টিকিট' : '5 Digits'}
+              </span>
             </div>
 
             <div className="grid grid-cols-2 sm:grid-cols-5 gap-2.5">
@@ -318,9 +323,11 @@ export default function DynamicSlotView({
               <div className="flex items-center justify-between border-b border-slate-100 pb-2">
                 <h4 className="text-xs sm:text-sm font-black text-slate-900 flex items-center gap-2">
                   <span className="w-2 h-2 rounded-full bg-blue-600"></span>
-                  <span>3rd Prize: ₹450 (৩য় পুরস্কার)</span>
+                  <span>{t('third_prize_title')}</span>
                 </h4>
-                <span className="text-[11px] text-slate-500 font-mono">Last 4 Digits</span>
+                <span className="text-[11px] text-slate-500 font-mono">
+                  {lang === 'bn' ? 'শেষ ৪ সংখ্যা' : 'Last 4 Digits'}
+                </span>
               </div>
               <div className="grid grid-cols-5 gap-2">
                 {third.map((num: string, idx: number) => (
@@ -338,9 +345,11 @@ export default function DynamicSlotView({
               <div className="flex items-center justify-between border-b border-slate-100 pb-2">
                 <h4 className="text-xs sm:text-sm font-black text-slate-900 flex items-center gap-2">
                   <span className="w-2 h-2 rounded-full bg-indigo-600"></span>
-                  <span>4th Prize: ₹250 (৪র্থ পুরস্কার)</span>
+                  <span>{t('fourth_prize_title')}</span>
                 </h4>
-                <span className="text-[11px] text-slate-500 font-mono">Last 4 Digits</span>
+                <span className="text-[11px] text-slate-500 font-mono">
+                  {lang === 'bn' ? 'শেষ ৪ সংখ্যা' : 'Last 4 Digits'}
+                </span>
               </div>
               <div className="grid grid-cols-5 gap-2">
                 {fourth.map((num: string, idx: number) => (
@@ -361,11 +370,11 @@ export default function DynamicSlotView({
               <div className="flex items-center gap-2">
                 <span className="w-2.5 h-2.5 rounded-full bg-amber-500"></span>
                 <h4 className="text-sm sm:text-base font-black text-slate-900">
-                  5th Prize: ₹120 (৫ম পুরস্কার - ১০০ জন বিজয়ী)
+                  {t('fifth_prize_title')}
                 </h4>
               </div>
               <span className="text-xs text-blue-700 font-mono font-bold">
-                Matches Last 4 Digits / শেষ ৪ সংখ্যা
+                {lang === 'bn' ? 'শেষ ৪ সংখ্যা মিলেছে' : 'Matches Last 4 Digits'}
               </span>
             </div>
 
