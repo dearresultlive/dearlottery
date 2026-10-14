@@ -152,8 +152,8 @@ export default function LiveResultsTabs({
   const yesterdayFourthPrizes = yesterdayPrizes.fourth_prize || [];
   const yesterdayFifthPrizes = yesterdayPrizes.fifth_prize || [];
 
-  const yesterdayPdfUrl = yesterdayDraw?.pdf_r2_url || yesterdayDraw?.source_url || `https://dearresultlive.in/results/${yesterdayDateStr}/${activeSlot.toLowerCase()}`;
-  const yesterdayJpgUrl = yesterdayDraw?.image_r2_url || yesterdayDraw?.source_url || `https://dearresultlive.in/og-image.jpg?date=${yesterdayDateStr}&slot=${activeSlot}`;
+  const yesterdayPdfUrl = yesterdayDraw?.pdf_r2_url || `/pdf/${yesterdayDateStr}/${activeSlot.toLowerCase()}.pdf`;
+  const yesterdayJpgUrl = yesterdayDraw?.image_r2_url || `/og-image.jpg?date=${yesterdayDateStr}&slot=${activeSlot}`;
 
   // If results are out today, use today's declared data
   const currentDraw = currentDrawForToday || drawsList[0];
@@ -164,8 +164,8 @@ export default function LiveResultsTabs({
   const fourthPrizes = declaredPrizes.fourth_prize || [];
   const fifthPrizes = declaredPrizes.fifth_prize || [];
 
-  const pdfUrl = currentDraw?.pdf_r2_url || currentDraw?.source_url || `https://dearresultlive.in/results/${todayStr}/${activeSlot.toLowerCase()}`;
-  const jpgUrl = currentDraw?.image_r2_url || currentDraw?.source_url || `https://dearresultlive.in/og-image.jpg?date=${todayStr}&slot=${activeSlot}`;
+  const pdfUrl = currentDraw?.pdf_r2_url || `/pdf/${todayStr}/${activeSlot.toLowerCase()}.pdf`;
+  const jpgUrl = currentDraw?.image_r2_url || `/og-image.jpg?date=${todayStr}&slot=${activeSlot}`;
 
   const whatsappShareText = `🎯 *Dear Lottery Result Today (${currentDraw?.draw_time || activeSlot})*\n📅 তারিখ: ${todayStr}\n\n🏆 *১ম পুরস্কার (₹1 Crore Winner)*: *${firstPrize.series} ${firstPrize.number}*\n\n👉 সম্পূর্ণ অফিসিয়াল রেজাল্ট শিট ও সব প্রাইজ নম্বর দেখুন:\nhttps://dearresultlive.in/results/${todayStr}/${activeSlot.toLowerCase()}`;
   const whatsappUrl = `https://api.whatsapp.com/send?text=${encodeURIComponent(whatsappShareText)}`;

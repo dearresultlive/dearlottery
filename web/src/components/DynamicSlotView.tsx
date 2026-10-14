@@ -59,8 +59,8 @@ export default function DynamicSlotView({
   const fourth = p?.fourth_prize || [];
   const fifth = p?.fifth_prize || [];
 
-  const pdfUrl = currentDraw?.pdf_r2_url || currentDraw?.source_url || `https://dearresultlive.in/results/${targetDate}/${slotKey}`;
-  const jpgUrl = currentDraw?.image_r2_url || currentDraw?.source_url || `https://dearresultlive.in/og-image.jpg?date=${targetDate}&slot=${slotKey}`;
+  const pdfUrl = currentDraw?.pdf_r2_url || `/pdf/${targetDate}/${slotKey}.pdf`;
+  const jpgUrl = currentDraw?.image_r2_url || `/og-image.jpg?date=${targetDate}&slot=${slotKey}`;
 
   const whatsappMessage = `🎯 *Dear Lottery Result Today (${currentDraw?.draw_time || slotHour})*\n📅 তারিখ: ${targetDate}\n\n🏆 *১ম পুরস্কার (₹1 Crore Winner)*: *${first.series} ${first.number}*\n\n👉 সম্পূর্ণ অফিসিয়াল রেজাল্ট শিট ও সব প্রাইজ নম্বর দেখুন:\nhttps://dearresultlive.in/results/${targetDate}/${slotKey}`;
   const whatsappUrl = `https://api.whatsapp.com/send?text=${encodeURIComponent(whatsappMessage)}`;

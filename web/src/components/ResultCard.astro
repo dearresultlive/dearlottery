@@ -13,8 +13,9 @@ const third = p?.third_prize || [];
 const fourth = p?.fourth_prize || [];
 const fifth = p?.fifth_prize || [];
 
-const pdfUrl = draw.pdf_r2_url || draw.source_url || `https://dearresultlive.in/results/${draw.draw_date}`;
-const jpgUrl = draw.image_r2_url || draw.source_url || 'https://www.nagalandlotteries.com/images/sample_gazette.jpg';
+const slotTag = draw.draw_time?.toLowerCase().includes('1') ? '1pm' : (draw.draw_time?.toLowerCase().includes('6') ? '6pm' : '8pm');
+const pdfUrl = draw.pdf_r2_url || `/pdf/${draw.draw_date}/${slotTag}.pdf`;
+const jpgUrl = draw.image_r2_url || `/og-image.jpg?date=${draw.draw_date}&slot=${slotTag}`;
 
 const whatsappMessage = `🎯 *Dear Lottery Result (${draw.draw_time || 'Live'})*\n📅 তারিখ: ${draw.draw_date}\n\n🏆 *১ম পুরস্কার (₹1 Crore Winner)*: *${first.series} ${first.number}*\n\n👉 সম্পূর্ণ রেজাল্ট শিট ও টিকিট চেক করুন:\nhttps://dearresultlive.in/results/${draw.draw_date}`;
 const whatsappUrl = `https://api.whatsapp.com/send?text=${encodeURIComponent(whatsappMessage)}`;
