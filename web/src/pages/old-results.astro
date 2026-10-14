@@ -22,28 +22,30 @@ for (let i = 1; i <= 30; i++) {
   title="Dear Lottery Old Result Archive (Past 30 Days) | Lottery Sambad পুরোনো রেজাল্ট"
   description="Check Dear Lottery old results and past winning sheets for the last 30 days. Daily 1:00 PM Morning, 6:00 PM Day, and 8:00 PM Night 1st prize ₹1 Crore numbers."
 >
-  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-8">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-10 space-y-6 sm:space-y-8">
     
-    <div class="border-b border-slate-800 pb-6">
-      <span class="text-xs font-bold text-amber-400 uppercase tracking-widest">Historical Archives</span>
-      <h1 class="text-3xl sm:text-4xl font-black text-white mt-1">
+    <div class="border-b border-slate-200 pb-5">
+      <span class="text-xs font-bold text-blue-700 uppercase tracking-widest bg-blue-50 px-2 py-0.5 rounded border border-blue-200">
+        Historical Archives
+      </span>
+      <h1 class="text-2xl sm:text-4xl font-black text-slate-900 mt-2">
         Dear Lottery Old Results Archive (পুরোনো রেজাল্ট)
       </h1>
-      <p class="text-slate-400 text-sm mt-2">
+      <p class="text-slate-600 text-xs sm:text-sm mt-1">
         Browse past 30 days official Nagaland and Sikkim State Lottery Sambad result sheets and winning numbers.
       </p>
     </div>
 
     {/* Quick Filter Yesterday */}
-    <div class="bg-gradient-to-r from-amber-500/15 via-slate-900 to-amber-500/15 border border-amber-400/40 rounded-3xl p-6 flex flex-col sm:flex-row items-center justify-between gap-4">
+    <div class="bg-gradient-to-r from-amber-50 via-white to-amber-50 border border-amber-300 rounded-2xl p-5 sm:p-6 flex flex-col sm:flex-row items-center justify-between gap-4 shadow-sm">
       <div>
-        <span class="text-xs font-bold text-amber-400 uppercase">High-Priority Search</span>
-        <h2 class="text-xl font-black text-white">Looking for Yesterday's Result? (গতকালকের রেজাল্ট)</h2>
-        <p class="text-xs text-slate-300 mt-1">Check verified winning numbers for all 3 draws conducted yesterday.</p>
+        <span class="text-xs font-bold text-amber-800 uppercase tracking-wider">High-Priority Search</span>
+        <h2 class="text-lg sm:text-xl font-black text-slate-900 mt-0.5">Looking for Yesterday's Result? (গতকালকের রেজাল্ট)</h2>
+        <p class="text-xs text-slate-600 mt-1">Check verified winning numbers for all 3 draws conducted yesterday.</p>
       </div>
       <a
         href={`/results/${datesList[0]?.date}`}
-        class="bg-gradient-to-r from-amber-500 to-yellow-500 hover:from-amber-400 hover:to-yellow-400 text-slate-950 font-black text-xs sm:text-sm px-6 py-3 rounded-2xl shadow-lg shadow-amber-500/20 transition-all whitespace-nowrap"
+        class="bg-blue-700 hover:bg-blue-800 text-white font-black text-xs sm:text-sm px-5 py-2.5 rounded-xl shadow-sm transition-all whitespace-nowrap active:scale-95"
       >
         View Yesterday's Results ({datesList[0]?.displayDate}) →
       </a>
@@ -52,15 +54,16 @@ for (let i = 1; i <= 30; i++) {
     {/* 30-Day Grid */}
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
       {datesList.map((item) => (
-        <div class="bg-slate-900 border border-slate-800 hover:border-amber-400/60 rounded-2xl p-5 space-y-3 transition-colors shadow">
-          <div class="flex items-center justify-between border-b border-slate-800 pb-2.5">
+        <div class="bg-white border border-slate-200 hover:border-blue-400 rounded-2xl p-4 sm:p-5 space-y-3 transition-colors shadow-sm">
+          <div className="flex items-center justify-between border-b border-slate-100 pb-2.5">
             <div>
-              <span class="text-base font-black text-white block">{item.displayDate}</span>
-              <span class="text-[11px] text-amber-400 font-semibold">{item.dayName}</span>
+              <span class="text-base font-black text-slate-900 block">{item.displayDate}</span>
+              <span class="text-[11px] text-blue-700 font-bold">{item.dayName}</span>
             </div>
+
             <a
               href={`/results/${item.date}`}
-              class="text-xs font-bold text-slate-400 hover:text-white bg-slate-950 border border-slate-800 px-2.5 py-1 rounded-lg transition-colors"
+              class="text-xs font-bold text-slate-600 hover:text-blue-700 bg-slate-50 border border-slate-200 px-2.5 py-1 rounded-lg transition-colors"
             >
               All Draws →
             </a>
@@ -69,25 +72,25 @@ for (let i = 1; i <= 30; i++) {
           <div class="grid grid-cols-3 gap-2 pt-1">
             <a
               href={`/results/${item.date}/1pm`}
-              class="bg-slate-950 hover:bg-slate-800 border border-slate-800 hover:border-amber-400/50 text-slate-300 hover:text-white rounded-xl py-2 px-1 text-center transition-colors flex flex-col items-center"
+              class="bg-slate-50 hover:bg-blue-50 border border-slate-200 hover:border-blue-300 text-slate-700 hover:text-blue-900 rounded-xl py-2 px-1 text-center transition-colors flex flex-col items-center"
             >
-              <span class="text-xs font-bold text-amber-300">1:00 PM</span>
+              <span class="text-xs font-bold text-blue-700">1:00 PM</span>
               <span class="text-[10px] text-slate-500">দুপুর</span>
             </a>
 
             <a
               href={`/results/${item.date}/6pm`}
-              class="bg-slate-950 hover:bg-slate-800 border border-slate-800 hover:border-amber-400/50 text-slate-300 hover:text-white rounded-xl py-2 px-1 text-center transition-colors flex flex-col items-center"
+              class="bg-slate-50 hover:bg-blue-50 border border-slate-200 hover:border-blue-300 text-slate-700 hover:text-blue-900 rounded-xl py-2 px-1 text-center transition-colors flex flex-col items-center"
             >
-              <span class="text-xs font-bold text-amber-300">6:00 PM</span>
+              <span class="text-xs font-bold text-blue-700">6:00 PM</span>
               <span class="text-[10px] text-slate-500">সন্ধ্যা</span>
             </a>
 
             <a
               href={`/results/${item.date}/8pm`}
-              class="bg-slate-950 hover:bg-slate-800 border border-slate-800 hover:border-amber-400/50 text-slate-300 hover:text-white rounded-xl py-2 px-1 text-center transition-colors flex flex-col items-center"
+              class="bg-slate-50 hover:bg-blue-50 border border-slate-200 hover:border-blue-300 text-slate-700 hover:text-blue-900 rounded-xl py-2 px-1 text-center transition-colors flex flex-col items-center"
             >
-              <span class="text-xs font-bold text-amber-300">8:00 PM</span>
+              <span class="text-xs font-bold text-blue-700">8:00 PM</span>
               <span class="text-[10px] text-slate-500">রাত</span>
             </a>
           </div>

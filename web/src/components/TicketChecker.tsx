@@ -24,7 +24,6 @@ export default function TicketChecker({ initialDraws = [] }: TicketCheckerProps)
   const [hasSearched, setHasSearched] = useState(false);
   const [matches, setMatches] = useState<MatchResult[]>([]);
 
-  // Trigger Confetti Effect on Win
   const triggerConfetti = () => {
     try {
       confetti({
@@ -33,7 +32,7 @@ export default function TicketChecker({ initialDraws = [] }: TicketCheckerProps)
         origin: { y: 0.6 }
       });
     } catch (e) {
-      // Ignore if canvas-confetti fails
+      // Ignore
     }
   };
 
@@ -49,8 +48,6 @@ export default function TicketChecker({ initialDraws = [] }: TicketCheckerProps)
     setMatches([]);
 
     const { series, number } = parseTicketInput(ticketInput);
-
-    // 1. First attempt instant client-side lookup from loaded draws
     const clientMatches: MatchResult[] = [];
 
     const activeDraws = initialDraws.filter(d => {
@@ -66,7 +63,6 @@ export default function TicketChecker({ initialDraws = [] }: TicketCheckerProps)
       const drawTime = d.draw_time;
       const drawName = d.draw_name;
 
-      // Check 1st Prize (5 digits + series)
       if (p.first_prize) {
         if (p.first_prize.number === number || (number.length === 4 && p.first_prize.number.endsWith(number))) {
           const seriesMatch = !series || series.toUpperCase() === p.first_prize.series.toUpperCase();
@@ -83,7 +79,6 @@ export default function TicketChecker({ initialDraws = [] }: TicketCheckerProps)
         }
       }
 
-      // Check 2nd Prize (10 x 5-digit numbers)
       if (p.second_prize) {
         for (const num of p.second_prize) {
           if (num === number || (number.length === 4 && num.endsWith(number))) {
@@ -100,7 +95,6 @@ export default function TicketChecker({ initialDraws = [] }: TicketCheckerProps)
         }
       }
 
-      // Check 3rd Prize (10 x 4-digit numbers)
       if (p.third_prize) {
         for (const num of p.third_prize) {
           if (num === number.slice(-4)) {
@@ -117,7 +111,6 @@ export default function TicketChecker({ initialDraws = [] }: TicketCheckerProps)
         }
       }
 
-      // Check 4th Prize (10 x 4-digit numbers)
       if (p.fourth_prize) {
         for (const num of p.fourth_prize) {
           if (num === number.slice(-4)) {
@@ -134,7 +127,6 @@ export default function TicketChecker({ initialDraws = [] }: TicketCheckerProps)
         }
       }
 
-      // Check 5th Prize (100 x 4-digit numbers)
       if (p.fifth_prize) {
         for (const num of p.fifth_prize) {
           if (num === number.slice(-4)) {
@@ -159,7 +151,6 @@ export default function TicketChecker({ initialDraws = [] }: TicketCheckerProps)
       return;
     }
 
-    // 2. If no client matches, query the Worker edge API endpoint
     try {
       const params = new URLSearchParams({ number });
       if (series) params.append('series', series);
@@ -183,8 +174,8 @@ export default function TicketChecker({ initialDraws = [] }: TicketCheckerProps)
           triggerConfetti();
         }
       }
-    } catch (err) {
-      console.log('Worker API offline, client check was evaluated.');
+    } catch (e) {
+      console.error('Edge ticket check failed:', e);
     } finally {
       setIsSearching(false);
     }
@@ -193,24 +184,23 @@ export default function TicketChecker({ initialDraws = [] }: TicketCheckerProps)
   const setSampleTicket = (sample: string) => {
     setTicketInput(sample);
     setTimeout(() => {
-      // Trigger search
       const btn = document.getElementById('search-btn');
       if (btn) btn.click();
     }, 50);
   };
 
   return (
-    <div className="bg-slate-900 border border-slate-800 rounded-3xl p-6 md:p-8 shadow-2xl relative">
+    <div className="bg-white border border-slate-200 rounded-2xl p-5 md:p-8 shadow-sm relative">
       <div className="max-w-2xl mx-auto">
         <div className="text-center mb-6">
-          <span className="inline-block bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 text-xs font-bold uppercase tracking-wider px-3 py-1 rounded-full mb-2">
-            ⚡ Instant Edge Ticket Checker
+          <span className="inline-block bg-blue-50 border border-blue-200 text-blue-700 text-xs font-bold uppercase tracking-wider px-3 py-1 rounded-full mb-2">
+            ⚡ Instant Ticket Checker
           </span>
-          <h2 className="text-2xl md:text-3xl font-black text-white">
+          <h3 className="text-2xl md:text-3xl font-black text-slate-900">
             Check Your Dear Lottery Ticket
-          </h2>
-          <p className="text-slate-400 text-sm mt-1">
-            Search by full ticket (<span className="text-amber-400 font-mono">84D 19283</span>) or last 4-5 digits (<span className="text-amber-400 font-mono">4829</span>).
+          </h3>
+          <p className="text-slate-600 text-xs sm:text-sm mt-1">
+            Search by full ticket (<span className="text-blue-700 font-mono font-bold">84D 19283</span>) or last 4-5 digits (<span className="text-blue-700 font-mono font-bold">4829</span>).
           </p>
         </div>
 
@@ -222,14 +212,14 @@ export default function TicketChecker({ initialDraws = [] }: TicketCheckerProps)
                 type="text"
                 value={ticketInput}
                 onChange={(e) => setTicketInput(e.target.value.toUpperCase())}
-                placeholder="e.g. 84D 19283 or last 4 digits"
-                className="w-full bg-slate-950 border-2 border-slate-700 focus:border-emerald-500 text-white rounded-2xl px-5 py-4 text-lg font-mono tracking-widest placeholder:text-slate-600 outline-none transition-all shadow-inner uppercase"
+                placeholder="e.g. 84D 19283 or 4829"
+                className="w-full bg-slate-50 border-2 border-slate-300 focus:border-blue-600 text-slate-900 rounded-xl px-4 py-3.5 text-lg font-mono tracking-widest placeholder:text-slate-400 outline-none transition-all uppercase shadow-inner"
               />
               {ticketInput && (
                 <button
                   type="button"
                   onClick={() => setTicketInput('')}
-                  className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-500 hover:text-white"
+                  className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-700 font-bold"
                 >
                   ✕
                 </button>
@@ -240,10 +230,10 @@ export default function TicketChecker({ initialDraws = [] }: TicketCheckerProps)
               id="search-btn"
               type="submit"
               disabled={isSearching}
-              className="bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-400 hover:to-teal-500 text-slate-950 font-black px-8 py-4 rounded-2xl shadow-lg shadow-emerald-500/25 flex items-center justify-center gap-2 text-lg transition-transform active:scale-95 disabled:opacity-50"
+              className="bg-blue-700 hover:bg-blue-800 text-white font-black px-7 py-3.5 rounded-xl shadow-sm flex items-center justify-center gap-2 text-base transition-transform active:scale-95 disabled:opacity-50"
             >
               {isSearching ? (
-                <span className="inline-block animate-spin">⏳</span>
+                <span className="inline-block animate-spin">⏳ Checking...</span>
               ) : (
                 <span>Check Ticket</span>
               )}
@@ -251,18 +241,18 @@ export default function TicketChecker({ initialDraws = [] }: TicketCheckerProps)
           </div>
 
           {/* Draw Slot Filters */}
-          <div className="flex flex-wrap items-center justify-between gap-2 text-xs text-slate-400 pt-1">
-            <div className="flex items-center gap-1.5">
-              <span>Filter Draw:</span>
+          <div className="flex flex-wrap items-center justify-between gap-2 text-xs text-slate-600 pt-1">
+            <div className="flex items-center gap-1.5 flex-wrap">
+              <span className="font-semibold">Filter Draw:</span>
               {(['ALL', '1:00 PM', '6:00 PM', '8:00 PM'] as const).map((slot) => (
                 <button
                   key={slot}
                   type="button"
                   onClick={() => setSelectedSlot(slot)}
-                  className={`px-2.5 py-1 rounded-lg border font-medium transition-colors ${
+                  className={`px-2.5 py-1 rounded-lg border font-bold transition-colors ${
                     selectedSlot === slot
-                      ? 'bg-emerald-500/20 border-emerald-500 text-emerald-300'
-                      : 'bg-slate-950 border-slate-800 text-slate-400 hover:border-slate-700'
+                      ? 'bg-blue-700 border-blue-700 text-white'
+                      : 'bg-slate-50 border-slate-200 text-slate-700 hover:border-slate-300'
                   }`}
                 >
                   {slot}
@@ -280,7 +270,7 @@ export default function TicketChecker({ initialDraws = [] }: TicketCheckerProps)
                   if (firstP) setSampleTicket(`${firstP.series} ${firstP.number}`);
                   else setSampleTicket('84D 19283');
                 }}
-                className="text-amber-400 hover:underline font-mono"
+                className="text-blue-700 hover:underline font-mono font-bold"
               >
                 1st Prize
               </button>
@@ -292,7 +282,7 @@ export default function TicketChecker({ initialDraws = [] }: TicketCheckerProps)
                   if (fifthP && fifthP[0]) setSampleTicket(fifthP[0]);
                   else setSampleTicket('4829');
                 }}
-                className="text-emerald-400 hover:underline font-mono"
+                className="text-emerald-700 hover:underline font-mono font-bold"
               >
                 5th Prize
               </button>
@@ -302,47 +292,47 @@ export default function TicketChecker({ initialDraws = [] }: TicketCheckerProps)
 
         {/* Search Results Display */}
         {hasSearched && (
-          <div className="mt-8 transition-all">
+          <div className="mt-6 transition-all">
             {matches.length > 0 ? (
               <div className="space-y-4">
-                <div className="bg-gradient-to-r from-emerald-950/80 to-slate-900 border-2 border-emerald-500 rounded-2xl p-6 text-center shadow-xl">
-                  <span className="text-4xl block mb-2">🎉</span>
-                  <h3 className="text-2xl font-black text-emerald-300 uppercase tracking-wide">
+                <div className="bg-emerald-50 border-2 border-emerald-300 rounded-2xl p-5 text-center shadow-xs">
+                  <span className="text-3xl block mb-1">🎉</span>
+                  <h4 className="text-xl font-black text-emerald-900 uppercase tracking-wide">
                     Congratulations! You Won!
-                  </h3>
-                  <p className="text-slate-300 text-sm mt-1">
-                    Your ticket matched <span className="font-bold text-white">{matches.length} prize tier{matches.length > 1 ? 's' : ''}</span>!
+                  </h4>
+                  <p className="text-emerald-800 text-xs mt-1">
+                    Your ticket matched <strong className="font-black text-slate-950">{matches.length} prize tier{matches.length > 1 ? 's' : ''}</strong>!
                   </p>
                 </div>
 
-                <div className="grid gap-3">
+                <div className="grid gap-2.5">
                   {matches.map((m, idx) => (
                     <div
                       key={idx}
-                      className="bg-slate-950 border border-emerald-500/40 rounded-2xl p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 shadow-lg"
+                      className="bg-slate-50 border border-slate-200 rounded-xl p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 shadow-2xs"
                     >
                       <div>
                         <div className="flex items-center gap-2">
-                          <span className="bg-emerald-500 text-slate-950 text-xs font-black px-2.5 py-0.5 rounded-full uppercase">
+                          <span className="bg-emerald-700 text-white text-xs font-black px-2.5 py-0.5 rounded-full uppercase">
                             {m.prizeRank}
                           </span>
-                          <span className="text-xs text-slate-400">
+                          <span className="text-xs text-slate-500 font-medium">
                             {m.drawName} ({m.drawTime})
                           </span>
                         </div>
-                        <p className="text-lg font-mono font-bold text-white mt-1">
-                          Winning Ticket: <span className="text-amber-400">{m.ticketNumber}</span>
+                        <p className="text-base font-mono font-bold text-slate-900 mt-1">
+                          Winning Ticket: <span className="text-blue-700 font-black">{m.ticketNumber}</span>
                         </p>
                         {m.requiredSeries && !m.seriesMatched && (
-                          <p className="text-xs text-amber-300/80 mt-0.5">
+                          <p className="text-xs text-amber-800 mt-0.5 font-medium">
                             ⚠️ Note: 1st Prize requires Series {m.requiredSeries}. All other series win ₹1,000 Consolation prize.
                           </p>
                         )}
                       </div>
 
                       <div className="sm:text-right">
-                        <span className="text-xs text-slate-400 block">Prize Amount</span>
-                        <span className="text-2xl font-black text-emerald-400 font-mono">
+                        <span className="text-xs text-slate-500 block">Prize Amount</span>
+                        <span className="text-xl font-black text-emerald-800 font-mono">
                           {formatINR(m.prizeAmount)}
                         </span>
                       </div>
@@ -350,16 +340,16 @@ export default function TicketChecker({ initialDraws = [] }: TicketCheckerProps)
                   ))}
                 </div>
 
-                <div className="bg-slate-950/60 border border-slate-800 rounded-xl p-3 text-xs text-slate-400 text-center">
-                  💡 <span className="font-semibold text-slate-300">How to claim:</span> Prizes up to ₹10,000 can be claimed through registered lottery distributors. 1st prize must be submitted with original ticket and valid government ID to the Directorate of State Lotteries.
+                <div className="bg-slate-50 border border-slate-200 rounded-xl p-3 text-xs text-slate-600 text-center">
+                  💡 <strong className="text-slate-900">How to claim:</strong> Prizes up to ₹10,000 can be claimed through registered lottery distributors. 1st prize must be submitted with original ticket and valid government ID to the Directorate of State Lotteries.
                 </div>
               </div>
             ) : (
-              <div className="bg-slate-950 border border-slate-800 rounded-2xl p-6 text-center">
-                <span className="text-3xl block mb-2">☘️</span>
-                <h3 className="text-lg font-bold text-white">No Winning Match Found</h3>
-                <p className="text-slate-400 text-sm mt-1 max-w-md mx-auto">
-                  Ticket <span className="text-amber-400 font-mono font-semibold">{ticketInput}</span> did not match any winning number for the selected draw. Keep playing responsibly and better luck next draw!
+              <div className="bg-slate-50 border border-slate-200 rounded-2xl p-6 text-center">
+                <span className="text-2xl block mb-1">☘️</span>
+                <h4 className="text-base font-bold text-slate-900">No Winning Match Found</h4>
+                <p className="text-slate-600 text-xs sm:text-sm mt-1 max-w-md mx-auto">
+                  Ticket <span className="text-blue-700 font-mono font-bold">{ticketInput}</span> did not match any winning number for the selected draw. Better luck next draw!
                 </p>
               </div>
             )}

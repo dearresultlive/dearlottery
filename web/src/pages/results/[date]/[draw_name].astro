@@ -83,43 +83,45 @@ const slotTabs = [
   drawTime={slotHour}
   winningNumbers={firstPrize ? { firstPrize: `${firstPrize.series} ${firstPrize.number}` } : undefined}
 >
-  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 space-y-6 sm:space-y-8">
     
     {/* Breadcrumbs Navigation */}
-    <nav aria-label="Breadcrumb" class="flex items-center gap-2 text-xs text-slate-400 border-b border-slate-800 pb-3">
-      <a href="/" class="hover:text-amber-400 transition-colors">Home (হোম)</a>
+    <nav aria-label="Breadcrumb" class="flex items-center gap-2 text-xs text-slate-500 border-b border-slate-200 pb-3">
+      <a href="/" class="hover:text-blue-700 transition-colors">Home (হোম)</a>
       <span>/</span>
-      <a href={`/results/${targetDate}`} class="hover:text-amber-400 transition-colors">Results {targetDate}</a>
+      <a href={`/results/${targetDate}`} class="hover:text-blue-700 transition-colors">Results {targetDate}</a>
       <span>/</span>
-      <span class="text-white font-bold">{slotHour} Draw {isUpcoming ? '(Upcoming / আসন্ন)' : ''}</span>
+      <span class="text-slate-900 font-bold">{slotHour} Draw {isUpcoming ? '(Upcoming / আসন্ন)' : ''}</span>
     </nav>
 
-    {/* 1. Draw Navigation Sticky Tabs */}
-    <section aria-label="Draw Slot Switcher" class="bg-slate-950 p-2 sm:p-2.5 rounded-3xl border-2 border-slate-800 shadow-2xl">
+    {/* 1. Draw Navigation Tabs */}
+    <section aria-label="Draw Slot Switcher" class="bg-white p-2 rounded-2xl border border-slate-200 shadow-sm">
       <div class="grid grid-cols-3 gap-2">
         {slotTabs.map((tab) => {
           const isCurrent = slotKey === tab.key;
           return (
             <a
               href={`/results/${targetDate}/${tab.key}`}
-              class={`py-3 sm:py-4 px-2 sm:px-4 rounded-2xl flex flex-col items-center justify-center transition-all ${
+              class={`py-2.5 sm:py-3.5 px-2 sm:px-4 rounded-xl flex flex-col items-center justify-center transition-all ${
                 isCurrent
-                  ? 'bg-gradient-to-r from-amber-500 via-amber-600 to-yellow-600 text-slate-950 font-black shadow-lg shadow-amber-500/25 ring-2 ring-amber-300 scale-[1.02]'
-                  : 'bg-slate-900/90 hover:bg-slate-800 border border-slate-800 text-slate-300 hover:text-white'
+                  ? 'bg-blue-700 text-white font-black shadow-md ring-2 ring-blue-600 scale-[1.01]'
+                  : 'bg-slate-50 hover:bg-slate-100 border border-slate-200 text-slate-700 hover:text-slate-900'
               }`}
             >
               <div class="flex items-center gap-1.5 sm:gap-2">
-                <span className="text-base sm:text-xl">{tab.icon}</span>
-                <span class="text-xs sm:text-base font-extrabold tracking-tight">
+                <span class="text-base sm:text-lg">{tab.icon}</span>
+                <span class="text-xs sm:text-base font-black tracking-tight">
                   {tab.time}
                 </span>
               </div>
-              <span class={`text-[10px] sm:text-xs font-semibold mt-0.5 ${isCurrent ? 'text-slate-950' : 'text-amber-400'}`}>
+              <span class={`text-[10px] sm:text-xs font-bold mt-0.5 ${isCurrent ? 'text-blue-100' : 'text-blue-700'}`}>
                 {tab.labelBn}
               </span>
               <div class="mt-1">
-                <span class={`inline-block text-[9px] sm:text-[10px] font-bold px-2 py-0.2 rounded-full uppercase tracking-wider ${
-                  isCurrent ? 'bg-slate-950 text-amber-300' : 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30'
+                <span class={`inline-block text-[9px] sm:text-[10px] font-black px-2 py-0.2 rounded-full uppercase tracking-wider ${
+                  isCurrent
+                    ? 'bg-white text-blue-900 shadow-xs'
+                    : 'bg-emerald-100 text-emerald-800 border border-emerald-300'
                 }`}>
                   {isUpcoming && isCurrent ? 'UPCOMING' : 'RESULT OUT'}
                 </span>
@@ -130,7 +132,7 @@ const slotTabs = [
       </div>
     </section>
 
-    {/* Primary Dynamic Slot View (Zero-Refresh transitions from Countdown to Results) */}
+    {/* Primary Dynamic Slot View */}
     <section>
       <DynamicSlotView
         client:load
@@ -144,11 +146,11 @@ const slotTabs = [
 
     {/* Scoped Ticket Checker */}
     <section class="space-y-4">
-      <div class="border-t border-slate-800 pt-8">
-        <h2 class="text-2xl font-black text-white mb-1">
+      <div class="border-t border-slate-200 pt-6">
+        <h2 class="text-xl sm:text-2xl font-black text-slate-900 mb-1">
           Verify Your Ticket in {draw?.draw_name || `${slotHour} Draw`}
         </h2>
-        <p class="text-slate-400 text-xs">
+        <p class="text-slate-600 text-xs">
           Instantly search your ticket number against this exact {slotHour} draw across all prize tiers.
         </p>
       </div>
@@ -156,20 +158,20 @@ const slotTabs = [
     </section>
 
     {/* Prize Claim Information */}
-    <div class="bg-slate-900/60 border border-slate-800 rounded-3xl p-6 md:p-8 space-y-4 text-slate-300 text-sm">
-      <h3 class="text-lg font-bold text-white flex items-center gap-2">
+    <div class="bg-white border border-slate-200 rounded-2xl p-5 sm:p-7 space-y-4 text-slate-700 text-sm shadow-sm">
+      <h3 class="text-base sm:text-lg font-black text-slate-900 flex items-center gap-2">
         <span>🏆</span>
         <span>How to Claim Dear Lottery Prizes (পুরস্কার দাবির নিয়মাবলী)</span>
       </h3>
-      <ul class="space-y-2 text-xs text-slate-400 leading-relaxed list-disc list-inside">
+      <ul class="space-y-2 text-xs text-slate-600 leading-relaxed list-disc list-inside">
         <li>
-          <strong class="text-white">Prizes up to ₹10,000:</strong> Can be collected in cash directly through any authorized Dear Lottery retailer or distributor with original intact ticket.
+          <strong class="text-slate-900">Prizes up to ₹10,000:</strong> Can be collected in cash directly through any authorized Dear Lottery retailer or distributor with original intact ticket.
         </li>
         <li>
-          <strong class="text-white">Prizes above ₹10,000 (including 1st Prize ₹1 Crore):</strong> Must be claimed by submitting the original ticket, passport-size photos, PAN Card, Aadhaar Card, and the official claim form to the Directorate of State Lotteries within 30 days of result publication.
+          <strong class="text-slate-900">Prizes above ₹10,000 (including 1st Prize ₹1 Crore):</strong> Must be claimed by submitting the original ticket, passport-size photos, PAN Card, Aadhaar Card, and the official claim form to the Directorate of State Lotteries within 30 days of result publication.
         </li>
         <li>
-          <strong class="text-white">Ticket Preservation:</strong> Damaged, mutilated, torn, or forged lottery tickets will not be accepted by government claim authorities.
+          <strong class="text-slate-900">Ticket Preservation:</strong> Damaged, mutilated, torn, or forged lottery tickets will not be accepted by government claim authorities.
         </li>
       </ul>
     </div>

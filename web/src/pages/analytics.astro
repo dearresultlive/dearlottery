@@ -10,20 +10,20 @@ const analytics = await fetchFrequencyAnalytics();
   title="Dear Lottery Hot & Cold Numbers | 4-Digit Frequency & Digit Heatmap"
   description="Explore Dear Lottery Hot & Cold numbers, 4-digit repetition analysis, and positional digit frequency heatmaps across Nagaland & Sikkim State Lottery daily draws."
 >
-  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-10">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-10 space-y-8">
     <div class="text-center max-w-3xl mx-auto">
-      <span class="bg-amber-500/10 border border-amber-500/30 text-amber-400 text-xs font-bold uppercase tracking-wider px-3 py-1 rounded-full">
-        Advanced Number Statistics
+      <span class="bg-blue-50 border border-blue-200 text-blue-700 text-xs font-bold uppercase tracking-wider px-3 py-1 rounded-full">
+        Advanced Statistics
       </span>
-      <h1 class="text-3xl sm:text-4xl font-black text-white mt-3">
+      <h1 class="text-2xl sm:text-4xl font-black text-slate-900 mt-2">
         Past 30 Days Hot & Cold Numbers
       </h1>
-      <p class="text-slate-400 text-sm mt-2">
+      <p class="text-slate-600 text-xs sm:text-sm mt-1">
         Empirical frequency distributions and digit trends calculated from official lottery draws over the past 30 days.
       </p>
 
       {/* Mandatory Statistical Disclaimer */}
-      <div class="mt-4 bg-amber-950/40 border border-amber-500/40 rounded-2xl px-4 py-2.5 text-xs text-amber-200 inline-flex items-center gap-2 shadow-inner">
+      <div class="mt-3 bg-amber-50 border border-amber-300 rounded-xl px-4 py-2 text-xs text-amber-900 inline-flex items-center gap-2 shadow-2xs">
         <span class="text-base">⚠️</span>
         <span class="font-medium">
           Historical data analysis for informational purposes only; does not predict future outcomes.
@@ -40,19 +40,19 @@ const analytics = await fetchFrequencyAnalytics();
     />
 
     {/* Educational Content on Frequency Analysis */}
-    <div class="bg-slate-900 border border-slate-800 rounded-3xl p-6 md:p-8 space-y-6 text-slate-300">
-      <h2 class="text-xl font-bold text-white">How to Use Frequency Analysis Responsibly</h2>
+    <div class="bg-white border border-slate-200 rounded-2xl p-6 md:p-8 space-y-6 text-slate-700 shadow-sm">
+      <h2 class="text-xl font-bold text-slate-900">How to Use Frequency Analysis Responsibly</h2>
       <div class="grid md:grid-cols-2 gap-6 text-sm">
-        <div class="space-y-2">
-          <h3 class="font-bold text-amber-400">What are "Hot Numbers"?</h3>
-          <p class="text-xs text-slate-400 leading-relaxed">
+        <div class="space-y-2 bg-slate-50 p-5 rounded-xl border border-slate-200">
+          <h3 class="font-bold text-slate-900">What are "Hot Numbers"?</h3>
+          <p class="text-xs text-slate-600 leading-relaxed">
             Hot numbers represent combinations that have appeared multiple times within the 5th prize tier over recent weeks. Some players believe hot numbers carry momentum, while probability law indicates each draw remains mathematically independent.
           </p>
         </div>
 
-        <div class="space-y-2">
-          <h3 class="font-bold text-cyan-400">What are "Cold Numbers"?</h3>
-          <p class="text-xs text-slate-400 leading-relaxed">
+        <div class="space-y-2 bg-slate-50 p-5 rounded-xl border border-slate-200">
+          <h3 class="font-bold text-slate-900">What are "Cold Numbers"?</h3>
+          <p class="text-xs text-slate-600 leading-relaxed">
             Cold numbers are combinations that have not been drawn for the longest number of consecutive draws. Players often monitor cold numbers anticipating an overdue appearance based on the law of large numbers.
           </p>
         </div>

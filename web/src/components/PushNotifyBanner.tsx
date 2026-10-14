@@ -10,12 +10,10 @@ export default function PushNotifyBanner() {
     if (typeof window !== 'undefined' && 'Notification' in window) {
       setIsSupported(true);
       
-      // Check current permission
       if (Notification.permission === 'granted') {
         setIsSubscribed(true);
       }
 
-      // Check if user dismissed prompt in the last 24 hours
       const dismissedAt = localStorage.getItem('dear_push_prompt_dismissed');
       if (dismissedAt) {
         const timeDiff = Date.now() - parseInt(dismissedAt, 10);
@@ -63,21 +61,21 @@ export default function PushNotifyBanner() {
   return (
     <aside
       aria-label="Result Notifications"
-      className="bg-gradient-to-r from-amber-500/15 via-slate-900 to-emerald-500/15 border-2 border-amber-400/40 rounded-3xl p-4 sm:p-5 shadow-2xl relative overflow-hidden transition-all duration-300"
+      className="bg-white border border-blue-200 rounded-2xl p-4 sm:p-5 shadow-sm relative overflow-hidden transition-all duration-300"
     >
       <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
         
         {/* Left Side: Bilingual Microcopy & Icon */}
         <div className="flex items-start sm:items-center gap-3.5 w-full sm:w-auto">
-          <div className="w-11 h-11 rounded-2xl bg-gradient-to-tr from-amber-400 to-yellow-500 text-slate-950 flex items-center justify-center text-xl flex-shrink-0 shadow-lg shadow-amber-500/20">
+          <div className="w-10 h-10 rounded-xl bg-blue-50 border border-blue-200 text-blue-700 flex items-center justify-center text-xl flex-shrink-0 shadow-2xs">
             🔔
           </div>
           <div>
-            <h4 className="text-sm sm:text-base font-black text-white tracking-tight flex flex-wrap items-center gap-2">
-              <span>🔔 প্রতিদিন ড্র হওয়ার সাথে সাথে রেজাল্ট নোটিফিকেশন পেতে চান?</span>
-              <span className="text-xs font-semibold text-amber-300">(Get instant draw alerts)</span>
+            <h4 className="text-sm sm:text-base font-black text-slate-900 tracking-tight flex flex-wrap items-center gap-1.5">
+              <span>প্রতিদিন ড্র হওয়ার সাথে সাথে রেজাল্ট নোটিফিকেশন পেতে চান?</span>
+              <span className="text-xs font-semibold text-blue-700">(Get instant alerts)</span>
             </h4>
-            <p className="text-xs text-slate-300 mt-0.5 leading-relaxed">
+            <p className="text-xs text-slate-600 mt-0.5 leading-relaxed">
               ১:০০ PM দুপুর, ৬:০০ PM সন্ধ্যা ও ৮:০০ PM রাত — রেজাল্ট ঘোষণা মাত্রই আপনার ফোনে সরাসরি নোটিফিকেশন পেয়ে যাবেন।
             </p>
           </div>
@@ -86,16 +84,16 @@ export default function PushNotifyBanner() {
         {/* Right Side: Action Triggers */}
         <div className="flex items-center gap-2.5 self-end sm:self-center flex-shrink-0">
           {isSubscribed ? (
-            <div className="inline-flex items-center gap-1.5 bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 px-4 py-2 rounded-xl text-xs font-bold">
+            <div className="inline-flex items-center gap-1.5 bg-emerald-50 text-emerald-800 border border-emerald-300 px-3.5 py-1.5 rounded-xl text-xs font-bold">
               <span>✓</span>
-              <span>নোটিফিকেশন সক্রিয় আছে (Alerts Active)</span>
+              <span>নোটিফিকেশন সক্রিয় আছে (Active)</span>
             </div>
           ) : (
             <>
               <button
                 type="button"
                 onClick={handleDismiss}
-                className="text-xs text-slate-400 hover:text-white px-3 py-2 rounded-xl transition-colors font-medium"
+                className="text-xs text-slate-500 hover:text-slate-800 px-3 py-1.5 rounded-xl transition-colors font-semibold"
               >
                 পরে (Not Now)
               </button>
@@ -104,10 +102,10 @@ export default function PushNotifyBanner() {
                 type="button"
                 onClick={handleSubscribe}
                 disabled={isLoading}
-                className="bg-gradient-to-r from-amber-500 via-amber-400 to-yellow-500 hover:from-amber-400 hover:to-yellow-400 text-slate-950 font-black text-xs sm:text-sm px-4 sm:px-5 py-2.5 rounded-xl shadow-lg shadow-amber-500/25 transition-all active:scale-95 flex items-center gap-2"
+                className="bg-blue-700 hover:bg-blue-800 text-white font-black text-xs sm:text-sm px-4 sm:px-5 py-2 rounded-xl shadow-sm transition-all active:scale-95 flex items-center gap-1.5"
               >
                 <span>🔔</span>
-                <span>{isLoading ? 'সংযুক্ত হচ্ছে...' : 'হ্যাঁ, চালু করুন (Enable)'}</span>
+                <span>{isLoading ? 'সংযুক্ত হচ্ছে...' : 'চালু করুন (Enable)'}</span>
               </button>
             </>
           )}

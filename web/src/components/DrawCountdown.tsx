@@ -45,7 +45,6 @@ export default function DrawCountdown({ onResultDetected, compact = false }: Dra
             setNewResultData(found);
             setIsPollingActive(false);
 
-            // Broadcast globally so LiveResultsTabs can update without reload
             if (typeof window !== 'undefined') {
               window.dispatchEvent(new CustomEvent('dearlottery:new_result', { detail: found }));
             }
@@ -71,8 +70,6 @@ export default function DrawCountdown({ onResultDetected, compact = false }: Dra
 
       const diff = currentUpcoming.targetTimestamp - istNow.getTime();
 
-      // Polling Trigger Rule: 2 minutes before draw time (diff <= 120,000ms) 
-      // or up to 15 minutes after scheduled time until result is captured
       const isWithin2MinWindow = diff <= 120 * 1000 && diff >= -15 * 60 * 1000;
       
       if (isWithin2MinWindow && !newResultData) {
@@ -94,7 +91,6 @@ export default function DrawCountdown({ onResultDetected, compact = false }: Dra
     return () => clearInterval(interval);
   }, [newResultData]);
 
-  // Handle 10-second auto-polling loop when active
   useEffect(() => {
     if (isPollingActive && !newResultData) {
       checkLatestResults();
@@ -117,17 +113,16 @@ export default function DrawCountdown({ onResultDetected, compact = false }: Dra
 
   if (!timeLeft) {
     return (
-      <div className="bg-slate-900/90 border border-amber-500/30 rounded-2xl p-3 text-white text-center text-xs animate-pulse">
-        <p className="text-slate-400 font-medium">Loading official draw schedule (IST)...</p>
+      <div className="bg-white border border-slate-200 rounded-2xl p-3 text-center text-xs text-slate-500 shadow-sm animate-pulse">
+        <p className="font-medium">Loading official draw schedule (IST)...</p>
       </div>
     );
   }
 
   const isLive = timeLeft.hours === 0 && timeLeft.minutes === 0 && timeLeft.seconds === 0;
 
-  // Ultra-Compact Mobile-First Live Bar (Takes ~48px-56px height, saves 300px of screen space!)
   return (
-    <div className="bg-gradient-to-r from-slate-950 via-slate-900 to-slate-950 border-2 border-amber-500/40 rounded-2xl px-3.5 py-2.5 sm:px-5 sm:py-3 text-white shadow-xl">
+    <div className="bg-white border border-slate-200 rounded-2xl px-3.5 py-2.5 sm:px-5 sm:py-3 shadow-sm">
       <div className="flex flex-col sm:flex-row items-center justify-between gap-2.5 sm:gap-4">
         
         {/* Left: Live Status & Next Draw Info */}
@@ -135,72 +130,72 @@ export default function DrawCountdown({ onResultDetected, compact = false }: Dra
           <div className="flex items-center gap-2">
             <span className="flex h-2.5 w-2.5 relative">
               <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
-              <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-red-500"></span>
+              <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-red-600"></span>
             </span>
-            <span className="text-[11px] sm:text-xs font-black uppercase tracking-wider text-red-400 bg-red-500/10 border border-red-500/20 px-2 py-0.5 rounded-full">
+            <span className="text-[11px] sm:text-xs font-black uppercase tracking-wider text-red-700 bg-red-50 border border-red-200 px-2 py-0.5 rounded-full">
               LIVE IST
             </span>
           </div>
 
-          <div className="text-xs sm:text-sm font-extrabold text-white">
-            <span>Next: </span>
-            <span className="text-amber-300 font-black">{nextDraw.timeLabel}</span>
-            <span className="hidden md:inline text-slate-400 font-normal text-xs ml-1.5">
+          <div className="text-xs sm:text-sm font-bold text-slate-900">
+            <span>Next Draw: </span>
+            <span className="text-blue-700 font-black">{nextDraw.timeLabel}</span>
+            <span className="hidden md:inline text-slate-500 font-medium text-xs ml-1.5">
               ({nextDraw.name})
             </span>
           </div>
 
-          <span className="text-[10px] text-slate-400 bg-slate-950 border border-slate-800 px-2 py-0.5 rounded font-mono hidden sm:inline">
-            {istTimeStr}
+          <span className="text-[10px] text-slate-500 bg-slate-100 border border-slate-200 px-2 py-0.5 rounded font-mono hidden sm:inline">
+            {istTimeStr} IST
           </span>
         </div>
 
         {/* Right: Dynamic Reverse Countdown / Result Out Badge */}
         <div className="flex items-center gap-2 w-full sm:w-auto justify-end">
           {newResultData ? (
-            <div className="flex items-center gap-2 bg-emerald-500/20 border border-emerald-500/50 text-emerald-300 px-3 py-1 rounded-xl text-xs font-black">
-              <span>🎉 রেজাল্ট প্রকাশ হয়েছে:</span>
-              <span className="font-mono text-amber-300 text-sm">
+            <div className="flex items-center gap-2 bg-emerald-50 border border-emerald-300 text-emerald-800 px-3 py-1 rounded-xl text-xs font-black shadow-sm">
+              <span>🎉 রেজাল্ট আউট:</span>
+              <span className="font-mono text-slate-950 text-sm font-black">
                 {newResultData.parsed_data?.prizes?.first_prize?.series} {newResultData.parsed_data?.prizes?.first_prize?.number}
               </span>
             </div>
           ) : isLive ? (
-            <div className="flex items-center gap-2 bg-red-500/20 border border-red-500/40 text-red-300 px-3 py-1 rounded-xl text-xs font-black animate-pulse">
-              <span>🚀 ড্র চলছে (Auto-Checking in {pollCountdown}s)</span>
+            <div className="flex items-center gap-2 bg-red-50 border border-red-300 text-red-700 px-3 py-1 rounded-xl text-xs font-black animate-pulse">
+              <span>🚀 ড্র চলছে • Auto-updating in {pollCountdown}s</span>
             </div>
           ) : (
-            <div className="flex items-center gap-1.5 bg-slate-950/90 border border-amber-500/30 px-3 py-1 rounded-xl shadow-inner">
-              <span className="text-[10px] text-slate-400 font-bold uppercase tracking-wider mr-1">
+            <div className="flex items-center gap-1.5 bg-slate-50 border border-slate-200 px-3 py-1 rounded-xl">
+              <span className="text-[10px] text-slate-500 font-bold uppercase tracking-wider mr-1">
                 বাকি / Left:
               </span>
               
               {/* Hours */}
               {timeLeft.hours > 0 && (
                 <>
-                  <span className="font-mono font-black text-amber-400 text-sm sm:text-base">
+                  <span className="font-mono font-black text-slate-900 text-sm sm:text-base">
                     {String(timeLeft.hours).padStart(2, '0')}
                   </span>
                   <span className="text-[10px] text-slate-400 font-bold">h</span>
-                  <span className="text-slate-600 font-bold">:</span>
+                  <span className="text-slate-300 font-bold">:</span>
                 </>
               )}
 
               {/* Minutes */}
-              <span className="font-mono font-black text-amber-400 text-sm sm:text-base">
+              <span className="font-mono font-black text-slate-900 text-sm sm:text-base">
                 {String(timeLeft.minutes).padStart(2, '0')}
               </span>
               <span className="text-[10px] text-slate-400 font-bold">m</span>
-              <span className="text-slate-600 font-bold">:</span>
+              <span className="text-slate-300 font-bold">:</span>
 
               {/* Seconds */}
-              <span className="font-mono font-black text-emerald-400 text-sm sm:text-base">
+              <span className="font-mono font-black text-blue-700 text-sm sm:text-base">
                 {String(timeLeft.seconds).padStart(2, '0')}
               </span>
               <span className="text-[10px] text-slate-400 font-bold">s</span>
 
               {/* Auto-Polling Indicator */}
               {isPollingActive && (
-                <span className="ml-2 text-[10px] text-emerald-400 bg-emerald-500/10 px-1.5 py-0.5 rounded font-mono font-bold animate-pulse">
+                <span className="ml-2 text-[10px] text-emerald-700 bg-emerald-100 border border-emerald-200 px-1.5 py-0.5 rounded font-mono font-bold animate-pulse">
                   ⚡ Auto-sync
                 </span>
               )}
