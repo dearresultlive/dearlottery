@@ -1,17 +1,18 @@
 ---
 import Layout from '../../../layouts/Layout.astro';
-import ResultCard from '../../../components/ResultCard.astro';
+import DynamicSlotView from '../../../components/DynamicSlotView';
 import TicketChecker from '../../../components/TicketChecker';
 import { fetchDrawsByDate } from '../../../lib/api';
+import { getISTNow, getISTDateString } from '../../../lib/lottery-utils';
 
 const { date, draw_name } = Astro.params;
-const targetDate = date || new Date().toISOString().slice(0, 10);
+const targetDate = date || getISTDateString();
 const rawSlug = (draw_name || '').toLowerCase();
 
 // Fetch all draws for the target date
 const allDraws = await fetchDrawsByDate(targetDate);
 
-// Match slot: 1pm, 6pm, 8pm or draw_name slug
+// Resolve slot: 1pm, 6pm, 8pm or full slug
 let selectedDraw = allDraws.find((d) => {
   const normTime = d.draw_time?.toLowerCase().replace(/[^a-z0-9]/g, '');
   const normName = d.draw_name?.toLowerCase().replace(/[^a-z0-9]+/g, '-');
@@ -38,14 +39,35 @@ if (!selectedDraw && allDraws.length > 0) {
 
 const draw = selectedDraw || allDraws[0];
 const prizes = draw?.parsed_data?.prizes || draw?.prizes;
-const firstPrize = prizes?.first_prize || { series: '84D', number: '74921' };
+const firstPrize = prizes?.first_prize;
 
-const slotHour = draw?.draw_time?.includes('6') ? '6 PM' : draw?.draw_time?.includes('8') ? '8 PM' : '1 PM';
-const slotKey = draw?.draw_time?.includes('6') ? '6pm' : draw?.draw_time?.includes('8') ? '8pm' : '1pm';
+const slotHour = draw?.draw_time?.includes('6') || rawSlug.includes('6') ? '6 PM' : draw?.draw_time?.includes('8') || rawSlug.includes('8') ? '8 PM' : '1 PM';
+const slotKey = slotHour === '6 PM' ? '6pm' : slotHour === '8 PM' ? '8pm' : '1pm';
 
-// Exact SEO Title and Description conforming to requirements
-const seoTitle = `Dear Lottery Result Today ${slotHour} Live - ${targetDate} | 1st Prize Winning Number`;
-const seoDesc = `Dear Lottery Result Today ${slotHour} Live on ${targetDate}. 1st Prize ₹1 Crore winning ticket is ${firstPrize.series} ${firstPrize.number}. Download official gazette PDF and check all 2nd, 3rd, 4th, 5th prizes online.`;
+// Determine if results have been extracted by OCR or if the draw is upcoming
+const istNow = getISTNow();
+const todayStr = getISTDateString(istNow);
+
+let isUpcoming = false;
+if (draw?.status === 'UPCOMING' || !firstPrize || !firstPrize.number) {
+  isUpcoming = true;
+} else if (targetDate === todayStr) {
+  const targetHour = slotHour === '6 PM' ? 18 : slotHour === '8 PM' ? 20 : 13;
+  if (istNow.getHours() < targetHour) {
+    isUpcoming = true;
+  }
+} else if (targetDate > todayStr) {
+  isUpcoming = true;
+}
+
+// Dynamic SEO Meta Tags based on state
+const seoTitle = isUpcoming
+  ? `Dear Lottery Result Today ${slotHour} Live - ${targetDate} | 1st Prize Winning Number (Upcoming Live)`
+  : `Dear Lottery Result Today ${slotHour} Live - ${targetDate} | 1st Prize Winning Number`;
+
+const seoDesc = isUpcoming
+  ? `Dear Lottery Result Today ${slotHour} Live on ${targetDate}. 1st Prize ₹1 Crore winning ticket and official gazette sheet will be published at ${slotHour}. Watch live countdown timer and instant ticket verify.`
+  : `Dear Lottery Result Today ${slotHour} Live on ${targetDate}. 1st Prize ₹1 Crore winning ticket is ${firstPrize?.series || '84D'} ${firstPrize?.number || '74921'}. Download official gazette PDF and check all 2nd, 3rd, 4th, 5th prizes online.`;
 
 const slotTabs = [
   { key: '1pm', time: '1:00 PM', labelEn: '1:00 PM Morning', labelBn: 'দুপুর ১টা', icon: '☀️' },
@@ -59,7 +81,7 @@ const slotTabs = [
   description={seoDesc}
   drawDate={targetDate}
   drawTime={slotHour}
-  winningNumbers={{ firstPrize: `${firstPrize.series} ${firstPrize.number}` }}
+  winningNumbers={firstPrize ? { firstPrize: `${firstPrize.series} ${firstPrize.number}` } : undefined}
 >
   <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
     
@@ -69,10 +91,10 @@ const slotTabs = [
       <span>/</span>
       <a href={`/results/${targetDate}`} class="hover:text-amber-400 transition-colors">Results {targetDate}</a>
       <span>/</span>
-      <span class="text-white font-bold">{slotHour} Draw ({draw?.draw_name})</span>
+      <span class="text-white font-bold">{slotHour} Draw {isUpcoming ? '(Upcoming / আসন্ন)' : ''}</span>
     </nav>
 
-    {/* 1. Draw Navigation Sticky/Top-Level Pill Switcher */}
+    {/* 1. Draw Navigation Sticky Tabs */}
     <section aria-label="Draw Slot Switcher" class="bg-slate-950 p-2 sm:p-2.5 rounded-3xl border-2 border-slate-800 shadow-2xl">
       <div class="grid grid-cols-3 gap-2">
         {slotTabs.map((tab) => {
@@ -87,7 +109,7 @@ const slotTabs = [
               }`}
             >
               <div class="flex items-center gap-1.5 sm:gap-2">
-                <span class="text-base sm:text-xl">{tab.icon}</span>
+                <span className="text-base sm:text-xl">{tab.icon}</span>
                 <span class="text-xs sm:text-base font-extrabold tracking-tight">
                   {tab.time}
                 </span>
@@ -99,7 +121,7 @@ const slotTabs = [
                 <span class={`inline-block text-[9px] sm:text-[10px] font-bold px-2 py-0.2 rounded-full uppercase tracking-wider ${
                   isCurrent ? 'bg-slate-950 text-amber-300' : 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30'
                 }`}>
-                  RESULT OUT
+                  {isUpcoming && isCurrent ? 'UPCOMING' : 'RESULT OUT'}
                 </span>
               </div>
             </a>
@@ -108,16 +130,16 @@ const slotTabs = [
       </div>
     </section>
 
-    {/* Primary Result Sheet */}
+    {/* Primary Dynamic Slot View (Zero-Refresh transitions from Countdown to Results) */}
     <section>
-      {draw ? (
-        <ResultCard draw={draw} />
-      ) : (
-        <div class="bg-slate-900 border-2 border-slate-800 rounded-3xl p-12 text-center text-slate-300">
-          <p class="text-lg font-bold text-white mb-2">No Draw Records Found</p>
-          <p class="text-xs text-slate-400">Results are currently being synchronized from the Directorate Gazette.</p>
-        </div>
-      )}
+      <DynamicSlotView
+        client:load
+        targetDate={targetDate}
+        slotKey={slotKey}
+        slotHour={slotHour}
+        initialDraw={draw}
+        isInitiallyUpcoming={isUpcoming}
+      />
     </section>
 
     {/* Scoped Ticket Checker */}

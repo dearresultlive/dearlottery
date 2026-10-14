@@ -9,7 +9,8 @@ import {
   checkTicket,
   getFrequencyMatrix,
   getHotAndColdNumbers,
-  getEndingFrequencyAnalysis
+  getEndingFrequencyAnalysis,
+  prepublishUpcomingDraw
 } from './db/queries';
 import { submitIndexNow } from './services/indexing';
 import { publishToGoogleIndexing } from './services/google_indexing';
@@ -256,14 +257,106 @@ app.post('/api/ocr/parse', async (c) => {
 });
 
 // ============================================================================
+// 10. Cron Pre-Publish Endpoint (POST /api/prepublish)
+// Generates upcoming draw route 30 minutes ahead of draw time and pings search engines
+// ============================================================================
+app.post('/api/prepublish', async (c) => {
+  const apiKeyHeader = c.req.header('X-API-KEY') || c.req.header('Authorization')?.replace('Bearer ', '');
+  const expectedKey = c.env.API_KEY || 'dear_lottery_secret_key_prod_2026';
+
+  if (apiKeyHeader !== expectedKey) {
+    return c.json({ error: 'Unauthorized: Invalid API Key' }, 401);
+  }
+
+  try {
+    const body = (await c.req.json<{ date?: string; slot?: '1PM' | '6PM' | '8PM' }>().catch(() => ({}))) as { date?: string; slot?: '1PM' | '6PM' | '8PM' };
+    
+    // Compute current IST date and slot if not provided
+    const now = new Date();
+    const utcTime = now.getTime() + now.getTimezoneOffset() * 60000;
+    const istDate = new Date(utcTime + 5.5 * 3600000);
+    const dateStr = body.date || `${istDate.getFullYear()}-${String(istDate.getMonth() + 1).padStart(2, '0')}-${String(istDate.getDate()).padStart(2, '0')}`;
+    
+    let slot: '1PM' | '6PM' | '8PM' = body.slot || '1PM';
+    if (!body.slot) {
+      const istHour = istDate.getHours();
+      if (istHour >= 19) slot = '8PM';
+      else if (istHour >= 14) slot = '6PM';
+      else slot = '1PM';
+    }
+
+    const prePublished = await prepublishUpcomingDraw(c.env.DB, dateStr, slot);
+    const frontendBase = c.env.FRONTEND_URL || 'https://dearresultlive.in';
+    const urlsToPing = [
+      `${frontendBase}/results/${dateStr}/${slot.toLowerCase()}`,
+      `${frontendBase}/results/${dateStr}`,
+      `${frontendBase}/`
+    ];
+
+    c.executionCtx.waitUntil(publishToGoogleIndexing(c.env, urlsToPing, prePublished.id));
+    c.executionCtx.waitUntil(submitIndexNow(c.env, urlsToPing, prePublished.id));
+
+    return c.json({
+      success: true,
+      status: 'UPCOMING',
+      draw_id: prePublished.id,
+      draw_name: prePublished.draw_name,
+      draw_time: prePublished.draw_time,
+      urls_pinged: urlsToPing,
+      message: `Draw ${prePublished.id} pre-published successfully. Dynamic route ready.`
+    }, 201);
+  } catch (err: any) {
+    console.error('Pre-publish error:', err);
+    return c.json({ error: 'Pre-publish failed', details: err.message }, 500);
+  }
+});
+
+// ============================================================================
 // Cloudflare Worker Default Export (Fetch + Scheduled Cron Trigger)
 // ============================================================================
 export default {
   fetch: app.fetch,
 
-  // Scheduled Cron Trigger Handler (Edge Sentinel)
+  // Scheduled Cron Trigger Handler (Fires at 12:30 PM, 5:30 PM, 7:30 PM IST -> 07:00, 12:00, 14:00 UTC)
   async scheduled(event: ScheduledEvent, env: Env, ctx: ExecutionContext) {
-    console.log(`[CRON] Scheduled event fired at ${new Date(event.scheduledTime).toISOString()}`);
-    // Edge sentinel: checks if latest draw is present, logs heartbeat
+    const scheduledDate = new Date(event.scheduledTime);
+    const utcHour = scheduledDate.getUTCHours();
+    console.log(`[CRON] Scheduled event fired at UTC ${scheduledDate.toISOString()} (Hour: ${utcHour})`);
+
+    // Determine target upcoming slot (30 min before draw):
+    // 07:00 UTC (12:30 PM IST) -> 1:00 PM Draw (1PM)
+    // 12:00 UTC (5:30 PM IST)  -> 6:00 PM Draw (6PM)
+    // 14:00 UTC (7:30 PM IST)  -> 8:00 PM Draw (8PM)
+    let slot: '1PM' | '6PM' | '8PM' = '1PM';
+    if (utcHour >= 13) {
+      slot = '8PM';
+    } else if (utcHour >= 10) {
+      slot = '6PM';
+    } else {
+      slot = '1PM';
+    }
+
+    // Current IST date string
+    const utcTime = scheduledDate.getTime() + scheduledDate.getTimezoneOffset() * 60000;
+    const istDate = new Date(utcTime + 5.5 * 3600000);
+    const dateStr = `${istDate.getFullYear()}-${String(istDate.getMonth() + 1).padStart(2, '0')}-${String(istDate.getDate()).padStart(2, '0')}`;
+
+    try {
+      console.log(`[CRON] Pre-publishing upcoming draw: ${dateStr} [${slot}] (30 min pre-draw)`);
+      const prePublished = await prepublishUpcomingDraw(env.DB, dateStr, slot);
+
+      const frontendBase = env.FRONTEND_URL || 'https://dearresultlive.in';
+      const urlsToPing = [
+        `${frontendBase}/results/${dateStr}/${slot.toLowerCase()}`,
+        `${frontendBase}/results/${dateStr}`,
+        `${frontendBase}/`
+      ];
+
+      // Ping Google Indexing and IndexNow in background
+      ctx.waitUntil(publishToGoogleIndexing(env, urlsToPing, prePublished.id));
+      ctx.waitUntil(submitIndexNow(env, urlsToPing, prePublished.id));
+    } catch (err) {
+      console.error('[CRON] Failed to pre-publish upcoming draw:', err);
+    }
   }
 };

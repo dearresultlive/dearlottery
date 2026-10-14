@@ -349,3 +349,100 @@ export async function getEndingFrequencyAnalysis(
   };
 }
 
+/**
+ * Pre-publishes an upcoming draw record 30 minutes before the scheduled draw time.
+ * Creates placeholder record with status 'UPCOMING' so dynamic routes exist ahead of time.
+ */
+export async function prepublishUpcomingDraw(
+  db: D1Database,
+  dateStr: string,
+  slot: '1PM' | '6PM' | '8PM'
+): Promise<DrawRecord> {
+  const drawId = `${dateStr}-${slot}`;
+  
+  // Official Nagaland & Sikkim State Lotteries weekday scheme names
+  const dateObj = new Date(dateStr);
+  const dayOfWeek = dateObj.getDay(); // 0: Sun, 1: Mon, ...
+  
+  const morningSchemes = [
+    'DEAR YAMUNA MORNING',   // 0: Sun
+    'DEAR DWIGHT MORNING',   // 1: Mon
+    'DEAR GODAVARI MORNING', // 2: Tue
+    'DEAR TEESTA MORNING',   // 3: Wed
+    'DEAR PADMA MORNING',    // 4: Thu
+    'DEAR HOOGHLY MORNING',  // 5: Fri
+    'DEAR NARMADA MORNING'   // 6: Sat
+  ];
+  
+  const daySchemes = [
+    'DEAR SUN DAY',       // 0: Sun
+    'DEAR MOUNTAIN DAY',  // 1: Mon
+    'DEAR WAVE DAY',      // 2: Tue
+    'DEAR DESERT DAY',    // 3: Wed
+    'DEAR HILL DAY',      // 4: Thu
+    'DEAR RIVER DAY',     // 5: Fri
+    'DEAR SEA DAY'        // 6: Sat
+  ];
+
+  const nightSchemes = [
+    'DEAR HAWK NIGHT',    // 0: Sun
+    'DEAR TOUCAN NIGHT',  // 1: Mon
+    'DEAR PARROT NIGHT',  // 2: Tue
+    'DEAR SEAGULL NIGHT', // 3: Wed
+    'DEAR FALCON NIGHT',  // 4: Thu
+    'DEAR VULTURE NIGHT', // 5: Fri
+    'DEAR OSTRICH NIGHT'  // 6: Sat
+  ];
+
+  let drawName = morningSchemes[dayOfWeek] || 'DEAR TEESTA MORNING';
+  let drawTime = '1:00 PM';
+  if (slot === '6PM') {
+    drawName = daySchemes[dayOfWeek] || 'DEAR DESERT DAY';
+    drawTime = '6:00 PM';
+  } else if (slot === '8PM') {
+    drawName = nightSchemes[dayOfWeek] || 'DEAR SEAGULL NIGHT';
+    drawTime = '8:00 PM';
+  }
+
+  // Check if draw already exists in D1
+  const existing = await getDrawById(db, drawId);
+  if (existing) {
+    return existing;
+  }
+
+  const upcomingJson = JSON.stringify({
+    status: 'UPCOMING',
+    draw_id: drawId,
+    draw_date: dateStr,
+    draw_time: drawTime,
+    draw_name: drawName,
+    prizes: null
+  });
+
+  const checksum = `upcoming_${drawId}_${Date.now()}`;
+
+  await db.prepare(`
+    INSERT INTO draws (id, draw_date, draw_time, draw_name, source_url, checksum, raw_json)
+    VALUES (?, ?, ?, ?, ?, ?, ?)
+    ON CONFLICT(id) DO NOTHING
+  `).bind(
+    drawId,
+    dateStr,
+    drawTime,
+    drawName,
+    null,
+    checksum,
+    upcomingJson
+  ).run();
+
+  return {
+    id: drawId,
+    draw_date: dateStr,
+    draw_time: drawTime,
+    draw_name: drawName,
+    checksum,
+    raw_json: upcomingJson,
+    created_at: new Date().toISOString()
+  };
+}
+
