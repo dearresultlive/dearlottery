@@ -25,29 +25,29 @@ for (let i = 1; i <= 30; i++) {
   <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-10 space-y-6 sm:space-y-8">
     
     <div class="border-b border-slate-200 pb-5">
-      <span class="text-xs font-bold text-blue-700 uppercase tracking-widest bg-blue-50 px-2 py-0.5 rounded border border-blue-200">
-        Historical Archives
+      <span class="text-xs font-black text-blue-700 uppercase tracking-widest bg-blue-50 px-2.5 py-0.5 rounded border border-blue-200">
+        পুরনো রেজাল্ট রেকর্ড
       </span>
       <h1 class="text-2xl sm:text-4xl font-black text-slate-900 mt-2">
-        Dear Lottery Old Results Archive (পুরোনো রেজাল্ট)
+        পুরনো ডিয়ার লটারি রেজাল্ট (গত ৩০ দিনের ড্র)
       </h1>
       <p class="text-slate-600 text-xs sm:text-sm mt-1">
-        Browse past 30 days official Nagaland and Sikkim State Lottery Sambad result sheets and winning numbers.
+        নাগাল্যান্ড ও সিকিম রাজ্য লটারি সংবাদের বিগত ৩০ দিনের অফিসিয়াল রেজাল্ট শিট ও সকল প্রাইজ নম্বর।
       </p>
     </div>
 
     {/* Quick Filter Yesterday */}
     <div class="bg-gradient-to-r from-amber-50 via-white to-amber-50 border border-amber-300 rounded-2xl p-5 sm:p-6 flex flex-col sm:flex-row items-center justify-between gap-4 shadow-sm">
       <div>
-        <span class="text-xs font-bold text-amber-800 uppercase tracking-wider">High-Priority Search</span>
-        <h2 class="text-lg sm:text-xl font-black text-slate-900 mt-0.5">Looking for Yesterday's Result? (গতকালকের রেজাল্ট)</h2>
-        <p class="text-xs text-slate-600 mt-1">Check verified winning numbers for all 3 draws conducted yesterday.</p>
+        <span class="text-xs font-bold text-amber-800 uppercase tracking-wider">জরুরি খোঁজ</span>
+        <h2 class="text-lg sm:text-xl font-black text-slate-900 mt-0.5">গতকালকের রেজাল্ট খুঁজছেন?</h2>
+        <p class="text-xs text-slate-600 mt-1">গতকালকের দুপুর ১:০০, সন্ধ্যা ৬:০০ ও রাত ৮:০০ টার সব কটি ড্র-এর বিজয়ী নম্বর দেখুন।</p>
       </div>
       <a
         href={`/results/${datesList[0]?.date}`}
         class="bg-blue-700 hover:bg-blue-800 text-white font-black text-xs sm:text-sm px-5 py-2.5 rounded-xl shadow-sm transition-all whitespace-nowrap active:scale-95"
       >
-        View Yesterday's Results ({datesList[0]?.displayDate}) →
+        গতকালকের রেজাল্ট দেখুন ({datesList[0]?.displayDate}) →
       </a>
     </div>
 
@@ -65,7 +65,7 @@ for (let i = 1; i <= 30; i++) {
               href={`/results/${item.date}`}
               class="text-xs font-bold text-slate-600 hover:text-blue-700 bg-slate-50 border border-slate-200 px-2.5 py-1 rounded-lg transition-colors"
             >
-              All Draws →
+              সব ড্র →
             </a>
           </div>
 

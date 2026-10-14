@@ -40,11 +40,10 @@ export default function LotteryTicketVoucher({
       <div className="bg-gradient-to-r from-red-700 via-red-600 to-red-800 text-white px-3 sm:px-6 py-2 sm:py-2.5 flex items-center justify-between text-[11px] sm:text-xs font-black tracking-wider uppercase shadow-xs">
         <div className="flex items-center gap-1.5 sm:gap-2">
           <span className="text-sm sm:text-base">🏛️</span>
-          <span>NAGALAND & SIKKIM STATE LOTTERIES</span>
-          <span className="hidden md:inline text-red-200 font-normal">| নাগাল্যান্ড স্টেট লটারি</span>
+          <span>নাগাল্যান্ড ও সিকিম রাজ্য লটারি (NAGALAND & SIKKIM STATE LOTTERIES)</span>
         </div>
         <div className="bg-amber-300 text-slate-950 font-black text-[10px] sm:text-xs px-2 py-0.5 rounded shadow-xs">
-          MRP ₹6 / মূল্য ₹৬
+          মূল্য মাত্র ₹৬ (MRP ₹6)
         </div>
       </div>
 
@@ -56,12 +55,12 @@ export default function LotteryTicketVoucher({
           <span className="text-slate-600">({drawTime})</span>
         </div>
         <div className="flex items-center gap-2 text-[10px] sm:text-xs text-slate-600">
-          <span>Draw #{drawNumber}</span>
+          <span>ড্র #{drawNumber}</span>
           <span>•</span>
-          <span>Date: <strong className="text-slate-950">{drawDate}</strong></span>
+          <span>তারিখ: <strong className="text-slate-950">{drawDate}</strong></span>
           {isYesterday && (
             <span className="bg-blue-100 text-blue-800 border border-blue-300 px-1.5 py-0.2 rounded font-sans font-bold">
-              YESTERDAY
+              গতকালকের
             </span>
           )}
         </div>
@@ -82,7 +81,7 @@ export default function LotteryTicketVoucher({
         {/* 1st Prize Winner Banner */}
         <div className="inline-flex items-center gap-1.5 bg-red-600 text-white font-black text-xs sm:text-sm uppercase tracking-wider px-4 py-1 rounded-full shadow-sm mb-2">
           <span>🏆</span>
-          <span>1ST PRIZE: {prizeAmount}</span>
+          <span>১ম পুরস্কার: {prizeAmount}</span>
         </div>
 
         {/* Ticket Numbers or Pending State */}
@@ -91,7 +90,7 @@ export default function LotteryTicketVoucher({
             {/* Series Box */}
             <div className="flex flex-col items-center">
               <span className="text-[10px] font-black uppercase tracking-wider text-slate-500 mb-0.5 font-mono">
-                SERIES / সিরিজ
+                সিরিজ (SERIES)
               </span>
               <span className="bg-slate-900 text-white font-mono text-3xl sm:text-5xl md:text-6xl font-black px-4 py-1 rounded-xl shadow-md border-2 border-slate-800">
                 {series}
@@ -101,7 +100,7 @@ export default function LotteryTicketVoucher({
             {/* 5-Digit Winning Ticket Number */}
             <div className="flex flex-col items-center">
               <span className="text-[10px] font-black uppercase tracking-wider text-slate-500 mb-0.5 font-mono">
-                NUMBER / টিকিট নম্বর
+                টিকিট নম্বর (TICKET NO.)
               </span>
               <span className="font-mono text-4xl sm:text-6xl md:text-7xl font-black text-slate-950 tracking-wider select-all">
                 {number}
@@ -110,17 +109,17 @@ export default function LotteryTicketVoucher({
           </div>
         ) : (
           <div className="py-3 sm:py-4 space-y-2.5">
-            <div className="text-2xl sm:text-4xl md:text-5xl font-black font-mono text-slate-900 tracking-wider">
-              DRAW PENDING • ফলাফল আসছে
+            <div className="text-2xl sm:text-4xl md:text-5xl font-black text-slate-900 tracking-wider">
+              ফলাফল আসছে • ড্র হতে বাকি
             </div>
             {countdownText && (
               <div className="inline-flex items-center gap-2 bg-slate-900 text-amber-300 px-4 py-2 rounded-xl font-mono text-xs sm:text-sm font-black shadow-md border border-slate-800">
-                <span>⏰ ড্র শুরু হতে বাকি / Starts in:</span>
+                <span>⏰ ড্র শুরু হতে বাকি:</span>
                 <span className="tracking-widest">{countdownText}</span>
               </div>
             )}
             <p className="text-xs sm:text-sm text-slate-600 max-w-xl mx-auto leading-relaxed pt-1">
-              আজকের {drawTime} ড্র সম্পন্ন হওয়ার পর অফিসিয়াল রেজাল্ট শিট এবং বিজয়ী নম্বর এখানে অটোমেটিক চলে আসবে (পেজ রিফ্রেশ করার প্রয়োজন নেই)।
+              আজকের {drawTime} ড্র সম্পন্ন হওয়ার পর অফিশিয়াল রেজাল্ট শিট এবং বিজয়ী নম্বর এখানে চলে আসবে (পেজ রিফ্রেশ করার প্রয়োজন নেই)।
             </p>
           </div>
         )}
@@ -128,10 +127,10 @@ export default function LotteryTicketVoucher({
         {/* Consolation Prize Notice */}
         <div className="mt-2 pt-2.5 border-t border-slate-200 text-xs sm:text-sm text-slate-700 flex flex-col sm:flex-row items-center justify-center gap-2">
           <span className="bg-amber-100 text-amber-900 border border-amber-300 font-bold px-3 py-0.5 rounded-full text-xs">
-            Consolation Prize: {consolationAmount} (সান্ত্বনা পুরস্কার)
+            সান্ত্বনা পুরস্কার: {consolationAmount} (Consolation Prize)
           </span>
           <span className="text-slate-600">
-            ১ম পুরস্কারের শেষ ৫ সংখ্যা মিললে বাকি সব সিরিজের টিকিটে প্রযোজ্য।
+            ১ম পুরস্কারের ৫ সংখ্যা মিললে অন্য সব সিরিজের টিকিট এই সান্ত্বনা পুরস্কার পাবে।
           </span>
         </div>
 
@@ -176,7 +175,7 @@ export default function LotteryTicketVoucher({
           {/* Security Verification Stamp */}
           <div className="flex items-center gap-1.5 text-emerald-800 bg-emerald-50 border border-emerald-300 px-2.5 py-0.5 rounded-full font-bold text-[10px] uppercase shadow-2xs">
             <span className="w-1.5 h-1.5 rounded-full bg-emerald-600 animate-pulse"></span>
-            ✓ Directorate Verified Record
+            ✓ সরকারি ডিরেক্টরেট ভেরিফায়েড
           </div>
 
         </div>

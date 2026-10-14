@@ -27,7 +27,7 @@ const { currentPath = '/' } = Astro.props;
             </span>
           </div>
           <span class="text-[11px] text-blue-700 font-bold tracking-wide block">
-            লটারি সংবাদ • Official Results Portal
+            লটারি সংবাদ • আজকের তাজা রেজাল্ট
           </span>
         </div>
       </a>
@@ -36,43 +36,43 @@ const { currentPath = '/' } = Astro.props;
       <nav class="hidden md:flex items-center gap-1">
         <a
           href="/"
-          class={`px-3 py-2 rounded-xl text-xs sm:text-sm font-bold transition-colors ${
+          class={`px-3.5 py-2 rounded-xl text-xs sm:text-sm font-black transition-colors ${
             currentPath === '/'
               ? 'text-blue-700 bg-blue-50 border border-blue-200'
               : 'text-slate-700 hover:text-blue-700 hover:bg-slate-100'
           }`}
         >
-          Today's Results (আজকের ড্র)
+          আজকের রেজাল্ট
         </a>
         <a
           href="/old-results"
-          class={`px-3 py-2 rounded-xl text-xs sm:text-sm font-bold transition-colors ${
+          class={`px-3.5 py-2 rounded-xl text-xs sm:text-sm font-black transition-colors ${
             currentPath === '/old-results'
               ? 'text-blue-700 bg-blue-50 border border-blue-200'
               : 'text-slate-700 hover:text-blue-700 hover:bg-slate-100'
           }`}
         >
-          Old Results (পুরনো রেজাল্ট)
+          পুরনো রেজাল্ট
         </a>
         <a
           href="/checker"
-          class={`px-3 py-2 rounded-xl text-xs sm:text-sm font-bold transition-colors ${
+          class={`px-3.5 py-2 rounded-xl text-xs sm:text-sm font-black transition-colors ${
             currentPath === '/checker'
               ? 'text-blue-700 bg-blue-50 border border-blue-200'
               : 'text-slate-700 hover:text-blue-700 hover:bg-slate-100'
           }`}
         >
-          Check Ticket (টিকিট চেক)
+          টিকিট মেলান
         </a>
         <a
           href="/analytics"
-          class={`px-3 py-2 rounded-xl text-xs sm:text-sm font-bold transition-colors ${
+          class={`px-3.5 py-2 rounded-xl text-xs sm:text-sm font-black transition-colors ${
             currentPath === '/analytics'
               ? 'text-blue-700 bg-blue-50 border border-blue-200'
               : 'text-slate-700 hover:text-blue-700 hover:bg-slate-100'
           }`}
         >
-          Hot Numbers (হট নম্বর)
+          হট নম্বর
         </a>
       </nav>
 
@@ -82,11 +82,11 @@ const { currentPath = '/' } = Astro.props;
 
         <a
           href="/checker"
-          class="inline-flex items-center gap-1.5 bg-blue-700 hover:bg-blue-800 text-white text-xs font-black uppercase tracking-wider px-3 sm:px-4 py-2 rounded-xl shadow-sm transition-all active:scale-95"
+          class="inline-flex items-center gap-1.5 bg-blue-700 hover:bg-blue-800 text-white text-xs font-black px-3.5 sm:px-4 py-2 rounded-xl shadow-sm transition-all active:scale-95"
         >
           <span>🔍</span>
-          <span class="hidden sm:inline">টিকিট চেক (Check)</span>
-          <span class="sm:hidden">চেক</span>
+          <span class="hidden sm:inline">টিকিট মেলান</span>
+          <span class="sm:hidden">মেলান</span>
         </a>
       </div>
 
