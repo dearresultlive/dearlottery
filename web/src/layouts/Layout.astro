@@ -2,7 +2,6 @@
 import SEOHead from '../components/SEOHead.astro';
 import Header from '../components/Header.astro';
 import Footer from '../components/Footer.astro';
-import StickyDisclaimer from '../components/StickyDisclaimer.astro';
 
 interface Props {
   title?: string;
@@ -28,12 +27,11 @@ const currentPath = Astro.url.pathname;
     drawTime={drawTime}
     winningNumbers={winningNumbers}
   />
-  <body class="min-h-screen flex flex-col font-sans selection:bg-emerald-500 selection:text-slate-950 pb-12 sm:pb-10">
+  <body class="min-h-screen flex flex-col font-sans selection:bg-amber-400 selection:text-slate-950">
     <Header currentPath={currentPath} />
     <main class="flex-1">
       <slot />
     </main>
     <Footer />
-    <StickyDisclaimer />
   </body>
 </html>
