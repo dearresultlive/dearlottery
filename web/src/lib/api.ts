@@ -51,12 +51,39 @@ export async function fetchLatestDraws(): Promise<DrawItem[]> {
     // Graceful fallback to mock data for instant preview
   }
 
-  const today = getISTDateString();
-  return [
-    generateWebMockDraw(today, '1PM'),
-    generateWebMockDraw(today, '6PM'),
-    generateWebMockDraw(today, '8PM')
-  ];
+  const istNow = new Date(Date.now() + (5.5 * 3600000) + (new Date().getTimezoneOffset() * 60000));
+  const currentHour = istNow.getHours();
+  const todayStr = getISTDateString(istNow);
+
+  const yesterday = new Date(istNow);
+  yesterday.setDate(yesterday.getDate() - 1);
+  const yesterdayStr = getISTDateString(yesterday);
+
+  const draws: DrawItem[] = [];
+
+  // 1:00 PM Draw (13:00)
+  if (currentHour >= 13) {
+    draws.push(generateWebMockDraw(todayStr, '1PM'));
+  } else {
+    // Has not occurred today yet; return yesterday's 1PM
+    draws.push(generateWebMockDraw(yesterdayStr, '1PM'));
+  }
+
+  // 6:00 PM Draw (18:00)
+  if (currentHour >= 18) {
+    draws.push(generateWebMockDraw(todayStr, '6PM'));
+  } else {
+    draws.push(generateWebMockDraw(yesterdayStr, '6PM'));
+  }
+
+  // 8:00 PM Draw (20:00)
+  if (currentHour >= 20) {
+    draws.push(generateWebMockDraw(todayStr, '8PM'));
+  } else {
+    draws.push(generateWebMockDraw(yesterdayStr, '8PM'));
+  }
+
+  return draws;
 }
 
 /**

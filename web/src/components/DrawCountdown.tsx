@@ -122,36 +122,36 @@ export default function DrawCountdown({ onResultDetected, compact = false }: Dra
   const isLive = timeLeft.hours === 0 && timeLeft.minutes === 0 && timeLeft.seconds === 0;
 
   return (
-    <div className="bg-white border border-slate-200 rounded-2xl px-3.5 py-2.5 sm:px-5 sm:py-3 shadow-sm">
-      <div className="flex flex-col sm:flex-row items-center justify-between gap-2.5 sm:gap-4">
+    <div className="bg-white border border-slate-200 rounded-xl sm:rounded-2xl px-3 py-1.5 sm:px-5 sm:py-2.5 shadow-xs">
+      <div className="flex flex-row items-center justify-between gap-2">
         
         {/* Left: Live Status & Next Draw Info */}
-        <div className="flex items-center gap-2.5 w-full sm:w-auto justify-between sm:justify-start">
-          <div className="flex items-center gap-2">
-            <span className="flex h-2.5 w-2.5 relative">
+        <div className="flex items-center gap-1.5 sm:gap-2.5 min-w-0">
+          <div className="flex items-center gap-1 sm:gap-1.5 flex-shrink-0">
+            <span className="flex h-2 w-2 sm:h-2.5 sm:w-2.5 relative">
               <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
-              <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-red-600"></span>
+              <span className="relative inline-flex rounded-full h-2 w-2 sm:h-2.5 sm:w-2.5 bg-red-600"></span>
             </span>
-            <span className="text-[11px] sm:text-xs font-black uppercase tracking-wider text-red-700 bg-red-50 border border-red-200 px-2 py-0.5 rounded-full">
-              LIVE IST
+            <span className="text-[10px] sm:text-xs font-black uppercase tracking-wider text-red-700 bg-red-50 border border-red-200 px-1.5 sm:px-2 py-0.2 rounded-full">
+              LIVE
             </span>
           </div>
 
-          <div className="text-xs sm:text-sm font-bold text-slate-900">
-            <span>Next Draw: </span>
+          <div className="text-xs sm:text-sm font-bold text-slate-900 truncate">
+            <span className="hidden sm:inline">Next: </span>
             <span className="text-blue-700 font-black">{nextDraw.timeLabel}</span>
             <span className="hidden md:inline text-slate-500 font-medium text-xs ml-1.5">
               ({nextDraw.name})
             </span>
           </div>
 
-          <span className="text-[10px] text-slate-500 bg-slate-100 border border-slate-200 px-2 py-0.5 rounded font-mono hidden sm:inline">
+          <span className="text-[10px] text-slate-500 bg-slate-100 border border-slate-200 px-2 py-0.5 rounded font-mono hidden lg:inline">
             {istTimeStr} IST
           </span>
         </div>
 
         {/* Right: Dynamic Reverse Countdown / Result Out Badge */}
-        <div className="flex items-center gap-2 w-full sm:w-auto justify-end">
+        <div className="flex items-center gap-1.5 sm:gap-2 flex-shrink-0">
           {newResultData ? (
             <div className="flex items-center gap-2 bg-emerald-50 border border-emerald-300 text-emerald-800 px-3 py-1 rounded-xl text-xs font-black shadow-sm">
               <span>🎉 রেজাল্ট আউট:</span>

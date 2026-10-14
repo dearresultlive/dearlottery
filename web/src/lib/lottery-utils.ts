@@ -104,3 +104,77 @@ export function parseTicketInput(input: string): { series: string | null; number
 
   return { series: null, number: clean.replace(/\D/g, '') };
 }
+
+/**
+ * Checks whether a specific draw slot on a given date is upcoming (not yet conducted/declared).
+ */
+export function isDrawSlotUpcoming(dateStr: string, slot: '1PM' | '6PM' | '8PM'): boolean {
+  const istNow = getISTNow();
+  const todayStr = getISTDateString(istNow);
+
+  if (dateStr > todayStr) return true;
+  if (dateStr < todayStr) return false;
+
+  // On today's date: 1PM is 13:00, 6PM is 18:00, 8PM is 20:00
+  const targetHour = slot === '1PM' ? 13 : slot === '6PM' ? 18 : 20;
+  return istNow.getHours() < targetHour;
+}
+
+/**
+ * Returns precise status of a draw slot: 'UPCOMING', 'DRAWING' (publishing in progress), or 'RESULT_OUT'.
+ */
+export function getSlotStatus(
+  dateStr: string,
+  slot: '1PM' | '6PM' | '8PM',
+  hasDeclaredPrizes: boolean
+): 'UPCOMING' | 'DRAWING' | 'RESULT_OUT' {
+  if (hasDeclaredPrizes) return 'RESULT_OUT';
+
+  const istNow = getISTNow();
+  const todayStr = getISTDateString(istNow);
+
+  if (dateStr > todayStr) return 'UPCOMING';
+  if (dateStr < todayStr) return 'RESULT_OUT';
+
+  const targetHour = slot === '1PM' ? 13 : slot === '6PM' ? 18 : 20;
+  const currentHour = istNow.getHours();
+  const currentMinute = istNow.getMinutes();
+
+  if (currentHour < targetHour) {
+    return 'UPCOMING';
+  } else if (currentHour === targetHour && currentMinute < 15) {
+    return 'DRAWING';
+  } else {
+    return 'RESULT_OUT';
+  }
+}
+
+/**
+ * Calculates countdown to a specific slot on today's date in IST.
+ */
+export function getSlotCountdown(slot: '1PM' | '6PM' | '8PM'): {
+  hours: number;
+  minutes: number;
+  seconds: number;
+  totalSeconds: number;
+  isPassed: boolean;
+} {
+  const istNow = getISTNow();
+  const targetHour = slot === '1PM' ? 13 : slot === '6PM' ? 18 : 20;
+
+  const target = new Date(istNow);
+  target.setHours(targetHour, 0, 0, 0);
+
+  const diffMs = target.getTime() - istNow.getTime();
+  if (diffMs <= 0) {
+    return { hours: 0, minutes: 0, seconds: 0, totalSeconds: 0, isPassed: true };
+  }
+
+  const totalSeconds = Math.floor(diffMs / 1000);
+  const hours = Math.floor(totalSeconds / 3600);
+  const minutes = Math.floor((totalSeconds % 3600) / 60);
+  const seconds = totalSeconds % 60;
+
+  return { hours, minutes, seconds, totalSeconds, isPassed: false };
+}
+

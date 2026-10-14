@@ -3,7 +3,7 @@ import Layout from '../../../layouts/Layout.astro';
 import DynamicSlotView from '../../../components/DynamicSlotView';
 import TicketChecker from '../../../components/TicketChecker';
 import { fetchDrawsByDate } from '../../../lib/api';
-import { getISTNow, getISTDateString } from '../../../lib/lottery-utils';
+import { getISTNow, getISTDateString, isDrawSlotUpcoming } from '../../../lib/lottery-utils';
 
 const { date, draw_name } = Astro.params;
 const targetDate = date || getISTDateString();
@@ -99,6 +99,8 @@ const slotTabs = [
       <div class="grid grid-cols-3 gap-2">
         {slotTabs.map((tab) => {
           const isCurrent = slotKey === tab.key;
+          const tabSlot = tab.key.toUpperCase() as '1PM' | '6PM' | '8PM';
+          const isTabUpcoming = isDrawSlotUpcoming(targetDate, tabSlot);
           return (
             <a
               href={`/results/${targetDate}/${tab.key}`}
@@ -120,10 +122,12 @@ const slotTabs = [
               <div class="mt-1">
                 <span class={`inline-block text-[9px] sm:text-[10px] font-black px-2 py-0.2 rounded-full uppercase tracking-wider ${
                   isCurrent
-                    ? 'bg-white text-blue-900 shadow-xs'
+                    ? isTabUpcoming ? 'bg-amber-300 text-amber-950 shadow-xs' : 'bg-white text-blue-900 shadow-xs'
+                    : isTabUpcoming
+                    ? 'bg-slate-200 text-slate-700'
                     : 'bg-emerald-100 text-emerald-800 border border-emerald-300'
                 }`}>
-                  {isUpcoming && isCurrent ? 'UPCOMING' : 'RESULT OUT'}
+                  {isTabUpcoming ? 'UPCOMING' : 'RESULT OUT'}
                 </span>
               </div>
             </a>

@@ -4,12 +4,19 @@ import DrawCountdown from '../components/DrawCountdown';
 import TicketChecker from '../components/TicketChecker';
 import PushNotifyBanner from '../components/PushNotifyBanner';
 import LiveResultsTabs from '../components/LiveResultsTabs';
-import { fetchLatestDraws, fetchFrequencyAnalytics } from '../lib/api';
-import { getISTDateString } from '../lib/lottery-utils';
+import { fetchLatestDraws, fetchDrawsByDate, fetchFrequencyAnalytics } from '../lib/api';
+import { getISTNow, getISTDateString } from '../lib/lottery-utils';
+
+const istNow = getISTNow();
+const todayDateStr = getISTDateString(istNow);
+
+const yesterday = new Date(istNow);
+yesterday.setDate(yesterday.getDate() - 1);
+const yesterdayDateStr = getISTDateString(yesterday);
 
 const draws = await fetchLatestDraws();
+const yesterdayDraws = await fetchDrawsByDate(yesterdayDateStr);
 const analytics = await fetchFrequencyAnalytics();
-const todayDateStr = getISTDateString();
 ---
 
 <Layout
@@ -53,7 +60,7 @@ const todayDateStr = getISTDateString();
         </div>
       </div>
 
-      <LiveResultsTabs client:load draws={draws} />
+      <LiveResultsTabs client:load draws={draws} yesterdayDraws={yesterdayDraws} todayDateStr={todayDateStr} />
     </section>
 
     {/* 3. Optional Convenience Tool: Quick Ticket Search (Placed AFTER results) */}

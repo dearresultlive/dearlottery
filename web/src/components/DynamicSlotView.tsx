@@ -144,6 +144,27 @@ export default function DynamicSlotView({
             </div>
           </div>
 
+          {/* Quick link / preview for Yesterday's Result */}
+          <div className="bg-white border-2 border-slate-200 rounded-2xl p-4 sm:p-5 shadow-sm space-y-3">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-100 pb-2.5">
+              <div className="flex items-center gap-2">
+                <span className="text-base sm:text-lg">📅</span>
+                <h4 className="text-sm sm:text-base font-black text-slate-900">
+                  Checking Yesterday's Ticket? (গতকালকের রেজাল্ট)
+                </h4>
+              </div>
+              <a
+                href="/old-results"
+                className="text-xs font-bold text-blue-700 hover:text-blue-800 bg-blue-50 border border-blue-200 px-3 py-1.5 rounded-xl transition-all self-start sm:self-auto"
+              >
+                Browse Past Results Archive →
+              </a>
+            </div>
+            <p className="text-xs text-slate-600 leading-relaxed">
+              Today's {slotHour} draw is scheduled for {slotHour}. If you have a ticket from yesterday, check the official results archive or use the Ticket Search below to verify all prize tiers.
+            </p>
+          </div>
+
           <PushNotifyBanner />
 
         </div>
