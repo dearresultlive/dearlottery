@@ -114,6 +114,7 @@ export default function DrawCountdown({ onResultDetected, compact = false }: Dra
   }, [isPollingActive, nextDraw.slot, newResultData]);
 
   if (!timeLeft) {
+    if (compact) return null;
     return (
       <div className="bg-white border border-slate-200 rounded-2xl p-3 text-center text-xs text-slate-500 shadow-sm animate-pulse">
         <p className="font-medium">Loading official draw schedule (IST)...</p>
@@ -122,6 +123,23 @@ export default function DrawCountdown({ onResultDetected, compact = false }: Dra
   }
 
   const isLive = timeLeft.hours === 0 && timeLeft.minutes === 0 && timeLeft.seconds === 0;
+
+  if (compact) {
+    return (
+      <div className="flex items-center gap-1.5 text-xs">
+        <span className="text-[11px] font-bold text-slate-500 hidden sm:inline">
+          {lang === 'bn' ? `পরবর্তী ড্র (${nextDraw.timeLabel}):` : `Next (${nextDraw.timeLabel}):`}
+        </span>
+        <span className="inline-flex items-center gap-1 bg-slate-100 border border-slate-300 text-slate-900 px-2.5 py-1 rounded-lg font-mono text-xs font-black shadow-2xs">
+          <span>⏰</span>
+          <span>
+            {timeLeft.hours > 0 ? `${String(timeLeft.hours).padStart(2, '0')}h : ` : ''}
+            {String(timeLeft.minutes).padStart(2, '0')}m : {String(timeLeft.seconds).padStart(2, '0')}s
+          </span>
+        </span>
+      </div>
+    );
+  }
 
   return (
     <div className="bg-white border border-slate-200 rounded-xl sm:rounded-2xl px-3 py-1.5 sm:px-5 sm:py-2.5 shadow-xs">

@@ -1,5 +1,6 @@
 ---
 import LanguageToggle from './LanguageToggle';
+import NotificationBell from './NotificationBell';
 
 interface Props {
   currentPath?: string;
@@ -76,14 +77,15 @@ const { currentPath = '/' } = Astro.props;
         </a>
       </nav>
 
-      {/* Controls: Language Toggle + CTA */}
-      <div class="flex items-center gap-1 sm:gap-2.5 flex-shrink-0">
+      {/* Controls: Notification Bell + Language Toggle + Ticket Checker Button */}
+      <div class="flex items-center gap-1.5 sm:gap-2 flex-shrink-0">
+        <NotificationBell client:load />
         <LanguageToggle client:load />
 
         <a
           href="/checker"
           aria-label="Ticket Checker"
-          class="inline-flex items-center gap-1 bg-blue-700 hover:bg-blue-800 text-white text-[11px] sm:text-xs font-black px-2 sm:px-3.5 py-1.5 sm:py-2 rounded-lg sm:rounded-xl shadow-xs transition-all active:scale-95"
+          class="inline-flex items-center gap-1 bg-blue-700 hover:bg-blue-800 text-white text-[11px] sm:text-xs font-black px-2 sm:px-3 py-1.5 sm:py-2 rounded-lg sm:rounded-xl shadow-xs transition-all active:scale-95"
         >
           <span>🔍</span>
           <span class="hidden sm:inline">টিকিট মেলান</span>
@@ -92,45 +94,5 @@ const { currentPath = '/' } = Astro.props;
       </div>
 
     </div>
-  </div>
-
-  {/* Mobile Sub-Navigation Bar (Horizontal Quick Access) */}
-  <div class="md:hidden border-t border-slate-200/80 bg-slate-50/95 backdrop-blur-md px-1.5 py-1 flex items-center justify-between gap-1 overflow-x-auto scrollbar-none text-[11px] font-bold">
-    <a
-      href="/"
-      class={`px-2 py-1 rounded-lg transition-colors whitespace-nowrap flex items-center gap-1 flex-1 justify-center ${
-        currentPath === '/' ? 'bg-blue-700 text-white shadow-xs font-black' : 'text-slate-700 hover:text-blue-700'
-      }`}
-    >
-      <span>🔴</span>
-      <span>আজকের রেজাল্ট</span>
-    </a>
-    <a
-      href="/old-results"
-      class={`px-2 py-1 rounded-lg transition-colors whitespace-nowrap flex items-center gap-1 flex-1 justify-center ${
-        currentPath === '/old-results' ? 'bg-blue-700 text-white shadow-xs font-black' : 'text-slate-700 hover:text-blue-700'
-      }`}
-    >
-      <span>📅</span>
-      <span>পুরনো</span>
-    </a>
-    <a
-      href="/checker"
-      class={`px-2 py-1 rounded-lg transition-colors whitespace-nowrap flex items-center gap-1 flex-1 justify-center ${
-        currentPath === '/checker' ? 'bg-blue-700 text-white shadow-xs font-black' : 'text-slate-700 hover:text-blue-700'
-      }`}
-    >
-      <span>🔍</span>
-      <span>মেলান</span>
-    </a>
-    <a
-      href="/analytics"
-      class={`px-2 py-1 rounded-lg transition-colors whitespace-nowrap flex items-center gap-1 flex-1 justify-center ${
-        currentPath === '/analytics' ? 'bg-blue-700 text-white shadow-xs font-black' : 'text-slate-700 hover:text-blue-700'
-      }`}
-    >
-      <span>📊</span>
-      <span>হট নম্বর</span>
-    </a>
   </div>
 </header>

@@ -2,7 +2,6 @@
 import Layout from '../layouts/Layout.astro';
 import DrawCountdown from '../components/DrawCountdown';
 import TicketChecker from '../components/TicketChecker';
-import PushNotifyBanner from '../components/PushNotifyBanner';
 import LiveResultsTabs from '../components/LiveResultsTabs';
 import { fetchLatestDraws, fetchDrawsByDate, fetchFrequencyAnalytics } from '../lib/api';
 import { getISTNow, getISTDateString } from '../lib/lottery-utils';
@@ -25,104 +24,37 @@ const analytics = await fetchFrequencyAnalytics();
   description={`Official Dear Lottery Result Today (${todayDateStr}) for 1:00 PM Morning, 6:00 PM Day, and 8:00 PM Night. 1st Prize ₹1 Crore winning ticket number, official gazette sheet JPG/PDF, and all prize tables.`}
   drawDate={todayDateStr}
 >
-  <div class="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-5 sm:py-8 space-y-6 sm:space-y-8">
+  <div class="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-3 sm:py-5 space-y-4 sm:space-y-6">
     
-    {/* 1. Sleek Mobile-First Live Draw Countdown Banner */}
-    <div>
-      <DrawCountdown client:load />
+    {/* 1. Slim Single-Line Status Bar (Time + Date + Compact Countdown) */}
+    <div class="bg-white border border-slate-200 rounded-xl px-3 sm:px-4 py-2 sm:py-2.5 flex flex-wrap items-center justify-between gap-2 shadow-2xs">
+      <div class="flex items-center gap-2 min-w-0">
+        <span class="inline-flex items-center gap-1.5 bg-red-100 text-red-800 text-[10px] sm:text-xs font-black px-2 py-0.5 rounded-full uppercase tracking-wider flex-shrink-0">
+          <span class="w-2 h-2 rounded-full bg-red-600 animate-ping"></span>
+          লাইভ
+        </span>
+        <h1 class="text-xs sm:text-sm font-black text-slate-900 truncate">
+          আজকের ডিয়ার লটারি রেজাল্ট • {todayDateStr}
+        </h1>
+        <span class="text-xs text-slate-300 hidden md:inline">|</span>
+        <span class="text-xs text-slate-500 hidden md:inline font-medium">নাগাল্যান্ড ও সিকিম সরকারি গেজেট</span>
+      </div>
+      <div class="flex items-center gap-2 ml-auto">
+        <DrawCountdown client:load compact={true} />
+      </div>
     </div>
 
-    {/* 2. HERO: Instant Live Result Tables with Golden Ticket & Official Gazette Sheet */}
-    <section id="results" class="space-y-4">
-      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-200 pb-3">
-        <div>
-          <div class="flex items-center gap-2">
-            <span class="text-xs uppercase font-black tracking-widest text-red-700 bg-red-50 px-2 py-0.5 rounded border border-red-200 flex items-center gap-1">
-              <span class="w-2 h-2 rounded-full bg-red-600 animate-ping"></span>
-              সরকারি লাইভ গেজেট রেজাল্ট
-            </span>
-            <span class="text-xs text-slate-400">•</span>
-            <span class="text-xs text-blue-700 font-black">লটারি সংবাদ</span>
-          </div>
-          <h1 class="text-2xl sm:text-4xl font-black text-slate-900 tracking-tight mt-1">
-            আজকের ডিয়ার লটারি রেজাল্ট ({todayDateStr})
-          </h1>
-          <p class="text-slate-600 text-xs sm:text-sm mt-0.5">
-            নাগাল্যান্ড ও সিকিম রাজ্য লটারির দুপুর ১:০০, সন্ধ্যা ৬:০০ ও রাত ৮:০০ টার সরকারি অফিশিয়াল ফলাফল।
-          </p>
-        </div>
-
-        <div class="flex items-center gap-2 self-start sm:self-auto">
-          <a
-            href="/analytics"
-            class="text-xs font-black text-blue-700 hover:text-blue-800 bg-blue-50 border border-blue-200 px-3.5 py-2 rounded-xl transition-colors shadow-2xs"
-          >
-            📊 কোন নম্বর বেশি আসছে? (হট নম্বর) →
-          </a>
-        </div>
-      </div>
-
+    {/* 2. HERO: Instant Live Result Tabs & Official Gazette Sheet */}
+    <section id="results">
       <LiveResultsTabs client:load draws={draws} yesterdayDraws={yesterdayDraws} todayDateStr={todayDateStr} />
     </section>
 
-    {/* 3. Optional Convenience Tool: Quick Ticket Search (Placed AFTER results) */}
-    <section id="checker" class="space-y-4 pt-2">
-      <div class="border-t border-slate-200 pt-6">
-        <div class="flex items-center gap-2 mb-1">
-          <span class="text-lg">🔍</span>
-          <h2 class="text-xl sm:text-2xl font-black text-slate-900">
-            টিকিট নম্বর মিলিয়ে নিন (১ম থেকে ৫ম পুরস্কার)
-          </h2>
-        </div>
-        <p class="text-slate-600 text-xs sm:text-sm">
-          আপনার টিকিটের ৫টি সংখ্যা অথবা শেষের ৪টি সংখ্যা লিখে এক ক্লিকেই সব প্রাইজ মেলান।
-        </p>
-      </div>
-
-      <TicketChecker client:load initialDraws={checkerDraws} />
+    {/* 3. 1-Second Instant Slim Ticket Checker */}
+    <section id="checker">
+      <TicketChecker client:load initialDraws={checkerDraws} variant="slim" />
     </section>
 
-    {/* 4. Instant Result Notification Opt-in */}
-    <section>
-      <PushNotifyBanner client:load />
-    </section>
-
-    {/* 5. Player Analytics & Hot Numbers */}
-    <section class="bg-white border border-slate-200 rounded-2xl p-5 sm:p-7 shadow-sm">
-      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-5">
-        <div>
-          <span class="text-xs font-bold text-blue-700 uppercase tracking-wider">
-            লটারি বিশ্লেষণ ও রিপিটিং নম্বর
-          </span>
-          <h3 class="text-xl sm:text-2xl font-black text-slate-900">
-            সাম্প্রতিক খেলাগুলোতে সবচেয়ে বেশি আসা নম্বর (৫ম প্রাইজ)
-          </h3>
-          <p class="text-slate-600 text-xs">
-            যে ৪ সংখ্যার নম্বরগুলো সাম্প্রতিক ডিয়ার লটারিতে বারবার ড্র-তে উঠেছে।
-          </p>
-        </div>
-        <a
-          href="/analytics"
-          class="bg-slate-50 border border-slate-200 hover:border-blue-400 text-blue-700 text-xs font-bold px-4 py-2 rounded-xl transition-all self-start sm:self-auto"
-        >
-          সম্পূর্ণ তালিকা ও হিটম্যাপ দেখুন →
-        </a>
-      </div>
-
-      <div class="grid grid-cols-2 sm:grid-cols-5 gap-2.5">
-        {analytics.hotNumbers.map((item, idx) => (
-          <div class="bg-slate-50 border border-slate-200 rounded-xl p-3 text-center">
-            <span class="text-[10px] text-slate-500 block font-mono">হট নম্বর #{idx + 1}</span>
-            <span class="text-xl sm:text-2xl font-mono font-black text-slate-950 block my-0.5">{item.ticket_number}</span>
-            <span class="text-[11px] text-emerald-800 bg-emerald-100 border border-emerald-200 px-2 py-0.5 rounded-full font-bold">
-              {item.occurrences} বার উঠেছে
-            </span>
-          </div>
-        ))}
-      </div>
-    </section>
-
-    {/* 6. Comprehensive SEO FAQ Schema Content */}
+    {/* 4. Comprehensive SEO FAQ Schema Content */}
     <section class="bg-white border border-slate-200 rounded-2xl p-5 sm:p-7 text-slate-700 space-y-5 shadow-sm">
       <h3 class="text-lg sm:text-xl font-black text-slate-900">ডিয়ার লটারি সংক্রান্ত প্রয়োজনীয় প্রশ্নোত্তর (FAQ)</h3>
       
@@ -130,7 +62,7 @@ const analytics = await fetchFrequencyAnalytics();
         <div class="space-y-1">
           <h4 class="font-bold text-slate-900">ডিয়ার লটারিতে ১ম পুরস্কার কত টাকা?</h4>
           <p class="text-slate-600 text-xs leading-relaxed">
-            ডিয়ার লটারির ১ম পুরস্কার হলো সুপার প্রাইজ সহ ১ কোটি টাকা (₹১,০০,০০,০০০)। আপনার টিকিটের ৫টি সংখ্যা এবং সিরিজ (যেমন: 84D) প্রথম পুরস্কারের সাথে হুবহু মিললে এই পুরস্কার পাওয়া যায়।
+            ডিয়ার লটারির ১ম পুরস্কার হলো সুপার প্রাইজ সহ ১ কোটি টাকা (₹১,০০,০০,০০০)। আপনার টিকিটের ৫টি সংখ্যা এবং সিরিজ (যেমন: 95E) প্রথম পুরস্কারের সাথে হুবহু মিললে এই পুরস্কার পাওয়া যায়।
           </p>
         </div>
 
@@ -154,6 +86,41 @@ const analytics = await fetchFrequencyAnalytics();
             ১০,০০০ টাকা পর্যন্ত পুরস্কার যেকোনো অনুমোদিত লটারির দোকানে টিকিট দেখালেই নগদ পাওয়া যায়। ১০,০০০ টাকার উপরের পুরস্কার বা ১ কোটি টাকার ১ম পুরস্কারের জন্য অক্ষত মূল টিকিট, প্যান কার্ড ও আধার কার্ড সহ ডিরেক্টরেট অফিসে জমা দিতে হয়।
           </p>
         </div>
+      </div>
+    </section>
+
+    {/* 5. Historical Statistics (বিগত ড্র-এর সাধারণ পরিসংখ্যান) */}
+    <section class="bg-white border border-slate-200 rounded-2xl p-4 sm:p-6 shadow-sm">
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4 border-b border-slate-100 pb-3">
+        <div>
+          <span class="text-[10px] font-bold text-slate-500 uppercase tracking-wider">
+            বিগত দিনের সাধারণ পরিসংখ্যান (ঐতিহাসিক ডেটা)
+          </span>
+          <h3 class="text-base sm:text-lg font-black text-slate-900">
+            সাম্প্রতিক খেলাগুলোতে সবচেয়ে বেশি আসা নম্বর (৫ম প্রাইজ স্ট্যাটস)
+          </h3>
+          <p class="text-slate-500 text-xs">
+            * এটি কোনো প্রেডিকশন বা ভবিষ্যৎ পূর্বাভাস নয়, কেবল বিগত ড্র-সমূহের সাধারণ গাণিতিক হিসাব।
+          </p>
+        </div>
+        <a
+          href="/analytics"
+          class="bg-slate-50 border border-slate-200 hover:border-blue-400 text-blue-700 text-xs font-bold px-3 py-1.5 rounded-lg transition-all self-start sm:self-auto"
+        >
+          বিশ্লেষণ দেখুন →
+        </a>
+      </div>
+
+      <div class="grid grid-cols-2 sm:grid-cols-5 gap-2">
+        {analytics.hotNumbers.map((item, idx) => (
+          <div class="bg-slate-50 border border-slate-200 rounded-xl p-2.5 text-center">
+            <span class="text-[10px] text-slate-400 block font-mono">নম্বর #{idx + 1}</span>
+            <span class="text-lg sm:text-xl font-mono font-black text-slate-950 block my-0.5">{item.ticket_number}</span>
+            <span class="text-[10px] text-slate-600 bg-slate-200/70 px-2 py-0.5 rounded-full font-medium">
+              বিগত ড্র-তে {item.occurrences} বার
+            </span>
+          </div>
+        ))}
       </div>
     </section>
 

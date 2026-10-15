@@ -6,7 +6,6 @@ import {
   getSlotStatus,
   getSlotCountdown
 } from '../lib/lottery-utils';
-import PushNotifyBanner from './PushNotifyBanner';
 import LotteryTicketVoucher from './LotteryTicketVoucher';
 import { useLanguage } from '../lib/i18n';
 
@@ -285,31 +284,22 @@ export default function LiveResultsTabs({
             countdownText={`${String(slotCountdown.hours).padStart(2, '0')}h ${String(slotCountdown.minutes).padStart(2, '0')}m ${String(slotCountdown.seconds).padStart(2, '0')}s`}
           />
 
-          {/* Pending Draw PDF Status & Official Notice Bar */}
-          <div className="bg-amber-50 border border-amber-300 rounded-2xl p-3.5 sm:p-4 flex flex-col sm:flex-row items-center justify-between gap-3 shadow-xs">
-            <div className="flex items-center gap-2.5 text-center sm:text-left">
-              <span className="w-3 h-3 rounded-full bg-amber-500 animate-pulse flex-shrink-0"></span>
-              <div>
-                <p className="text-xs sm:text-sm font-black text-amber-950">
-                  {lang === 'bn' 
-                    ? `আজকের ${currentSlotInfo.time} অফিসিয়াল রেজাল্ট শিট ও পিডিএফ ড্র সম্পন্ন হওয়ার পর প্রকাশিত হবে`
-                    : `Today's ${currentSlotInfo.time} Official Gazette PDF will be available right after draw`}
-                </p>
-                <p className="text-[11px] text-amber-800">
-                  {lang === 'bn' ? 'ড্র শুরু হওয়া পর্যন্ত অপেক্ষা করুন অথবা সরকারি ড্র শিডিউল নোটিশ ডাউনলোড করুন' : 'Draw is scheduled. You can download the official schedule notice PDF.'}
-                </p>
-              </div>
+          {/* Calm Pending Draw Status Strip with Fast Link to Yesterday */}
+          <div className="bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 flex flex-col sm:flex-row items-center justify-between gap-2 text-xs text-slate-600 shadow-2xs">
+            <div className="flex items-center gap-2">
+              <span className="w-2 h-2 rounded-full bg-blue-600"></span>
+              <span className="font-medium">
+                {lang === 'bn' 
+                  ? `আজকের ${currentSlotInfo.time} ড্র প্রক্রিয়াধীন। ড্র শেষে তৎক্ষণাৎ সরকারি ফলাফল প্রকাশিত হবে।` 
+                  : `Today's ${currentSlotInfo.time} draw is scheduled. Results will appear right after draw.`}
+              </span>
             </div>
-
             <a
-              href={pdfUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              download={`Dear_Lottery_${todayStr}_${activeSlot}_Notice.pdf`}
-              className="inline-flex items-center gap-1.5 bg-white hover:bg-amber-100 border border-amber-400 text-amber-950 font-bold text-xs sm:text-sm px-4 py-2 rounded-xl transition-colors shadow-2xs whitespace-nowrap"
+              href="#yesterday-section"
+              className="text-blue-700 hover:text-blue-800 font-bold hover:underline inline-flex items-center gap-1 self-end sm:self-auto"
             >
-              <span>📋</span>
-              <span>{lang === 'bn' ? 'ড্র শিডিউল নোটিশ (PDF)' : 'Draw Notice (PDF)'}</span>
+              <span>{lang === 'bn' ? `গতকালকের ${currentSlotInfo.time} বিজয়ী নম্বর দেখুন` : `View Yesterday's ${currentSlotInfo.time} Result`}</span>
+              <span>↓</span>
             </a>
           </div>
 
@@ -348,7 +338,7 @@ export default function LiveResultsTabs({
           </div>
 
           {/* 3. High-Visibility Yesterday's Declared Result Section (For Morning Visitors) */}
-          <div className="bg-white border-2 border-slate-200 rounded-2xl p-4 sm:p-6 shadow-sm space-y-4">
+          <div id="yesterday-section" className="bg-white border-2 border-slate-200 rounded-2xl p-4 sm:p-6 shadow-sm space-y-4">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-100 pb-3">
               <div>
                 <div className="flex items-center gap-2">
@@ -477,9 +467,6 @@ export default function LiveResultsTabs({
             )}
 
           </div>
-
-          <PushNotifyBanner />
-
         </div>
       )}
 
@@ -509,7 +496,41 @@ export default function LiveResultsTabs({
           ========================================================================= */}
       {activeStatus === 'RESULT_OUT' && (
         <div className="space-y-5 sm:space-y-6">
-          
+          {/* 1-Click Official Full Paper/Gazette Sheet Viewer */}
+          <div className="flex flex-wrap items-center justify-between gap-3 bg-gradient-to-r from-blue-700 via-indigo-700 to-blue-800 p-2.5 sm:p-3 rounded-2xl text-white shadow-md">
+            <div className="flex items-center gap-2.5 px-1">
+              <span className="text-xl sm:text-2xl">📜</span>
+              <div>
+                <span className="text-xs sm:text-sm font-black tracking-tight block">
+                  {lang === 'bn' ? 'আসল সরকারি গেজেট রেজাল্ট শিট' : 'Official Scanned Gazette Paper'}
+                </span>
+                <span className="text-[10px] sm:text-[11px] text-blue-100 block">
+                  {lang === 'bn' ? 'নাগাল্যান্ড রাজ্য লটারির আসল সিলমোহর ও বিচারকদের স্বাক্ষর সম্বলিত ফুল শিট' : 'Certified signed scanned sheet in high resolution'}
+                </span>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-2 w-full sm:w-auto">
+              <button
+                type="button"
+                onClick={() => openImageLightbox(jpgUrl)}
+                className="flex-1 sm:flex-none inline-flex items-center justify-center gap-2 bg-amber-400 hover:bg-amber-300 text-slate-950 font-black text-xs sm:text-sm py-2 px-4 rounded-xl transition-all shadow-sm active:scale-95"
+              >
+                <span>🔍</span>
+                <span>{lang === 'bn' ? 'অফিসিয়াল গেজেট শিট (ফুল ইমেজ)' : 'Official Gazette Sheet (Full Image)'}</span>
+              </button>
+              <a
+                href={pdfUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                download={`Dear_Lottery_${todayStr}_${activeSlot}.pdf`}
+                className="inline-flex items-center justify-center gap-1 bg-white/10 hover:bg-white/20 text-white font-bold text-xs py-2 px-3 rounded-xl transition-colors border border-white/20"
+              >
+                <span>📥 PDF</span>
+              </a>
+            </div>
+          </div>
+
           {/* 1. HERO: Authentic Physical Lottery Ticket Voucher (Paper Style, Ultra High-Trust) */}
           <LotteryTicketVoucher
             status="DECLARED"
