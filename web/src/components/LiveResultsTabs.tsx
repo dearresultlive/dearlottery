@@ -6,7 +6,6 @@ import {
   getSlotStatus,
   getSlotCountdown
 } from '../lib/lottery-utils';
-import LotteryTicketVoucher from './LotteryTicketVoucher';
 import { useLanguage } from '../lib/i18n';
 
 interface PrizeData {
@@ -61,8 +60,9 @@ export default function LiveResultsTabs({
   const [drawsList, setDrawsList] = useState<DrawRecord[]>(draws);
   const [showImageModal, setShowImageModal] = useState<boolean>(false);
   const [selectedImageUrl, setSelectedImageUrl] = useState<string>('');
+  const [zoomScale, setZoomScale] = useState<number>(1);
+  const [showTextTables, setShowTextTables] = useState<boolean>(true);
   const [copiedLink, setCopiedLink] = useState<boolean>(false);
-  const [showYesterdaySheet, setShowYesterdaySheet] = useState<boolean>(false);
   const [slotCountdown, setSlotCountdown] = useState(getSlotCountdown('1PM'));
 
   useEffect(() => {
@@ -148,23 +148,13 @@ export default function LiveResultsTabs({
   })();
 
   const slotFallbackFirstPrize = activeSlot === '1PM' 
-    ? { series: '64D', number: '79258' } 
+    ? { series: '95E', number: '75331' } 
     : activeSlot === '6PM' 
     ? { series: '86G', number: '45286' } 
-    : { series: '49A', number: '80944' };
-
-  const yesterdayPrizes: PrizeData = yesterdayDraw?.parsed_data?.prizes || yesterdayDraw?.prizes || {};
-  const yesterdayFirstPrize = yesterdayPrizes.first_prize || slotFallbackFirstPrize;
-  const yesterdaySecondPrizes = yesterdayPrizes.second_prize || [];
-  const yesterdayThirdPrizes = yesterdayPrizes.third_prize || [];
-  const yesterdayFourthPrizes = yesterdayPrizes.fourth_prize || [];
-  const yesterdayFifthPrizes = yesterdayPrizes.fifth_prize || [];
-
-  const yesterdayPdfUrl = `/pdf/${yesterdayDateStr}/${activeSlot.toLowerCase()}.pdf`;
-  const yesterdayJpgUrl = yesterdayDraw?.image_r2_url || `/og-image.jpg?date=${yesterdayDateStr}&slot=${activeSlot}`;
+    : { series: '75C', number: '25455' };
 
   // If results are out today, use today's declared data
-  const currentDraw = currentDrawForToday || drawsList[0];
+  const currentDraw = currentDrawForToday || drawsList[0] || yesterdayDraw;
   const declaredPrizes: PrizeData = currentDraw?.parsed_data?.prizes || currentDraw?.prizes || {};
   const firstPrize = declaredPrizes.first_prize || slotFallbackFirstPrize;
   const secondPrizes = declaredPrizes.second_prize || [];
@@ -173,657 +163,404 @@ export default function LiveResultsTabs({
   const fifthPrizes = declaredPrizes.fifth_prize || [];
 
   const pdfUrl = `/pdf/${todayStr}/${activeSlot.toLowerCase()}.pdf`;
-  const jpgUrl = currentDraw?.image_r2_url || `/og-image.jpg?date=${todayStr}&slot=${activeSlot}`;
+  const sheetSvgUrl = `/api/gazette-sheet.svg?date=${todayStr}&slot=${activeSlot.toLowerCase()}`;
+  const activeSheetUrl = currentDrawForToday?.image_r2_url || sheetSvgUrl;
 
   const whatsappShareText = `🎯 *Dear Lottery Result Today (${currentDraw?.draw_time || activeSlot})*\n📅 তারিখ: ${todayStr}\n\n🏆 *১ম পুরস্কার (₹1 Crore Winner)*: *${firstPrize.series} ${firstPrize.number}*\n\n👉 সম্পূর্ণ অফিসিয়াল রেজাল্ট শিট ও সব প্রাইজ নম্বর দেখুন:\nhttps://dearresultlive.in/results/${todayStr}/${activeSlot.toLowerCase()}`;
   const whatsappUrl = `https://api.whatsapp.com/send?text=${encodeURIComponent(whatsappShareText)}`;
 
-  const handleCopyLink = () => {
-    const url = `https://dearresultlive.in/results/${todayStr}/${activeSlot.toLowerCase()}`;
-    if (typeof window !== 'undefined' && navigator?.clipboard) {
-      navigator.clipboard.writeText(url);
-      setCopiedLink(true);
-      setTimeout(() => setCopiedLink(false), 2000);
-    }
-  };
-
   const openImageLightbox = (url: string) => {
     setSelectedImageUrl(url);
+    setZoomScale(1);
     setShowImageModal(true);
   };
+
+  const handleZoomIn = () => setZoomScale(prev => Math.min(prev + 0.3, 3));
+  const handleZoomOut = () => setZoomScale(prev => Math.max(prev - 0.3, 1));
+  const handleResetZoom = () => setZoomScale(1);
 
   const currentSlotInfo = slots.find(s => s.key === activeSlot) || slots[0];
 
   return (
-    <div className="space-y-5 sm:space-y-6">
+    <div className="space-y-3.5 sm:space-y-4 max-w-[557px] mx-auto">
       
-      {/* 1. High-Contrast Draw Navigation Tabs (Newspaper Style) */}
-      <div className="bg-white p-2 rounded-2xl border border-slate-200 shadow-sm">
-        <div className="grid grid-cols-3 gap-2">
-          {slots.map(slot => {
-            const isActive = activeSlot === slot.key;
-            
-            // Per-slot status calculation for today
-            const drawForSlotToday = drawsList.find(d => 
-              (d.draw_time?.includes(slot.key.replace('PM', '')) || d.id?.includes(slot.key)) &&
-              d.draw_date === todayStr
-            );
-            const p: PrizeData = drawForSlotToday?.parsed_data?.prizes || drawForSlotToday?.prizes || {};
-            const slotHasPrizes = Boolean(
-              p.first_prize?.number &&
-              drawForSlotToday?.status !== 'UPCOMING' &&
-              drawForSlotToday?.parsed_data?.status !== 'UPCOMING'
-            );
-            const slotStatus = getSlotStatus(todayStr, slot.key, slotHasPrizes);
-
-            return (
-              <button
-                key={slot.key}
-                type="button"
-                onClick={() => {
-                  setActiveSlot(slot.key);
-                  setShowYesterdaySheet(false);
-                }}
-                className={`relative py-2.5 sm:py-3.5 px-2 sm:px-4 rounded-xl flex flex-col items-center justify-center transition-all ${
-                  isActive
-                    ? 'bg-blue-700 text-white font-black shadow-md ring-2 ring-blue-600 scale-[1.01]'
-                    : 'bg-slate-50 hover:bg-slate-100 border border-slate-200 text-slate-700 hover:text-slate-900'
-                }`}
-              >
-                <div className="flex items-center gap-1.5 sm:gap-2">
-                  <span className="text-base sm:text-lg">{slot.icon}</span>
-                  <span className="text-xs sm:text-base font-black tracking-tight">
-                    {slot.time}
-                  </span>
-                </div>
-                
-                <span className={`text-[10px] sm:text-xs font-bold mt-0.5 ${isActive ? 'text-blue-100' : 'text-blue-700'}`}>
-                  {lang === 'bn' ? slot.labelBn : slot.labelEn.replace(slot.time + ' ', '')}
-                </span>
-
-                <div className="mt-1">
-                  <span className={`inline-block text-[9px] sm:text-[10px] font-black px-2 py-0.2 rounded-full uppercase tracking-wider ${
-                    isActive
-                      ? slotStatus === 'RESULT_OUT'
-                        ? 'bg-white text-emerald-900 shadow-xs'
-                        : slotStatus === 'DRAWING'
-                        ? 'bg-white text-red-900 shadow-xs'
-                        : 'bg-amber-300 text-amber-950 shadow-xs'
-                      : slotStatus === 'RESULT_OUT'
-                      ? 'bg-emerald-100 text-emerald-800 border border-emerald-300'
-                      : slotStatus === 'DRAWING'
-                      ? 'bg-red-100 text-red-700 border border-red-300 animate-pulse'
-                      : 'bg-slate-200 text-slate-700'
-                  }`}>
-                    {slotStatus === 'RESULT_OUT' 
-                      ? (lang === 'bn' ? 'রেজাল্ট আউট' : 'RESULT OUT')
-                      : slotStatus === 'DRAWING' 
-                      ? (lang === 'bn' ? 'ড্র চলছে...' : 'PUBLISHING...') 
-                      : (lang === 'bn' ? 'আসন্ন ড্র' : 'UPCOMING')}
-                  </span>
-                </div>
-              </button>
-            );
-          })}
-        </div>
+      {/* 1. Lottery Sambad Style Big Slot Buttons */}
+      <div className="grid grid-cols-3 gap-2 sm:gap-2.5">
+        {slots.map(slot => {
+          const isActive = activeSlot === slot.key;
+          return (
+            <button
+              key={slot.key}
+              type="button"
+              onClick={() => setActiveSlot(slot.key)}
+              className={`py-3 px-2 rounded-xl flex flex-col items-center justify-center transition-all ${
+                isActive
+                  ? 'bg-[#138808] text-white font-black shadow-md ring-2 ring-[#138808]/40 scale-[1.01]'
+                  : 'bg-slate-100 hover:bg-slate-200 border border-slate-200 text-slate-800'
+              }`}
+            >
+              <span className="text-base sm:text-lg font-black tracking-tight">
+                {slot.time}
+              </span>
+              <span className={`text-[10px] sm:text-xs font-bold mt-0.5 ${isActive ? 'text-emerald-100' : 'text-slate-500'}`}>
+                {lang === 'bn' ? slot.labelBn : slot.labelEn.replace(slot.time + ' ', '')}
+              </span>
+            </button>
+          );
+        })}
       </div>
 
-      {/* =========================================================================
-          STATE A: UPCOMING (Draw has not occurred yet today - e.g. at 9:00 AM)
-          ========================================================================= */}
-      {activeStatus === 'UPCOMING' && (
-        <div className="space-y-5 sm:space-y-6">
-          
-          {/* 1. Authentic Physical Pending Ticket Voucher */}
-          <LotteryTicketVoucher
-            status="PENDING"
-            drawName={currentDrawForToday?.draw_name || currentSlotInfo.labelEn}
-            drawTime={currentSlotInfo.time}
-            drawDate={todayStr}
-            drawNumber={currentDrawForToday?.draw_number || '74'}
-            countdownText={`${String(slotCountdown.hours).padStart(2, '0')}h ${String(slotCountdown.minutes).padStart(2, '0')}m ${String(slotCountdown.seconds).padStart(2, '0')}s`}
-          />
+      {/* 2. Lottery Sambad Winning Result Card (.rcard) */}
+      {activeStatus === 'RESULT_OUT' ? (
+        <div
+          onClick={() => openImageLightbox(activeSheetUrl)}
+          className={`cursor-pointer relative overflow-hidden rounded-2xl border p-4 sm:p-5 text-center transition-all hover:shadow-md ${
+            activeSlot === '1PM'
+              ? 'bg-[#e9f5db] border-emerald-300'
+              : activeSlot === '6PM'
+              ? 'bg-[#e3eefb] border-blue-300'
+              : 'bg-[#fbe8e8] border-red-300'
+          }`}
+        >
+          {/* Vertical Side Band */}
+          <div
+            className={`absolute top-0 right-0 bottom-0 w-8 sm:w-10 flex items-center justify-center overflow-hidden ${
+              activeSlot === '1PM'
+                ? 'bg-[#16a34a] text-[#ffdd00]'
+                : activeSlot === '6PM'
+                ? 'bg-[#f5c518] text-[#dc2626]'
+                : 'bg-[#dc2626] text-[#ffdd00]'
+            }`}
+          >
+            <span className="font-black text-xs sm:text-sm tracking-wider uppercase -rotate-90 whitespace-nowrap">
+              DEAR {activeSlot.replace('PM', ' PM')}
+            </span>
+          </div>
 
-          {/* Calm Pending Draw Status Strip with Fast Link to Yesterday */}
-          <div className="bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 flex flex-col sm:flex-row items-center justify-between gap-2 text-xs text-slate-600 shadow-2xs">
-            <div className="flex items-center gap-2">
-              <span className="w-2 h-2 rounded-full bg-blue-600"></span>
-              <span className="font-medium">
-                {lang === 'bn' 
-                  ? `আজকের ${currentSlotInfo.time} ড্র প্রক্রিয়াধীন। ড্র শেষে তৎক্ষণাৎ সরকারি ফলাফল প্রকাশিত হবে।` 
-                  : `Today's ${currentSlotInfo.time} draw is scheduled. Results will appear right after draw.`}
+          <div className="pr-8 sm:pr-10">
+            {/* Top Date Header */}
+            <div className="flex items-center justify-between mb-1.5">
+              <span className="bg-[#e93323] text-white font-extrabold text-xs px-2.5 py-0.5 rounded-md shadow-2xs">
+                {todayStr.split('-').reverse().join('/')}
+              </span>
+              <span className="text-xs text-slate-600 font-bold">
+                {currentDraw.draw_name} • #{currentDraw.draw_number || '74'}
               </span>
             </div>
-            <a
-              href="#yesterday-section"
-              className="text-blue-700 hover:text-blue-800 font-bold hover:underline inline-flex items-center gap-1 self-end sm:self-auto"
-            >
-              <span>{lang === 'bn' ? `গতকালকের ${currentSlotInfo.time} বিজয়ী নম্বর দেখুন` : `View Yesterday's ${currentSlotInfo.time} Result`}</span>
-              <span>↓</span>
-            </a>
-          </div>
 
-          {/* 2. Official Prize Structure Grid for this Slot */}
-          <div className="bg-white border border-slate-200 rounded-2xl p-4 sm:p-6 space-y-4 shadow-sm">
-            <h3 className="text-base sm:text-lg font-black text-slate-900 flex items-center gap-2">
-              <span>📋</span>
-              <span>{lang === 'bn' ? `অফিসিয়াল পুরস্কার কাঠামো (${currentSlotInfo.time})` : `Official Prize Structure for ${currentSlotInfo.time}`}</span>
-            </h3>
-            
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-center">
-              <div className="bg-slate-50 border border-slate-200 rounded-xl p-3">
-                <span className="text-[11px] text-slate-500 block font-bold">{lang === 'bn' ? '২য় পুরস্কার (১০ জন)' : '2nd Prize (10 Winners)'}</span>
-                <span className="text-lg sm:text-xl font-mono font-black text-emerald-800 block my-1">₹9,000</span>
-                <span className="text-[10px] text-slate-400 font-medium">5 Digits</span>
-              </div>
-
-              <div className="bg-slate-50 border border-slate-200 rounded-xl p-3">
-                <span className="text-[11px] text-slate-500 block font-bold">{lang === 'bn' ? '৩য় পুরস্কার (১০ জন)' : '3rd Prize (10 Winners)'}</span>
-                <span className="text-lg sm:text-xl font-mono font-black text-blue-700 block my-1">₹450</span>
-                <span className="text-[10px] text-slate-400 font-medium">Last 4 Digits</span>
-              </div>
-
-              <div className="bg-slate-50 border border-slate-200 rounded-xl p-3">
-                <span className="text-[11px] text-slate-500 block font-bold">{lang === 'bn' ? '৪র্থ পুরস্কার (১০ জন)' : '4th Prize (10 Winners)'}</span>
-                <span className="text-lg sm:text-xl font-mono font-black text-indigo-700 block my-1">₹250</span>
-                <span className="text-[10px] text-slate-400 font-medium">Last 4 Digits</span>
-              </div>
-
-              <div className="bg-slate-50 border border-slate-200 rounded-xl p-3">
-                <span className="text-[11px] text-slate-500 block font-bold">{lang === 'bn' ? '৫ম পুরস্কার (১০০ জন)' : '5th Prize (100 Winners)'}</span>
-                <span className="text-lg sm:text-xl font-mono font-black text-slate-900 block my-1">₹120</span>
-                <span className="text-[10px] text-slate-400 font-medium">Last 4 Digits</span>
+            {/* Massive 1st Prize Number */}
+            <div className="py-2">
+              <span className="text-[11px] font-black uppercase tracking-wider text-slate-600 block mb-0.5">
+                ১ম পুরস্কার • 1st Prize ₹1 Crore Winner
+              </span>
+              <div className={`font-mono font-black text-4xl sm:text-6xl tracking-widest ${
+                activeSlot === '1PM' ? 'text-[#2c65c5]' : activeSlot === '6PM' ? 'text-[#dc2626]' : 'text-[#32733b]'
+              }`}>
+                {firstPrize.series} {firstPrize.number}
               </div>
             </div>
-          </div>
 
-          {/* 3. High-Visibility Yesterday's Declared Result Section (For Morning Visitors) */}
-          <div id="yesterday-section" className="bg-white border-2 border-slate-200 rounded-2xl p-4 sm:p-6 shadow-sm space-y-4">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-100 pb-3">
-              <div>
-                <div className="flex items-center gap-2">
-                  <span className="text-base sm:text-lg">📅</span>
-                  <h4 className="text-sm sm:text-base font-black text-slate-900">
-                    {t('yesterday_looking')}
-                  </h4>
-                </div>
-                <p className="text-xs text-slate-500 mt-0.5">
-                  {lang === 'bn' 
-                    ? `আজকের ${currentSlotInfo.time} ড্র এখনো প্রকাশ হয়নি। নিচে গতকালকের (${yesterdayDateStr}) রেজাল্ট দেওয়া হলো:`
-                    : `Today's ${currentSlotInfo.time} draw has not declared yet. Here is yesterday's (${yesterdayDateStr}) official result:`}
-                </p>
-              </div>
-
-              <a
-                href={`/results/${yesterdayDateStr}`}
-                className="inline-flex items-center gap-1.5 text-xs font-bold text-blue-700 hover:text-blue-800 bg-blue-50 border border-blue-200 hover:border-blue-400 px-3.5 py-2 rounded-xl transition-all shadow-2xs self-start sm:self-auto"
-              >
-                <span>{lang === 'bn' ? `গতকালকের সব রেজাল্ট (${yesterdayDateStr})` : `All Yesterday Results (${yesterdayDateStr})`}</span>
-                <span>→</span>
-              </a>
+            {/* Consolation info */}
+            <div className="text-[11px] font-bold text-slate-500">
+              সান্ত্বনা পুরস্কার: ₹১,০০০ • {firstPrize.number} অন্য সব সিরিজ
             </div>
 
-            {/* Yesterday 1st Prize Authentic Ticket Voucher */}
-            <LotteryTicketVoucher
-              status="DECLARED"
-              isYesterday={true}
-              series={yesterdayFirstPrize.series}
-              number={yesterdayFirstPrize.number}
-              drawName={yesterdayDraw?.draw_name || `${currentSlotInfo.time} Draw`}
-              drawTime={yesterdayDraw?.draw_time || currentSlotInfo.time}
-              drawDate={yesterdayDateStr}
-              drawNumber={yesterdayDraw?.draw_number || '74'}
-            />
-
-            {/* Action Buttons for Yesterday */}
-            <div className="flex flex-wrap items-center gap-2 pt-1">
-              <button
-                type="button"
-                onClick={() => setShowYesterdaySheet(prev => !prev)}
-                className="flex-1 sm:flex-none bg-blue-700 hover:bg-blue-800 text-white font-black text-xs sm:text-sm py-2 px-4 rounded-xl transition-all shadow-sm active:scale-95 flex items-center justify-center gap-1.5"
-              >
-                <span>{showYesterdaySheet ? '▲' : '👁️'}</span>
-                <span>{showYesterdaySheet ? t('btn_hide_sheet') : t('btn_yesterday_sheet')}</span>
-              </button>
-              <a
-                href={yesterdayPdfUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                download={`Dear_Lottery_${yesterdayDateStr}_${activeSlot}.pdf`}
-                className="bg-white hover:bg-slate-100 border border-slate-300 text-slate-800 font-bold text-xs sm:text-sm py-2 px-4 rounded-xl transition-colors shadow-2xs flex items-center justify-center gap-1.5"
-              >
-                <span>📥</span>
-                <span>{lang === 'bn' ? `গতকালকের পিডিএফ ডাউনলোড (${yesterdayDateStr})` : `Download Yesterday PDF (${yesterdayDateStr})`}</span>
-              </a>
+            {/* Tap Hint */}
+            <div className="mt-2 text-xs font-black text-blue-700 hover:underline inline-flex items-center gap-1">
+              <span>🔍 অফিসিয়াল গেজেট শিট বড় করে দেখতে ট্যাপ করুন</span>
             </div>
-
-            {/* Expandable Yesterday Complete Prize Sheet */}
-            {showYesterdaySheet && (
-              <div className="pt-3 border-t border-slate-200 space-y-4 animate-in fade-in duration-200">
-                
-                {/* 2nd Prize */}
-                <div className="space-y-2">
-                  <div className="flex items-center justify-between">
-                    <h5 className="text-xs sm:text-sm font-black text-slate-900">
-                      Yesterday 2nd Prize: ₹9,000 (১০ জন বিজয়ী)
-                    </h5>
-                    <span className="text-[11px] text-emerald-700 font-mono font-bold">5 Digits</span>
-                  </div>
-                  <div className="grid grid-cols-2 sm:grid-cols-5 gap-2">
-                    {yesterdaySecondPrizes.map((num, idx) => (
-                      <div key={idx} className="bg-emerald-50 border border-emerald-200 rounded-lg py-1.5 text-center font-mono text-sm font-black text-emerald-950">
-                        {num}
-                      </div>
-                    ))}
-                  </div>
-                </div>
-
-                {/* 3rd & 4th Prize */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                  <div className="space-y-1.5">
-                    <h6 className="text-xs font-black text-slate-900">Yesterday 3rd Prize: ₹450</h6>
-                    <div className="grid grid-cols-5 gap-1.5">
-                      {yesterdayThirdPrizes.map((num, idx) => (
-                        <div key={idx} className="bg-slate-100 border border-slate-200 rounded py-1 text-center font-mono text-xs font-bold text-slate-900">
-                          {num}
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-
-                  <div className="space-y-1.5">
-                    <h6 className="text-xs font-black text-slate-900">Yesterday 4th Prize: ₹250</h6>
-                    <div className="grid grid-cols-5 gap-1.5">
-                      {yesterdayFourthPrizes.map((num, idx) => (
-                        <div key={idx} className="bg-slate-100 border border-slate-200 rounded py-1 text-center font-mono text-xs font-bold text-slate-900">
-                          {num}
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                </div>
-
-                {/* 5th Prize Sample */}
-                <div className="space-y-1.5">
-                  <div className="flex items-center justify-between">
-                    <h6 className="text-xs font-black text-slate-900">Yesterday 5th Prize: ₹120 (১০০ জন বিজয়ী)</h6>
-                    <span className="text-[10px] text-slate-500 font-mono">Last 4 Digits</span>
-                  </div>
-                  <div className="grid grid-cols-5 sm:grid-cols-10 gap-1">
-                    {yesterdayFifthPrizes.slice(0, 30).map((num, idx) => (
-                      <div key={idx} className="bg-slate-50 border border-slate-200 rounded py-1 text-center font-mono text-xs font-medium text-slate-800">
-                        {num}
-                      </div>
-                    ))}
-                  </div>
-                  <div className="text-center pt-1">
-                    <a href={`/results/${yesterdayDateStr}`} className="text-xs text-blue-700 hover:underline font-bold">
-                      View all 100 winning numbers from yesterday →
-                    </a>
-                  </div>
-                </div>
-
-              </div>
-            )}
-
           </div>
         </div>
-      )}
-
-      {/* =========================================================================
-          STATE B: DRAWING (Draw in progress / Top of hour / Result scanning)
-          ========================================================================= */}
-      {activeStatus === 'DRAWING' && (
-        <div className="bg-white border-2 border-red-300 rounded-2xl p-8 text-center space-y-4 shadow-sm">
+      ) : activeStatus === 'DRAWING' ? (
+        <div className="bg-white border-2 border-red-300 rounded-2xl p-6 text-center space-y-3 shadow-sm">
           <div className="inline-flex items-center gap-2 bg-red-100 border border-red-300 text-red-800 px-3 py-1 rounded-full text-xs font-black animate-pulse">
             <span className="w-2 h-2 rounded-full bg-red-600 animate-ping"></span>
             DRAW IN PROGRESS • ড্র চলছে
           </div>
-          <h3 className="text-2xl sm:text-3xl font-black text-slate-900">
-            {currentSlotInfo.time} রেজাল্ট শিট আপলোড ও ভেরিফাই হচ্ছে
+          <h3 className="text-xl sm:text-2xl font-black text-slate-900">
+            {currentSlotInfo.time} রেজাল্ট শিট আপলোড হচ্ছে
           </h3>
-          <p className="text-sm text-slate-600 max-w-lg mx-auto">
-            অফিসিয়াল ডিরেক্টরেট শিট স্ক্যান সম্পন্ন হচ্ছে। কোনো রিফ্রেশ ছাড়াই কয়েক সেকেন্ডের মধ্যে ১ম পুরস্কার ও সকল বিজয়ী নম্বর প্রদর্শিত হবে।
+          <p className="text-xs text-slate-600">
+            সরকারি ডিরেক্টরেট শিট স্ক্যান সম্পন্ন হচ্ছে। কয়েক সেকেন্ডের মধ্যে নম্বর প্রদর্শিত হবে।
           </p>
-          <div className="pt-2">
-            <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-blue-700"></div>
+        </div>
+      ) : (
+        /* UPCOMING PENDING CARD */
+        <div className="bg-slate-50 border border-slate-200 rounded-2xl p-5 text-center space-y-3">
+          <div className="inline-flex items-center gap-1.5 bg-slate-200 text-slate-800 text-xs font-black px-3 py-1 rounded-full">
+            <span>⏰</span>
+            <span>আসন্ন ড্র • UPCOMING DRAW ({currentSlotInfo.time})</span>
           </div>
+          <div className="font-mono text-3xl font-black text-slate-900">
+            {String(slotCountdown.hours).padStart(2, '0')}h : {String(slotCountdown.minutes).padStart(2, '0')}m : {String(slotCountdown.seconds).padStart(2, '0')}s
+          </div>
+          <p className="text-xs text-slate-600">
+            আজকের {currentSlotInfo.time} ড্র সম্পন্ন হওয়ার পর অফিশিয়াল গেজেট রেজাল্ট প্রকাশিত হবে।
+          </p>
         </div>
       )}
 
-      {/* =========================================================================
-          STATE C: RESULT OUT (Declared with real winning numbers & sheet)
-          ========================================================================= */}
-      {activeStatus === 'RESULT_OUT' && (
-        <div className="space-y-5 sm:space-y-6">
-          {/* 1-Click Official Full Paper/Gazette Sheet Viewer */}
-          <div className="flex flex-wrap items-center justify-between gap-3 bg-gradient-to-r from-blue-700 via-indigo-700 to-blue-800 p-2.5 sm:p-3 rounded-2xl text-white shadow-md">
-            <div className="flex items-center gap-2.5 px-1">
-              <span className="text-xl sm:text-2xl">📜</span>
-              <div>
-                <span className="text-xs sm:text-sm font-black tracking-tight block">
-                  {lang === 'bn' ? 'আসল সরকারি গেজেট রেজাল্ট শিট' : 'Official Scanned Gazette Paper'}
-                </span>
-                <span className="text-[10px] sm:text-[11px] text-blue-100 block">
-                  {lang === 'bn' ? 'নাগাল্যান্ড রাজ্য লটারির আসল সিলমোহর ও বিচারকদের স্বাক্ষর সম্বলিত ফুল শিট' : 'Certified signed scanned sheet in high resolution'}
-                </span>
-              </div>
-            </div>
+      {/* 3. Control Row (PDF Download + Slot Selector + Date Selector) */}
+      <div className="grid grid-cols-3 gap-2 text-xs sm:text-sm font-bold">
+        <a
+          href={pdfUrl}
+          target="_blank"
+          rel="noopener noreferrer"
+          download={`Dear_Lottery_${todayStr}_${activeSlot}.pdf`}
+          className="bg-slate-100 hover:bg-slate-200 border border-slate-300 text-slate-800 rounded-xl py-2 px-3 flex items-center justify-center gap-1 font-black uppercase shadow-2xs"
+        >
+          <span>📥 PDF</span>
+        </a>
 
-            <div className="flex items-center gap-2 w-full sm:w-auto">
-              <button
-                type="button"
-                onClick={() => openImageLightbox(jpgUrl)}
-                className="flex-1 sm:flex-none inline-flex items-center justify-center gap-2 bg-amber-400 hover:bg-amber-300 text-slate-950 font-black text-xs sm:text-sm py-2 px-4 rounded-xl transition-all shadow-sm active:scale-95"
-              >
-                <span>🔍</span>
-                <span>{lang === 'bn' ? 'অফিসিয়াল গেজেট শিট (ফুল ইমেজ)' : 'Official Gazette Sheet (Full Image)'}</span>
-              </button>
-              <a
-                href={pdfUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                download={`Dear_Lottery_${todayStr}_${activeSlot}.pdf`}
-                className="inline-flex items-center justify-center gap-1 bg-white/10 hover:bg-white/20 text-white font-bold text-xs py-2 px-3 rounded-xl transition-colors border border-white/20"
-              >
-                <span>📥 PDF</span>
-              </a>
-            </div>
+        <div className="relative">
+          <select
+            value={activeSlot}
+            onChange={(e) => setActiveSlot(e.target.value as any)}
+            className="w-full bg-slate-100 hover:bg-slate-200 border border-slate-300 text-slate-800 rounded-xl py-2 px-2.5 font-bold appearance-none text-center cursor-pointer shadow-2xs"
+          >
+            <option value="1PM">1:00 PM</option>
+            <option value="6PM">6:00 PM</option>
+            <option value="8PM">8:00 PM</option>
+          </select>
+          <span className="pointer-events-none absolute right-2 top-1/2 -translate-y-1/2 text-slate-400 text-xs">▾</span>
+        </div>
+
+        <div className="relative">
+          <select
+            value={todayStr}
+            onChange={(e) => {
+              window.location.href = `/results/${e.target.value}/${activeSlot.toLowerCase()}`;
+            }}
+            className="w-full bg-slate-100 hover:bg-slate-200 border border-slate-300 text-slate-800 rounded-xl py-2 px-2.5 font-bold appearance-none text-center cursor-pointer shadow-2xs"
+          >
+            <option value={todayStr}>{todayStr.split('-').reverse().join('.')}</option>
+            <option value={yesterdayDateStr}>{yesterdayDateStr.split('-').reverse().join('.')}</option>
+          </select>
+          <span className="pointer-events-none absolute right-2 top-1/2 -translate-y-1/2 text-slate-400 text-xs">▾</span>
+        </div>
+      </div>
+
+      {/* 4. Direct Scanned Gazette Paper Preview (Embedded on page like Lottery Sambad) */}
+      <div className="bg-white border border-slate-200 rounded-2xl p-2.5 sm:p-3 shadow-sm text-center space-y-2">
+        <div className="flex items-center justify-between px-1.5 pb-1 border-b border-slate-100">
+          <div className="flex items-center gap-1.5 text-left">
+            <span className="text-sm">📜</span>
+            <span className="text-xs font-black text-slate-900">
+              {lang === 'bn' ? `অফিসিয়াল গেজেট শিট (${currentSlotInfo.time})` : `Official Gazette Sheet (${currentSlotInfo.time})`}
+            </span>
           </div>
+          <button
+            type="button"
+            onClick={() => openImageLightbox(activeSheetUrl)}
+            className="text-xs font-black text-blue-700 hover:underline flex items-center gap-1"
+          >
+            <span>🔍 ফুল স্ক্রিন জুম</span>
+          </button>
+        </div>
 
-          {/* 1. HERO: Authentic Physical Lottery Ticket Voucher (Paper Style, Ultra High-Trust) */}
-          <LotteryTicketVoucher
-            status="DECLARED"
-            series={firstPrize.series}
-            number={firstPrize.number}
-            drawName={currentDraw.draw_name}
-            drawTime={currentDraw.draw_time || currentSlotInfo.time}
-            drawDate={todayStr}
-            drawNumber={currentDraw.draw_number || '74'}
+        <div
+          onClick={() => openImageLightbox(activeSheetUrl)}
+          className="cursor-zoom-in relative rounded-xl overflow-hidden border border-slate-200 bg-[#fcfbf7] group shadow-inner"
+        >
+          <img
+            src={activeSheetUrl}
+            alt={`Official Gazette Result Sheet ${currentDraw.draw_name} ${currentSlotInfo.time}`}
+            className="w-full h-auto object-contain transition-transform group-hover:scale-[1.01]"
+            loading="eager"
           />
-
-          {/* 2. Official Gazette Sheet (Image Preview) & Action Bar */}
-          <div className="bg-white border border-slate-200 rounded-2xl p-4 sm:p-5 shadow-sm space-y-4">
-            
-            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 border-b border-slate-100 pb-3">
-              <div>
-                <h3 className="text-base sm:text-lg font-black text-slate-900 flex items-center gap-2">
-                  <span>📄</span>
-                  <span>{t('gazette_sheet_title')}</span>
-                </h3>
-                <p className="text-xs text-slate-500 mt-0.5">
-                  {t('gazette_sheet_sub')}
-                </p>
-              </div>
-
-              <div className="flex items-center gap-2 w-full sm:w-auto">
-                <button
-                  type="button"
-                  onClick={() => openImageLightbox(jpgUrl)}
-                  className="flex-1 sm:flex-none flex items-center justify-center gap-1.5 bg-blue-700 hover:bg-blue-800 text-white font-black text-xs sm:text-sm py-2 px-3.5 rounded-xl transition-all shadow-sm active:scale-95"
-                >
-                  <span>{t('btn_open_sheet')}</span>
-                </button>
-                <a
-                  href={pdfUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  download={`${todayStr}_${activeSlot}.pdf`}
-                  className="flex-1 sm:flex-none flex items-center justify-center gap-1.5 bg-slate-100 hover:bg-slate-200 text-slate-800 font-bold text-xs sm:text-sm py-2 px-3.5 rounded-xl transition-all border border-slate-300"
-                >
-                  <span>{t('btn_download_pdf')}</span>
-                </a>
-                <a
-                  href={whatsappUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="flex-1 sm:flex-none flex items-center justify-center gap-1.5 bg-emerald-600 hover:bg-emerald-700 text-white font-black text-xs sm:text-sm py-2 px-3.5 rounded-xl transition-all shadow-sm active:scale-95"
-                >
-                  <span>{t('btn_share_whatsapp')}</span>
-                </a>
-              </div>
-            </div>
-
-            {/* Inline Interactive Gazette Sheet Preview Card */}
-            <div 
-              onClick={() => openImageLightbox(jpgUrl)}
-              className="group cursor-pointer bg-slate-50 border border-slate-200 hover:border-blue-400 rounded-xl p-3 transition-all flex flex-col sm:flex-row items-center gap-4"
-            >
-              <div className="w-full sm:w-48 h-32 bg-white rounded-lg overflow-hidden border border-slate-200 flex items-center justify-center relative flex-shrink-0 shadow-inner">
-                <img
-                  src={jpgUrl}
-                  alt={`Official Sheet ${currentDraw.draw_name} ${currentDraw.draw_time}`}
-                  className="w-full h-full object-cover group-hover:scale-105 transition-transform"
-                  onError={(e) => {
-                    (e.target as HTMLElement).style.display = 'none';
-                    const parent = (e.target as HTMLElement).parentElement;
-                    if (parent && !parent.querySelector('.sheet-placeholder')) {
-                      const ph = document.createElement('div');
-                      ph.className = 'sheet-placeholder text-center p-3 text-slate-700 text-xs font-mono';
-                      ph.innerHTML = '<span class="text-2xl block mb-1">📜</span><strong>OFFICIAL GAZETTE</strong><br/><span class="text-[10px] text-slate-500">Tap to view full sheet</span>';
-                      parent.appendChild(ph);
-                    }
-                  }}
-                />
-                <div className="absolute inset-0 bg-slate-900/10 group-hover:bg-transparent transition-colors flex items-center justify-center">
-                  <span className="bg-white/95 text-blue-900 text-[11px] font-black px-2.5 py-1 rounded-md shadow-sm border border-slate-200">
-                    {lang === 'bn' ? '🔍 বড় করে দেখুন' : '🔍 Click to Zoom'}
-                  </span>
-                </div>
-              </div>
-
-              <div className="space-y-1.5 text-center sm:text-left flex-1">
-                <div className="flex items-center justify-center sm:justify-start gap-2">
-                  <span className="bg-emerald-100 text-emerald-800 border border-emerald-300 text-[10px] font-bold px-2 py-0.5 rounded-full uppercase">
-                    {t('verified_certified')}
-                  </span>
-                  <span className="text-xs text-slate-500 font-mono">
-                    Draw #{currentDraw.draw_number || '74'}
-                  </span>
-                </div>
-                <h4 className="text-sm sm:text-base font-bold text-slate-900">
-                  {currentDraw.draw_name} {lang === 'bn' ? 'অফিসিয়াল গেজেট ফলাফল শিট' : 'Official Signed Result Document'}
-                </h4>
-                <p className="text-xs text-slate-600 leading-relaxed">
-                  {lang === 'bn' 
-                    ? 'সরকারি সিল ও স্বাক্ষর সম্বলিত আসল স্ক্যান কপি। সম্পূর্ণ শিটটি হাই-রেজোলিউশনে দেখতে এখানে ট্যাপ করুন।'
-                    : 'Authentic scanned copy with directorate seals, judges signatures, and complete prize tiers. Tap anywhere to open in high-resolution full screen.'}
-                </p>
-              </div>
-            </div>
-
+          <div className="absolute inset-0 bg-slate-900/5 group-hover:bg-transparent transition-colors flex items-center justify-center pointer-events-none">
+            <span className="bg-white/95 text-slate-900 text-xs font-black px-3 py-1.5 rounded-full shadow border border-slate-200 opacity-90 group-hover:opacity-100">
+              🔍 ট্যাপ করে ফুল স্ক্রিনে বড় করুন
+            </span>
           </div>
-
-          {/* 3. High-Contrast Newspaper Prize Tables */}
-          
-          {/* 2nd Prize: 10 Winners of ₹9,000 Each */}
-          <div className="bg-white border border-slate-200 rounded-2xl p-4 sm:p-5 shadow-sm space-y-3">
-            <div className="flex items-center justify-between border-b border-slate-100 pb-2.5">
-              <h3 className="text-sm sm:text-base font-black text-slate-900 flex items-center gap-2">
-                <span className="w-2.5 h-2.5 rounded-full bg-emerald-600"></span>
-                <span>{t('second_prize_title')}</span>
-              </h3>
-              <span className="text-xs text-emerald-700 font-bold font-mono">
-                {lang === 'bn' ? '৫ সংখ্যার টিকিট' : '5 Digits'}
-              </span>
-            </div>
-
-            <div className="grid grid-cols-2 sm:grid-cols-5 gap-2.5">
-              {secondPrizes.map((num: string, idx: number) => (
-                <div
-                  key={idx}
-                  className="bg-emerald-50/60 border border-emerald-200 hover:border-emerald-400 rounded-xl py-2.5 px-3 text-center font-mono text-lg sm:text-xl font-black text-emerald-950 tracking-wider shadow-xs select-all"
-                >
-                  {num}
-                </div>
-              ))}
-            </div>
-          </div>
-
-          {/* 3rd & 4th Prize 2-Column Grid */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            
-            {/* 3rd Prize (₹450 Each - 10 Winners) */}
-            <div className="bg-white border border-slate-200 rounded-2xl p-4 shadow-sm space-y-3">
-              <div className="flex items-center justify-between border-b border-slate-100 pb-2">
-                <h4 className="text-xs sm:text-sm font-black text-slate-900 flex items-center gap-2">
-                  <span className="w-2 h-2 rounded-full bg-blue-600"></span>
-                  <span>{t('third_prize_title')}</span>
-                </h4>
-                <span className="text-[11px] text-slate-500 font-mono">
-                  {lang === 'bn' ? 'শেষ ৪ সংখ্যা' : 'Last 4 Digits'}
-                </span>
-              </div>
-              <div className="grid grid-cols-5 gap-2">
-                {thirdPrizes.map((num: string, idx: number) => (
-                  <div
-                    key={idx}
-                    className="bg-slate-50 border border-slate-200 hover:border-blue-300 rounded-lg py-2 text-center font-mono text-base font-bold text-slate-900 tracking-wider select-all"
-                  >
-                    {num}
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            {/* 4th Prize (₹250 Each - 10 Winners) */}
-            <div className="bg-white border border-slate-200 rounded-2xl p-4 shadow-sm space-y-3">
-              <div className="flex items-center justify-between border-b border-slate-100 pb-2">
-                <h4 className="text-xs sm:text-sm font-black text-slate-900 flex items-center gap-2">
-                  <span className="w-2 h-2 rounded-full bg-indigo-600"></span>
-                  <span>{t('fourth_prize_title')}</span>
-                </h4>
-                <span className="text-[11px] text-slate-500 font-mono">
-                  {lang === 'bn' ? 'শেষ ৪ সংখ্যা' : 'Last 4 Digits'}
-                </span>
-              </div>
-              <div className="grid grid-cols-5 gap-2">
-                {fourthPrizes.map((num: string, idx: number) => (
-                  <div
-                    key={idx}
-                    className="bg-slate-50 border border-slate-200 hover:border-indigo-300 rounded-lg py-2 text-center font-mono text-base font-bold text-slate-900 tracking-wider select-all"
-                  >
-                    {num}
-                  </div>
-                ))}
-              </div>
-            </div>
-
-          </div>
-
-          {/* 5th Prize: 100 Numbers of ₹120 Each (Clean Newspaper Scanning Grid) */}
-          <div className="bg-white border border-slate-200 rounded-2xl p-4 sm:p-5 shadow-sm space-y-3">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between border-b border-slate-100 pb-2.5 gap-1">
-              <div className="flex items-center gap-2">
-                <span className="w-2.5 h-2.5 rounded-full bg-amber-500"></span>
-                <h4 className="text-sm sm:text-base font-black text-slate-900">
-                  {t('fifth_prize_title')}
-                </h4>
-              </div>
-              <span className="text-xs text-blue-700 font-mono font-bold">
-                {lang === 'bn' ? 'শেষ ৪ সংখ্যা মিলেছে' : 'Matches Last 4 Digits'}
-              </span>
-            </div>
-
-            <div className="grid grid-cols-5 sm:grid-cols-10 gap-1.5 sm:gap-2 pt-1">
-              {fifthPrizes.map((num: string, idx: number) => (
-                <div
-                  key={idx}
-                  className="bg-slate-50 border border-slate-200 hover:border-amber-400 hover:bg-amber-50 rounded-lg py-1.5 text-center font-mono text-sm sm:text-base font-bold text-slate-900 tracking-wider transition-colors select-all shadow-2xs"
-                >
-                  {num}
-                </div>
-              ))}
-            </div>
-          </div>
-
-          {/* Bottom Utility Controls */}
-          <div className="pt-2 flex flex-wrap items-center justify-between gap-3 text-xs text-slate-500 border-t border-slate-200">
-            <div className="flex items-center gap-2">
-              <span>Verified Government Gazette Record</span>
-              <span>•</span>
-              <button
-                type="button"
-                onClick={handleCopyLink}
-                className="text-blue-700 hover:underline font-bold"
-              >
-                {copiedLink ? '✓ Link Copied!' : '🔗 Copy Direct Result Link'}
-              </button>
-            </div>
-            <button
-              onClick={() => typeof window !== 'undefined' && window.print()}
-              type="button"
-              className="text-slate-700 hover:text-slate-900 font-bold inline-flex items-center gap-1.5 bg-slate-100 hover:bg-slate-200 px-3 py-1.5 rounded-lg transition-colors border border-slate-300"
-            >
-              <span>🖨️</span>
-              <span>Print Official Sheet</span>
-            </button>
-          </div>
-
         </div>
-      )}
+      </div>
 
-      {/* Lightbox Modal for Official Sheet Fullscreen Zoom View */}
+      {/* 5. WhatsApp Share Button */}
+      <a
+        href={whatsappUrl}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="w-full bg-[#25d366] hover:bg-[#20bd5a] text-white font-black text-xs sm:text-sm py-2.5 px-4 rounded-xl flex items-center justify-center gap-2 shadow-sm transition-all active:scale-95"
+      >
+        <span>💬</span>
+        <span>হোয়াটসঅ্যাপে রেজাল্ট শেয়ার করুন (Share on WhatsApp)</span>
+      </a>
+
+      {/* 6. Clean Structured Text Prize Tables (Toggleable/Expandable) */}
+      <div className="space-y-3 pt-1">
+        
+        {/* Toggle Bar */}
+        <button
+          type="button"
+          onClick={() => setShowTextTables(prev => !prev)}
+          className="w-full bg-slate-50 hover:bg-slate-100 border border-slate-200 rounded-xl py-2 px-3 flex items-center justify-between text-xs font-black text-slate-800 transition-colors"
+        >
+          <span>📋 ২য় থেকে ৫ম পুরস্কারের বিস্তারিত নম্বর তালিকা</span>
+          <span>{showTextTables ? '▲ বন্ধ করুন' : '▼ দেখুন'}</span>
+        </button>
+
+        {showTextTables && (
+          <div className="space-y-3 animate-in fade-in duration-200">
+            {/* 2nd Prize */}
+            <div className="bg-white border border-slate-200 rounded-xl p-3.5 shadow-xs space-y-2">
+              <div className="flex items-center justify-between border-b border-slate-100 pb-1.5">
+                <h4 className="text-xs sm:text-sm font-black text-slate-900 flex items-center gap-1.5">
+                  <span className="w-2.5 h-2.5 rounded-full bg-emerald-600"></span>
+                  <span>২য় পুরস্কার: ₹৯,০০০ (১০ জন বিজয়ী)</span>
+                </h4>
+                <span className="text-[11px] text-emerald-700 font-mono font-bold">5 Digits</span>
+              </div>
+              <div className="grid grid-cols-2 sm:grid-cols-5 gap-2">
+                {secondPrizes.map((num: string, idx: number) => (
+                  <div
+                    key={idx}
+                    className="bg-emerald-50/70 border border-emerald-200 rounded-lg py-2 text-center font-mono text-base font-black text-emerald-950 select-all"
+                  >
+                    {num}
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* 3rd & 4th Prize */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+              <div className="bg-white border border-slate-200 rounded-xl p-3 shadow-xs space-y-2">
+                <div className="flex items-center justify-between border-b border-slate-100 pb-1.5">
+                  <h5 className="text-xs font-black text-slate-900">৩য় পুরস্কার: ₹৪৫০</h5>
+                  <span className="text-[10px] text-slate-500 font-mono">Last 4 Digits</span>
+                </div>
+                <div className="grid grid-cols-5 gap-1.5">
+                  {thirdPrizes.map((num: string, idx: number) => (
+                    <div key={idx} className="bg-slate-50 border border-slate-200 rounded py-1.5 text-center font-mono text-xs font-bold text-slate-900 select-all">
+                      {num}
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              <div className="bg-white border border-slate-200 rounded-xl p-3 shadow-xs space-y-2">
+                <div className="flex items-center justify-between border-b border-slate-100 pb-1.5">
+                  <h5 className="text-xs font-black text-slate-900">৪র্থ পুরস্কার: ₹২৫০</h5>
+                  <span className="text-[10px] text-slate-500 font-mono">Last 4 Digits</span>
+                </div>
+                <div className="grid grid-cols-5 gap-1.5">
+                  {fourthPrizes.map((num: string, idx: number) => (
+                    <div key={idx} className="bg-slate-50 border border-slate-200 rounded py-1.5 text-center font-mono text-xs font-bold text-slate-900 select-all">
+                      {num}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            {/* 5th Prize */}
+            <div className="bg-white border border-slate-200 rounded-xl p-3.5 shadow-xs space-y-2">
+              <div className="flex items-center justify-between border-b border-slate-100 pb-1.5">
+                <h4 className="text-xs sm:text-sm font-black text-slate-900 flex items-center gap-1.5">
+                  <span className="w-2.5 h-2.5 rounded-full bg-amber-500"></span>
+                  <span>৫ম পুরস্কার: ₹১২০ (১০০ জন বিজয়ী)</span>
+                </h4>
+                <span className="text-[11px] text-blue-700 font-mono font-bold">Last 4 Digits</span>
+              </div>
+              <div className="grid grid-cols-5 sm:grid-cols-10 gap-1.5">
+                {fifthPrizes.map((num: string, idx: number) => (
+                  <div
+                    key={idx}
+                    className="bg-slate-50 hover:bg-amber-50 border border-slate-200 rounded py-1.5 text-center font-mono text-xs font-bold text-slate-900 select-all transition-colors"
+                  >
+                    {num}
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* 7. Lightbox Zoom Modal (Like Lottery Sambad imodal) */}
       {showImageModal && (
         <div
           role="dialog"
           aria-modal="true"
-          className="fixed inset-0 z-50 bg-slate-900/80 backdrop-blur-sm flex items-center justify-center p-2 sm:p-4 animate-in fade-in duration-200"
+          className="fixed inset-0 z-50 bg-black/85 backdrop-blur-sm flex flex-col p-2 sm:p-4 animate-in fade-in duration-200"
           onClick={() => setShowImageModal(false)}
         >
+          {/* Modal Header */}
           <div
-            className="bg-white border border-slate-300 rounded-2xl max-w-4xl w-full p-4 sm:p-6 shadow-2xl relative space-y-4 max-h-[95vh] flex flex-col"
+            className="flex items-center justify-between max-w-3xl w-full mx-auto pb-2 text-white"
             onClick={e => e.stopPropagation()}
           >
-            <div className="flex items-center justify-between pb-3 border-b border-slate-200">
-              <h3 className="text-base sm:text-lg font-black text-slate-900 flex items-center gap-2">
-                <span>📄</span>
-                <span>Official Dear Lottery Result Gazette Sheet (অফিসিয়াল শিট)</span>
-              </h3>
+            <div className="flex items-center gap-2 font-black text-xs sm:text-sm">
+              <span>📄</span>
+              <span>{currentDraw.draw_name} • {currentSlotInfo.time}</span>
+            </div>
+            <button
+              type="button"
+              onClick={() => setShowImageModal(false)}
+              className="w-9 h-9 rounded-full bg-white/20 hover:bg-white/30 text-white font-bold text-base flex items-center justify-center transition-colors"
+            >
+              ✕
+            </button>
+          </div>
+
+          {/* Interactive Zoom Frame */}
+          <div
+            className="flex-1 overflow-auto max-w-3xl w-full mx-auto bg-slate-900/60 rounded-2xl p-2 border border-white/10 flex items-center justify-center relative touch-manipulation"
+            onClick={e => e.stopPropagation()}
+          >
+            <img
+              src={selectedImageUrl}
+              alt="Official Dear Lottery Gazette Sheet"
+              style={{
+                transform: `scale(${zoomScale})`,
+                transformOrigin: 'top center',
+                transition: 'transform 0.18s ease'
+              }}
+              className="max-w-full h-auto object-contain rounded shadow-2xl"
+            />
+          </div>
+
+          {/* Bottom Zoom Controls (+ / - / % / PDF) */}
+          <div
+            className="max-w-3xl w-full mx-auto pt-3 flex items-center justify-center gap-3 text-white"
+            onClick={e => e.stopPropagation()}
+          >
+            <div className="inline-flex items-center bg-slate-800/90 border border-white/20 rounded-full h-10 px-3 gap-2 shadow-lg">
               <button
                 type="button"
-                onClick={() => setShowImageModal(false)}
-                className="w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold flex items-center justify-center transition-colors"
+                onClick={handleZoomOut}
+                disabled={zoomScale <= 1}
+                className="w-7 h-7 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center font-black text-base disabled:opacity-40"
               >
-                ✕
+                −
+              </button>
+              <button
+                type="button"
+                onClick={handleResetZoom}
+                className="px-2 font-mono font-bold text-xs"
+              >
+                {Math.round(zoomScale * 100)}%
+              </button>
+              <button
+                type="button"
+                onClick={handleZoomIn}
+                disabled={zoomScale >= 3}
+                className="w-7 h-7 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center font-black text-base disabled:opacity-40"
+              >
+                +
               </button>
             </div>
 
-            <div className="flex-1 overflow-auto bg-slate-100 rounded-xl p-2 border border-slate-200 flex items-center justify-center">
-              <img
-                src={selectedImageUrl}
-                alt="Official Dear Lottery Gazette Result Sheet"
-                className="max-w-full max-h-[75vh] object-contain rounded shadow-lg"
-                onError={(e) => {
-                  (e.target as HTMLElement).style.display = 'none';
-                  const parent = (e.target as HTMLElement).parentElement;
-                  if (parent && !parent.querySelector('.fallback-msg')) {
-                    const msg = document.createElement('div');
-                    msg.className = 'fallback-msg p-8 text-center text-slate-700';
-                    msg.innerHTML = '<p class="font-bold text-slate-900 mb-2">Official Signed Gazette Document Available</p><p class="text-xs text-slate-500">Please use the Download PDF button below to view the official government signed publication.</p>';
-                    parent.appendChild(msg);
-                  }
-                }}
-              />
-            </div>
-
-            <div className="flex items-center justify-between pt-2">
-              <a
-                href={pdfUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="bg-blue-700 hover:bg-blue-800 text-white font-black text-xs sm:text-sm px-4 py-2.5 rounded-xl transition-all shadow-sm"
-              >
-                📥 Download High-Res PDF
-              </a>
-              <button
-                type="button"
-                onClick={() => setShowImageModal(false)}
-                className="bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs sm:text-sm px-4 py-2.5 rounded-xl transition-all border border-slate-300"
-              >
-                Close View
-              </button>
-            </div>
+            <a
+              href={pdfUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              download={`Dear_Lottery_${todayStr}_${activeSlot}.pdf`}
+              className="bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs px-4 py-2 rounded-full shadow-lg flex items-center gap-1.5"
+            >
+              <span>📥 PDF</span>
+            </a>
           </div>
         </div>
       )}
