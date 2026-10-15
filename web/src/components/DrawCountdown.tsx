@@ -128,7 +128,7 @@ export default function DrawCountdown({ onResultDetected, compact = false }: Dra
     return (
       <div className="flex items-center gap-1.5 text-xs">
         <span className="text-[11px] font-bold text-slate-500 hidden sm:inline">
-          {lang === 'bn' ? `পরবর্তী ড্র (${nextDraw.timeLabel}):` : `Next (${nextDraw.timeLabel}):`}
+          {lang === 'bn' ? `পরবর্তী ড্র (${nextDraw.timeLabel}):` : lang === 'hi' ? `अगला ड्रा (${nextDraw.timeLabel}):` : `Next (${nextDraw.timeLabel}):`}
         </span>
         <span className="inline-flex items-center gap-1 bg-slate-100 border border-slate-300 text-slate-900 px-2.5 py-1 rounded-lg font-mono text-xs font-black shadow-2xs">
           <span>⏰</span>
@@ -158,7 +158,7 @@ export default function DrawCountdown({ onResultDetected, compact = false }: Dra
           </div>
 
           <div className="text-xs sm:text-sm font-bold text-slate-900 truncate">
-            <span className="hidden sm:inline">{lang === 'bn' ? 'পরবর্তী ড্র: ' : 'Next: '}</span>
+            <span className="hidden sm:inline">{lang === 'bn' ? 'পরবর্তী ড্র: ' : lang === 'hi' ? 'अगला ड्रा: ' : 'Next: '}</span>
             <span className="text-blue-700 font-black">{nextDraw.timeLabel}</span>
             <span className="hidden md:inline text-slate-500 font-medium text-xs ml-1.5">
               ({nextDraw.name})
@@ -174,14 +174,14 @@ export default function DrawCountdown({ onResultDetected, compact = false }: Dra
         <div className="flex items-center gap-1.5 sm:gap-2 flex-shrink-0">
           {newResultData ? (
             <div className="flex items-center gap-2 bg-emerald-50 border border-emerald-300 text-emerald-800 px-3 py-1 rounded-xl text-xs font-black shadow-sm">
-              <span>{lang === 'bn' ? '🎉 রেজাল্ট আউট:' : '🎉 Result Out:'}</span>
+              <span>{lang === 'bn' ? '🎉 রেজাল্ট আউট:' : lang === 'hi' ? '🎉 रिजल्ट जारी:' : '🎉 Result Out:'}</span>
               <span className="font-mono text-slate-950 text-sm font-black">
                 {newResultData.parsed_data?.prizes?.first_prize?.series} {newResultData.parsed_data?.prizes?.first_prize?.number}
               </span>
             </div>
           ) : isLive ? (
             <div className="flex items-center gap-2 bg-red-50 border border-red-300 text-red-700 px-3 py-1 rounded-xl text-xs font-black animate-pulse">
-              <span>{lang === 'bn' ? `🚀 ড্র চলছে • ${pollCountdown}s এ অটো-আপডেট` : `🚀 Drawing Live • Auto-updating in ${pollCountdown}s`}</span>
+              <span>{lang === 'bn' ? `🚀 ড্র চলছে • ${pollCountdown}s এ অটো-আপডেট` : lang === 'hi' ? `🚀 ड्रा जारी • ${pollCountdown}s में ऑटो-अपडेट` : `🚀 Drawing Live • Auto-updating in ${pollCountdown}s`}</span>
             </div>
           ) : (
             <div className="flex items-center gap-1.5 bg-slate-50 border border-slate-200 px-3 py-1 rounded-xl">

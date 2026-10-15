@@ -49,9 +49,9 @@ export default function LiveResultsTabs({
   todayDateStr
 }: LiveResultsTabsProps) {
   const slots = [
-    { key: '1PM' as const, time: '1:00 PM', labelEn: '1:00 PM Morning', labelBn: 'দুপুর ১:০০', icon: '☀️' },
-    { key: '6PM' as const, time: '6:00 PM', labelEn: '6:00 PM Day', labelBn: 'সন্ধ্যা ৬:০০', icon: '🌅' },
-    { key: '8PM' as const, time: '8:00 PM', labelEn: '8:00 PM Night', labelBn: 'রাত ৮:০০', icon: '🌙' }
+    { key: '1PM' as const, time: '1:00 PM', labelEn: 'Morning', labelBn: 'দুপুর ১:০০', labelHi: 'दोपहर 1:00', icon: '☀️' },
+    { key: '6PM' as const, time: '6:00 PM', labelEn: 'Day', labelBn: 'সন্ধ্যা ৬:০০', labelHi: 'शाम 6:00', icon: '🌅' },
+    { key: '8PM' as const, time: '8:00 PM', labelEn: 'Night', labelBn: 'রাত ৮:০০', labelHi: 'रात 8:00', icon: '🌙' }
   ];
 
   const todayStr = todayDateStr || getISTDateString();
@@ -203,7 +203,7 @@ export default function LiveResultsTabs({
                 {slot.time}
               </span>
               <span className={`text-[10px] sm:text-xs font-bold mt-0.5 ${isActive ? 'text-emerald-100' : 'text-slate-500'}`}>
-                {lang === 'bn' ? slot.labelBn : slot.labelEn.replace(slot.time + ' ', '')}
+                {lang === 'bn' ? slot.labelBn : lang === 'hi' ? slot.labelHi : slot.labelEn}
               </span>
             </button>
           );
@@ -251,7 +251,7 @@ export default function LiveResultsTabs({
             {/* Massive 1st Prize Number */}
             <div className="py-2">
               <span className="text-[11px] font-black uppercase tracking-wider text-slate-600 block mb-0.5">
-                ১ম পুরস্কার • 1st Prize ₹1 Crore Winner
+                {lang === 'bn' ? '১ম পুরস্কার • 1st Prize ₹1 Crore Winner' : lang === 'hi' ? 'प्रथम पुरस्कार • 1st Prize ₹1 Crore Winner' : '1st Prize • ₹1 Crore Winner'}
               </span>
               <div className={`font-mono font-black text-4xl sm:text-6xl tracking-widest ${
                 activeSlot === '1PM' ? 'text-[#2c65c5]' : activeSlot === '6PM' ? 'text-[#dc2626]' : 'text-[#32733b]'
@@ -262,12 +262,22 @@ export default function LiveResultsTabs({
 
             {/* Consolation info */}
             <div className="text-[11px] font-bold text-slate-500">
-              সান্ত্বনা পুরস্কার: ₹১,০০০ • {firstPrize.number} অন্য সব সিরিজ
+              {lang === 'bn'
+                ? `সান্ত্বনা পুরস্কার: ₹১,০০০ • ${firstPrize.number} অন্য সব সিরিজ`
+                : lang === 'hi'
+                ? `सांत्वना पुरस्कार: ₹1,000 • ${firstPrize.number} अन्य सभी सीरीज`
+                : `Consolation Prize: ₹1,000 • ${firstPrize.number} Remaining Series`}
             </div>
 
             {/* Tap Hint */}
             <div className="mt-2 text-xs font-black text-blue-700 hover:underline inline-flex items-center gap-1">
-              <span>🔍 অফিসিয়াল গেজেট শিট বড় করে দেখতে ট্যাপ করুন</span>
+              <span>
+                {lang === 'bn'
+                  ? '🔍 অফিসিয়াল গেজেট শিট বড় করে দেখতে ট্যাপ করুন'
+                  : lang === 'hi'
+                  ? '🔍 ऑफिशियल गजट शीट बड़ा करके देखने के लिए टैप करें'
+                  : '🔍 Tap to zoom official gazette sheet'}
+              </span>
             </div>
           </div>
         </div>
@@ -275,13 +285,17 @@ export default function LiveResultsTabs({
         <div className="bg-white border-2 border-red-300 rounded-2xl p-6 text-center space-y-3 shadow-sm">
           <div className="inline-flex items-center gap-2 bg-red-100 border border-red-300 text-red-800 px-3 py-1 rounded-full text-xs font-black animate-pulse">
             <span className="w-2 h-2 rounded-full bg-red-600 animate-ping"></span>
-            DRAW IN PROGRESS • ড্র চলছে
+            {lang === 'bn' ? 'ড্র চলছে • DRAW IN PROGRESS' : lang === 'hi' ? 'ड्रा प्रगति पर है • DRAW IN PROGRESS' : 'DRAW IN PROGRESS'}
           </div>
           <h3 className="text-xl sm:text-2xl font-black text-slate-900">
-            {currentSlotInfo.time} রেজাল্ট শিট আপলোড হচ্ছে
+            {lang === 'bn' ? `${currentSlotInfo.time} রেজাল্ট শিট আপলোড হচ্ছে` : lang === 'hi' ? `${currentSlotInfo.time} रिजल्ट शीट अपलोड हो रही है` : `${currentSlotInfo.time} Result Sheet Uploading`}
           </h3>
           <p className="text-xs text-slate-600">
-            সরকারি ডিরেক্টরেট শিট স্ক্যান সম্পন্ন হচ্ছে। কয়েক সেকেন্ডের মধ্যে নম্বর প্রদর্শিত হবে।
+            {lang === 'bn'
+              ? 'সরকারি ডিরেক্টরেট শিট স্ক্যান সম্পন্ন হচ্ছে। কয়েক সেকেন্ডের মধ্যে নম্বর প্রদর্শিত হবে।'
+              : lang === 'hi'
+              ? 'सरकारी निदेशालय शीट स्कैन हो रही है। कुछ ही पलों में नंबर दिखाई देंगे।'
+              : 'Official Directorate result sheet scanning in progress. Winning numbers will appear momentarily.'}
           </p>
         </div>
       ) : (
@@ -289,13 +303,17 @@ export default function LiveResultsTabs({
         <div className="bg-slate-50 border border-slate-200 rounded-2xl p-5 text-center space-y-3">
           <div className="inline-flex items-center gap-1.5 bg-slate-200 text-slate-800 text-xs font-black px-3 py-1 rounded-full">
             <span>⏰</span>
-            <span>আসন্ন ড্র • UPCOMING DRAW ({currentSlotInfo.time})</span>
+            <span>{lang === 'bn' ? `আসন্ন ড্র • UPCOMING DRAW (${currentSlotInfo.time})` : lang === 'hi' ? `आगामी ड्रा • UPCOMING DRAW (${currentSlotInfo.time})` : `UPCOMING DRAW (${currentSlotInfo.time})`}</span>
           </div>
           <div className="font-mono text-3xl font-black text-slate-900">
             {String(slotCountdown.hours).padStart(2, '0')}h : {String(slotCountdown.minutes).padStart(2, '0')}m : {String(slotCountdown.seconds).padStart(2, '0')}s
           </div>
           <p className="text-xs text-slate-600">
-            আজকের {currentSlotInfo.time} ড্র সম্পন্ন হওয়ার পর অফিশিয়াল গেজেট রেজাল্ট প্রকাশিত হবে।
+            {lang === 'bn'
+              ? `আজকের ${currentSlotInfo.time} ড্র সম্পন্ন হওয়ার পর অফিশিয়াল গেজেট রেজাল্ট প্রকাশিত হবে।`
+              : lang === 'hi'
+              ? `आज के ${currentSlotInfo.time} ड्रा पूरा होने के बाद आधिकारिक गजट रिजल्ट घोषित होगा।`
+              : `Official gazette result will be declared immediately following today's ${currentSlotInfo.time} draw.`}
           </p>
         </div>
       )}
@@ -346,7 +364,7 @@ export default function LiveResultsTabs({
           <div className="flex items-center gap-1.5 text-left">
             <span className="text-sm">📜</span>
             <span className="text-xs font-black text-slate-900">
-              {lang === 'bn' ? `অফিসিয়াল গেজেট শিট (${currentSlotInfo.time})` : `Official Gazette Sheet (${currentSlotInfo.time})`}
+              {lang === 'bn' ? `অফিসিয়াল গেজেট শিট (${currentSlotInfo.time})` : lang === 'hi' ? `ऑफिशियल गजट शीट (${currentSlotInfo.time})` : `Official Gazette Sheet (${currentSlotInfo.time})`}
             </span>
           </div>
           <button
@@ -354,7 +372,7 @@ export default function LiveResultsTabs({
             onClick={() => openImageLightbox(activeSheetUrl)}
             className="text-xs font-black text-blue-700 hover:underline flex items-center gap-1"
           >
-            <span>🔍 ফুল স্ক্রিন জুম</span>
+            <span>{lang === 'bn' ? '🔍 ফুল স্ক্রিন জুম' : lang === 'hi' ? '🔍 फुल स्क्रीन ज़ूम' : '🔍 Full Screen Zoom'}</span>
           </button>
         </div>
 
@@ -370,7 +388,7 @@ export default function LiveResultsTabs({
           />
           <div className="absolute inset-0 bg-slate-900/5 group-hover:bg-transparent transition-colors flex items-center justify-center pointer-events-none">
             <span className="bg-white/95 text-slate-900 text-xs font-black px-3 py-1.5 rounded-full shadow border border-slate-200 opacity-90 group-hover:opacity-100">
-              🔍 ট্যাপ করে ফুল স্ক্রিনে বড় করুন
+              {lang === 'bn' ? '🔍 ট্যাপ করে ফুল স্ক্রিনে বড় করুন' : lang === 'hi' ? '🔍 टैप करके फुल स्क्रीन में बड़ा करें' : '🔍 Tap to view full screen zoom'}
             </span>
           </div>
         </div>
@@ -384,7 +402,7 @@ export default function LiveResultsTabs({
         className="w-full bg-[#25d366] hover:bg-[#20bd5a] text-white font-black text-xs sm:text-sm py-2.5 px-4 rounded-xl flex items-center justify-center gap-2 shadow-sm transition-all active:scale-95"
       >
         <span>💬</span>
-        <span>হোয়াটসঅ্যাপে রেজাল্ট শেয়ার করুন (Share on WhatsApp)</span>
+        <span>{lang === 'bn' ? 'হোয়াটসঅ্যাপে রেজাল্ট শেয়ার করুন (Share on WhatsApp)' : lang === 'hi' ? 'व्हाट्सएप पर रिजल्ट शेयर करें (Share on WhatsApp)' : 'Share Result on WhatsApp'}</span>
       </a>
 
       {/* 6. Clean Structured Text Prize Tables (Toggleable/Expandable) */}
@@ -396,8 +414,8 @@ export default function LiveResultsTabs({
           onClick={() => setShowTextTables(prev => !prev)}
           className="w-full bg-slate-50 hover:bg-slate-100 border border-slate-200 rounded-xl py-2 px-3 flex items-center justify-between text-xs font-black text-slate-800 transition-colors"
         >
-          <span>📋 ২য় থেকে ৫ম পুরস্কারের বিস্তারিত নম্বর তালিকা</span>
-          <span>{showTextTables ? '▲ বন্ধ করুন' : '▼ দেখুন'}</span>
+          <span>{lang === 'bn' ? '📋 ২য় থেকে ৫ম পুরস্কারের বিস্তারিত নম্বর তালিকা' : lang === 'hi' ? '📋 2nd से 5th पुरस्कार की पूरी सूची' : '📋 2nd to 5th Prize Full Winning Numbers List'}</span>
+          <span>{showTextTables ? (lang === 'bn' ? '▲ বন্ধ করুন' : lang === 'hi' ? '▲ बंद करें' : '▲ Hide') : (lang === 'bn' ? '▼ দেখুন' : lang === 'hi' ? '▼ देखें' : '▼ View')}</span>
         </button>
 
         {showTextTables && (
@@ -407,7 +425,7 @@ export default function LiveResultsTabs({
               <div className="flex items-center justify-between border-b border-slate-100 pb-1.5">
                 <h4 className="text-xs sm:text-sm font-black text-slate-900 flex items-center gap-1.5">
                   <span className="w-2.5 h-2.5 rounded-full bg-emerald-600"></span>
-                  <span>২য় পুরস্কার: ₹১০,০০০ (১০ জন বিজয়ী)</span>
+                  <span>{lang === 'bn' ? '২য় পুরস্কার: ₹১০,০০০ (১০ জন বিজয়ী)' : lang === 'hi' ? 'द्वितीय पुरस्कार: ₹10,000 (10 विजेता)' : '2nd Prize: ₹10,000 (10 Winners)'}</span>
                 </h4>
                 <span className="text-[11px] text-emerald-700 font-mono font-bold">5 Digits</span>
               </div>
@@ -427,7 +445,7 @@ export default function LiveResultsTabs({
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
               <div className="bg-white border border-slate-200 rounded-xl p-3 shadow-xs space-y-2">
                 <div className="flex items-center justify-between border-b border-slate-100 pb-1.5">
-                  <h5 className="text-xs font-black text-slate-900">৩য় পুরস্কার: ₹৫০০</h5>
+                  <h5 className="text-xs font-black text-slate-900">{lang === 'bn' ? '৩য় পুরস্কার: ₹৫০০' : lang === 'hi' ? 'तृतीय पुरस्कार: ₹500' : '3rd Prize: ₹500'}</h5>
                   <span className="text-[10px] text-slate-500 font-mono">Last 4 Digits</span>
                 </div>
                 <div className="grid grid-cols-5 gap-1.5">
@@ -441,7 +459,7 @@ export default function LiveResultsTabs({
 
               <div className="bg-white border border-slate-200 rounded-xl p-3 shadow-xs space-y-2">
                 <div className="flex items-center justify-between border-b border-slate-100 pb-1.5">
-                  <h5 className="text-xs font-black text-slate-900">৪র্থ পুরস্কার: ₹২৫০</h5>
+                  <h5 className="text-xs font-black text-slate-900">{lang === 'bn' ? '৪র্থ পুরস্কার: ₹২৫০' : lang === 'hi' ? 'चतुर्थ पुरस्कार: ₹250' : '4th Prize: ₹250'}</h5>
                   <span className="text-[10px] text-slate-500 font-mono">Last 4 Digits</span>
                 </div>
                 <div className="grid grid-cols-5 gap-1.5">
@@ -459,7 +477,7 @@ export default function LiveResultsTabs({
               <div className="flex items-center justify-between border-b border-slate-100 pb-1.5">
                 <h4 className="text-xs sm:text-sm font-black text-slate-900 flex items-center gap-1.5">
                   <span className="w-2.5 h-2.5 rounded-full bg-amber-500"></span>
-                  <span>৫ম পুরস্কার: ₹১২০ (১০০ জন বিজয়ী)</span>
+                  <span>{lang === 'bn' ? '৫ম পুরস্কার: ₹১২০ (১০০ জন বিজয়ী)' : lang === 'hi' ? '5वां पुरस्कार: ₹120 (100 विजेता)' : '5th Prize: ₹120 (100 Winners)'}</span>
                 </h4>
                 <span className="text-[11px] text-blue-700 font-mono font-bold">Last 4 Digits</span>
               </div>

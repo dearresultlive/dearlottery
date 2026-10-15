@@ -31,13 +31,13 @@ const analytics = await fetchFrequencyAnalytics();
       <div class="flex items-center gap-2 min-w-0">
         <span class="inline-flex items-center gap-1.5 bg-red-100 text-red-800 text-[10px] sm:text-xs font-black px-2 py-0.5 rounded-full uppercase tracking-wider flex-shrink-0">
           <span class="w-2 h-2 rounded-full bg-red-600 animate-ping"></span>
-          লাইভ
+          <span id="status-live-badge">LIVE</span>
         </span>
-        <h1 class="text-xs sm:text-sm font-black text-slate-900 truncate">
-          আজকের ডিয়ার লটারি রেজাল্ট • {todayDateStr}
+        <h1 class="text-xs sm:text-sm font-black text-slate-900 truncate" id="status-title">
+          Dear Lottery Result Today • {todayDateStr}
         </h1>
         <span class="text-xs text-slate-300 hidden md:inline">|</span>
-        <span class="text-xs text-slate-500 hidden md:inline font-medium">নাগাল্যান্ড ও সিকিম সরকারি গেজেট</span>
+        <span class="text-xs text-slate-500 hidden md:inline font-medium" id="status-sub">Nagaland &amp; Sikkim Official Gazette</span>
       </div>
       <div class="flex items-center gap-2 ml-auto">
         <DrawCountdown client:load compact={true} />
@@ -125,4 +125,37 @@ const analytics = await fetchFrequencyAnalytics();
     </section>
 
   </div>
+
+  <script is:inline define:vars={{ todayDateStr }}>
+    function updateIndexLanguage(lang) {
+      var badge = document.getElementById('status-live-badge');
+      var title = document.getElementById('status-title');
+      var sub = document.getElementById('status-sub');
+
+      if (lang === 'bn') {
+        if (badge) badge.textContent = 'লাইভ';
+        if (title) title.textContent = 'আজকের ডিয়ার লটারি রেজাল্ট • ' + todayDateStr;
+        if (sub) sub.textContent = 'নাগাল্যান্ড ও সিকিম সরকারি গেজেট';
+      } else if (lang === 'hi') {
+        if (badge) badge.textContent = 'लाइव';
+        if (title) title.textContent = 'आज का डियर लॉटरी रिजल्ट • ' + todayDateStr;
+        if (sub) sub.textContent = 'नागालैंड और सिक्किम सरकारी गजट';
+      } else {
+        if (badge) badge.textContent = 'LIVE';
+        if (title) title.textContent = 'Dear Lottery Result Today • ' + todayDateStr;
+        if (sub) sub.textContent = 'Nagaland & Sikkim Official Gazette';
+      }
+    }
+
+    try {
+      var currentLang = localStorage.getItem('dearlottery_lang') || 'en';
+      updateIndexLanguage(currentLang);
+    } catch(e) {}
+
+    window.addEventListener('dearlottery:lang_change', function(e) {
+      if (e.detail) {
+        updateIndexLanguage(e.detail);
+      }
+    });
+  </script>
 </Layout>

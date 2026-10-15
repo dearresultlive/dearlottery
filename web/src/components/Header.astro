@@ -27,8 +27,8 @@ const { currentPath = '/' } = Astro.props;
               LIVE
             </span>
           </div>
-          <span class="text-[9px] sm:text-[11px] text-blue-700 font-bold tracking-tight block truncate">
-            লটারি সংবাদ • আজকের তাজা রেজাল্ট
+          <span id="header-brand-tagline" class="text-[9px] sm:text-[11px] text-blue-700 font-bold tracking-tight block truncate">
+            Lottery Sambad • Live Result Portal
           </span>
         </div>
       </a>
@@ -43,7 +43,7 @@ const { currentPath = '/' } = Astro.props;
               : 'text-slate-700 hover:text-blue-700 hover:bg-slate-100'
           }`}
         >
-          আজকের রেজাল্ট
+          <span id="nav-today">Today's Result</span>
         </a>
         <a
           href="/old-results"
@@ -53,7 +53,7 @@ const { currentPath = '/' } = Astro.props;
               : 'text-slate-700 hover:text-blue-700 hover:bg-slate-100'
           }`}
         >
-          পুরনো রেজাল্ট
+          <span id="nav-old">Old Results</span>
         </a>
         <a
           href="/checker"
@@ -63,7 +63,7 @@ const { currentPath = '/' } = Astro.props;
               : 'text-slate-700 hover:text-blue-700 hover:bg-slate-100'
           }`}
         >
-          টিকিট মেলান
+          <span id="nav-checker">Check Ticket</span>
         </a>
         <a
           href="/analytics"
@@ -73,7 +73,7 @@ const { currentPath = '/' } = Astro.props;
               : 'text-slate-700 hover:text-blue-700 hover:bg-slate-100'
           }`}
         >
-          হট নম্বর
+          <span id="nav-analytics">Hot Numbers</span>
         </a>
       </nav>
 
@@ -88,11 +88,60 @@ const { currentPath = '/' } = Astro.props;
           class="inline-flex items-center gap-1 bg-blue-700 hover:bg-blue-800 text-white text-[11px] sm:text-xs font-black px-2 sm:px-3 py-1.5 sm:py-2 rounded-lg sm:rounded-xl shadow-xs transition-all active:scale-95"
         >
           <span>🔍</span>
-          <span class="hidden sm:inline">টিকিট মেলান</span>
-          <span class="sm:hidden">মেলান</span>
+          <span id="header-btn-checker-full" class="hidden sm:inline">Check Ticket</span>
+          <span id="header-btn-checker-short" class="sm:hidden">Check</span>
         </a>
       </div>
 
     </div>
   </div>
 </header>
+
+<script is:inline>
+  function applyHeaderLanguage(lang) {
+    var brand = document.getElementById('header-brand-tagline');
+    var navToday = document.getElementById('nav-today');
+    var navOld = document.getElementById('nav-old');
+    var navChecker = document.getElementById('nav-checker');
+    var navAnalytics = document.getElementById('nav-analytics');
+    var btnFull = document.getElementById('header-btn-checker-full');
+    var btnShort = document.getElementById('header-btn-checker-short');
+
+    if (lang === 'bn') {
+      if (brand) brand.textContent = 'লটারি সংবাদ • আজকের তাজা রেজাল্ট';
+      if (navToday) navToday.textContent = 'আজকের রেজাল্ট';
+      if (navOld) navOld.textContent = 'পুরনো রেজাল্ট';
+      if (navChecker) navChecker.textContent = 'টিকিট মেলান';
+      if (navAnalytics) navAnalytics.textContent = 'হট নম্বর';
+      if (btnFull) btnFull.textContent = 'টিকিট মেলান';
+      if (btnShort) btnShort.textContent = 'মেলান';
+    } else if (lang === 'hi') {
+      if (brand) brand.textContent = 'लॉटरी संबाद • आज का ताजा रिजल्ट';
+      if (navToday) navToday.textContent = 'आज का रिजल्ट';
+      if (navOld) navOld.textContent = 'पुराने रिजल्ट';
+      if (navChecker) navChecker.textContent = 'टिकट चेक';
+      if (navAnalytics) navAnalytics.textContent = 'हॉट नंबर्स';
+      if (btnFull) btnFull.textContent = 'टिकट चेक';
+      if (btnShort) btnShort.textContent = 'चेक';
+    } else {
+      if (brand) brand.textContent = 'Lottery Sambad • Live Result Portal';
+      if (navToday) navToday.textContent = "Today's Result";
+      if (navOld) navOld.textContent = 'Old Results';
+      if (navChecker) navChecker.textContent = 'Check Ticket';
+      if (navAnalytics) navAnalytics.textContent = 'Hot Numbers';
+      if (btnFull) btnFull.textContent = 'Check Ticket';
+      if (btnShort) btnShort.textContent = 'Check';
+    }
+  }
+
+  try {
+    var initialLang = localStorage.getItem('dearlottery_lang') || 'en';
+    applyHeaderLanguage(initialLang);
+  } catch(e) {}
+
+  window.addEventListener('dearlottery:lang_change', function(e) {
+    if (e.detail) {
+      applyHeaderLanguage(e.detail);
+    }
+  });
+</script>

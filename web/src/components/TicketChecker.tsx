@@ -53,6 +53,16 @@ export default function TicketChecker({ initialDraws = [], variant = 'slim' }: T
     const { series, number } = parseTicketInput(raw);
     const clientMatches: MatchResult[] = [];
 
+    const getRankName = (rank: '1st' | '2nd' | '3rd' | '4th' | '5th' | 'cons') => {
+      if (lang === 'bn') {
+        return rank === '1st' ? '১ম পুরস্কার' : rank === '2nd' ? '২য় পুরস্কার' : rank === '3rd' ? '৩য় পুরস্কার' : rank === '4th' ? '৪র্থ পুরস্কার' : rank === '5th' ? '৫ম পুরস্কার' : 'সান্ত্বনা পুরস্কার (সিরিজ আলাদা)';
+      }
+      if (lang === 'hi') {
+        return rank === '1st' ? 'प्रथम पुरस्कार' : rank === '2nd' ? 'द्वितीय पुरस्कार' : rank === '3rd' ? 'तृतीय पुरस्कार' : rank === '4th' ? 'चतुर्थ पुरस्कार' : rank === '5th' ? '5वां पुरस्कार' : 'सांत्वना पुरस्कार (सीरीज अलग)';
+      }
+      return rank === '1st' ? '1st Prize' : rank === '2nd' ? '2nd Prize' : rank === '3rd' ? '3rd Prize' : rank === '4th' ? '4th Prize' : rank === '5th' ? '5th Prize' : 'Consolation Prize (Different Series)';
+    };
+
     // Client-side instant match across initialDraws
     for (const d of initialDraws) {
       const p = d.parsed_data?.prizes || d.prizes;
@@ -69,7 +79,7 @@ export default function TicketChecker({ initialDraws = [], variant = 'slim' }: T
             drawName,
             drawTime,
             drawDate,
-            prizeRank: seriesMatch ? '১ম পুরস্কার' : 'সান্ত্বনা পুরস্কার (সিরিজ আলাদা)',
+            prizeRank: seriesMatch ? getRankName('1st') : getRankName('cons'),
             prizeAmount: seriesMatch ? 10000000 : 1000,
             ticketNumber: `${p.first_prize.series} ${p.first_prize.number}`,
             seriesMatched: seriesMatch,
@@ -85,7 +95,7 @@ export default function TicketChecker({ initialDraws = [], variant = 'slim' }: T
               drawName,
               drawTime,
               drawDate,
-              prizeRank: '২য় পুরস্কার',
+              prizeRank: getRankName('2nd'),
               prizeAmount: 10000,
               ticketNumber: num,
               seriesMatched: true
@@ -101,7 +111,7 @@ export default function TicketChecker({ initialDraws = [], variant = 'slim' }: T
               drawName,
               drawTime,
               drawDate,
-              prizeRank: '৩য় পুরস্কার',
+              prizeRank: getRankName('3rd'),
               prizeAmount: 500,
               ticketNumber: num,
               seriesMatched: true
@@ -117,7 +127,7 @@ export default function TicketChecker({ initialDraws = [], variant = 'slim' }: T
               drawName,
               drawTime,
               drawDate,
-              prizeRank: '৪র্থ পুরস্কার',
+              prizeRank: getRankName('4th'),
               prizeAmount: 250,
               ticketNumber: num,
               seriesMatched: true
@@ -133,7 +143,7 @@ export default function TicketChecker({ initialDraws = [], variant = 'slim' }: T
               drawName,
               drawTime,
               drawDate,
-              prizeRank: '৫ম পুরস্কার',
+              prizeRank: getRankName('5th'),
               prizeAmount: 120,
               ticketNumber: num,
               seriesMatched: true
@@ -214,7 +224,13 @@ export default function TicketChecker({ initialDraws = [], variant = 'slim' }: T
             type="text"
             value={ticketInput}
             onChange={(e) => handleInputChange(e.target.value)}
-            placeholder="আপনার টিকিট নম্বর লিখুন (যেমন: 75331 বা শেষ ৪ সংখ্যা)..."
+            placeholder={
+              lang === 'bn'
+                ? 'আপনার টিকিট নম্বর লিখুন (যেমন: 75331 বা শেষ ৪ সংখ্যা)...'
+                : lang === 'hi'
+                ? 'अपना टिकट नंबर दर्ज करें (जैसे: 75331 या अंतिम 4 अंक)...'
+                : 'Enter ticket number (e.g. 75331 or last 4 digits)...'
+            }
             className="w-full bg-slate-50 border border-slate-300 focus:border-blue-600 focus:bg-white text-slate-900 rounded-xl pl-9 pr-9 py-2.5 sm:py-3 text-sm sm:text-base font-mono font-bold tracking-wider placeholder:text-slate-400 placeholder:font-sans placeholder:font-normal placeholder:tracking-normal outline-none transition-all uppercase"
           />
           {ticketInput && (
@@ -238,11 +254,11 @@ export default function TicketChecker({ initialDraws = [], variant = 'slim' }: T
           className="w-full sm:w-auto inline-flex items-center justify-center gap-2 bg-blue-700 hover:bg-blue-800 text-white font-black text-xs sm:text-sm px-5 py-2.5 sm:py-3 rounded-xl shadow-xs transition-all active:scale-95 whitespace-nowrap disabled:opacity-50"
         >
           {isSearching ? (
-            <span className="inline-block animate-spin">মাপা হচ্ছে...</span>
+            <span className="inline-block animate-spin">{lang === 'bn' ? 'মাপা হচ্ছে...' : lang === 'hi' ? 'जांच हो रही है...' : 'Checking...'}</span>
           ) : (
             <>
               <span>⚡</span>
-              <span>১-সেকেন্ডে মেলান</span>
+              <span>{lang === 'bn' ? '১-সেকেন্ডে মেলান' : lang === 'hi' ? '1-सेकंड में चेक करें' : '1-Second Check'}</span>
             </>
           )}
         </button>
@@ -263,18 +279,23 @@ export default function TicketChecker({ initialDraws = [], variant = 'slim' }: T
                     <div>
                       <div className="flex items-center gap-2">
                         <span className="bg-emerald-700 text-white text-[11px] font-black px-2.5 py-0.5 rounded-full uppercase tracking-wider">
-                          বিজয়ী ({m.prizeRank})
+                          {lang === 'bn' ? `বিজয়ী (${m.prizeRank})` : lang === 'hi' ? `विजेता (${m.prizeRank})` : `Winner (${m.prizeRank})`}
                         </span>
                         <span className="text-xs text-slate-600 font-bold">
                           {m.drawName} ({m.drawTime})
                         </span>
                       </div>
                       <p className="text-xs sm:text-sm font-bold text-slate-900 mt-1">
-                        টিকিট নম্বর: <span className="font-mono font-black text-blue-700 text-sm sm:text-base">{m.ticketNumber}</span>
+                        {lang === 'bn' ? 'টিকিট নম্বর: ' : lang === 'hi' ? 'टिकट नंबर: ' : 'Ticket Number: '}
+                        <span className="font-mono font-black text-blue-700 text-sm sm:text-base">{m.ticketNumber}</span>
                       </p>
                       {m.requiredSeries && !m.seriesMatched && (
                         <p className="text-[11px] text-amber-900 mt-0.5 font-medium">
-                          ⚠️ Note: ১ম পুরস্কারের জন্য সিরিজ {m.requiredSeries} প্রয়োজন। আপনার টিকিট ₹১,০০০ সান্ত্বনা পুরস্কার বিজয়ী!
+                          {lang === 'bn'
+                            ? `⚠️ Note: ১ম পুরস্কারের জন্য সিরিজ ${m.requiredSeries} প্রয়োজন। আপনার টিকিট ₹১,০০০ সান্ত্বনা পুরস্কার বিজয়ী!`
+                            : lang === 'hi'
+                            ? `⚠️ Note: 1st Prize के लिए सीरीज ${m.requiredSeries} आवश्यक है। आपका टिकट ₹1,000 सांत्वना पुरस्कार विजेता है!`
+                            : `⚠️ Note: 1st Prize required series ${m.requiredSeries}. Your ticket won ₹1,000 Consolation Prize!`}
                         </p>
                       )}
                     </div>
@@ -282,7 +303,7 @@ export default function TicketChecker({ initialDraws = [], variant = 'slim' }: T
 
                   <div className="sm:text-right w-full sm:w-auto border-t sm:border-t-0 border-emerald-200 pt-2 sm:pt-0 flex sm:flex-col justify-between items-center sm:items-end">
                     <span className="text-[10px] text-slate-500 font-bold uppercase tracking-wider">
-                      পুরস্কারের টাকা
+                      {lang === 'bn' ? 'পুরস্কারের টাকা' : lang === 'hi' ? 'पुरस्कार राशि' : 'Prize Amount'}
                     </span>
                     <span className="text-xl sm:text-2xl font-mono font-black text-emerald-800">
                       {formatINR(m.prizeAmount)}
@@ -293,7 +314,13 @@ export default function TicketChecker({ initialDraws = [], variant = 'slim' }: T
             </div>
           ) : (
             <div className="bg-slate-50 border border-slate-200 rounded-xl p-3 text-center text-xs text-slate-700 animate-in fade-in duration-150">
-              <span className="font-mono font-bold text-slate-900">{ticketInput}</span> নম্বরে কোনো পুরস্কার মেলেনি। অন্য ড্র বা নম্বর চেক করে দেখুন।
+              {lang === 'bn' ? (
+                <span><span className="font-mono font-bold text-slate-900">{ticketInput}</span> নম্বরে কোনো পুরস্কার মেলেনি। অন্য ড্র বা নম্বর চেক করে দেখুন।</span>
+              ) : lang === 'hi' ? (
+                <span><span className="font-mono font-bold text-slate-900">{ticketInput}</span> नंबर पर कोई पुरस्कार नहीं मिला। अन्य ड्रा या नंबर जांचें।</span>
+              ) : (
+                <span>No winning match found for ticket <span className="font-mono font-bold text-slate-900">{ticketInput}</span>. Try checking another draw.</span>
+              )}
             </div>
           )}
         </div>
