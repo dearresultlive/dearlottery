@@ -1,0 +1,16 @@
+{
+  "name": "dearlottery-suite",
+  "version": "1.0.0",
+  "type": "module",
+  "description": "Dear Lottery Official Results Portal & Autonomous Ingestion Engine",
+  "scripts": {
+    "dev": "npm run dev --prefix web",
+    "build": "npm run build --prefix web",
+    "worker:dev": "npm run dev --prefix worker",
+    "worker:deploy": "npm run deploy --prefix worker",
+    "auto-poll": "node scripts/live_autopoller.js"
+  },
+  "dependencies": {
+    "tesseract.js": "^7.0.0"
+  }
+}

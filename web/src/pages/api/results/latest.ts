@@ -1,5 +1,7 @@
 import type { APIRoute } from 'astro';
 import { fetchLatestDraws } from '../../../lib/api';
+import { checkAndFetchLiveSlot } from '../../../lib/live-fetcher';
+import { getISTDateString, getISTNow } from '../../../lib/lottery-utils';
 
 export const prerender = false;
 
@@ -34,6 +36,21 @@ export const GET: APIRoute = async ({ request, locals }) => {
   // Fallback to api.ts fetchLatestDraws()
   if (!draws || draws.length === 0) {
     draws = await fetchLatestDraws();
+  }
+
+  // If a slot is in DRAWING state, attempt autonomous on-demand check of live upstream
+  const istNow = getISTNow();
+  const todayStr = getISTDateString(istNow);
+  const drawingSlot = draws.find(d => d.status === 'DRAWING' || d.parsed_data?.status === 'DRAWING');
+
+  if (drawingSlot) {
+    const rawSlot = (drawingSlot.draw_time?.includes('1:00') ? '1PM' : drawingSlot.draw_time?.includes('6:00') ? '6PM' : '8PM') as '1PM' | '6PM' | '8PM';
+    try {
+      const check = await checkAndFetchLiveSlot(todayStr, rawSlot, istNow);
+      if (check.status === 'RESULT_OUT') {
+        draws = await fetchLatestDraws();
+      }
+    } catch (e) {}
   }
 
   return new Response(JSON.stringify({

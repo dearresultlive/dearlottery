@@ -30,3 +30,11 @@ Thumbs.db
 .vscode/
 .idea/
 *.log
+*.traineddata
+scraper/test_poller.js
+scraper/test_ocr.js
+scraper/test_full_ocr_parser.js
+scraper/test_1pm_parser.js
+scraper/auto_fetcher.js
+scraper/test_samples/*.pdf
+

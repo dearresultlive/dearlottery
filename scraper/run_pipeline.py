@@ -70,8 +70,8 @@ def run_pipeline(slot: str, target_date_str: str, mock_mode: bool = False, dry_r
         file_bytes, source_url = poller.poll_for_result(target_date=t_date, time_slot=slot)
 
         if not file_bytes:
-            logger.warning("No live result PDF found. Falling back to test mode generation to maintain continuity.")
-            return run_pipeline(slot, target_date_str, mock_mode=True, dry_run=dry_run)
+            logger.info(f"Draw {slot} for {target_date_str} is not yet published by the official directorate. Awaiting release.")
+            return None
 
         engine = LotteryParserEngine()
         raw_text = engine.extract_text_from_pdf(file_bytes)

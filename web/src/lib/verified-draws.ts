@@ -4,6 +4,8 @@
  */
 
 import { getISTDateString } from './lottery-utils';
+import liveDrawsData from '../data/live_draws.json';
+import { DYNAMIC_DRAWS_CACHE } from './live-fetcher';
 
 export interface VerifiedPrizeStructure {
   first_prize: { series: string; number: string };
@@ -407,9 +409,10 @@ export function getVerifiedDraw(dateStr: string, slot: '1PM' | '6PM' | '8PM', is
   const todayStr = getISTDateString(istNow);
   const targetHour = slot === '1PM' ? 13 : slot === '6PM' ? 18 : 20;
 
-  // Check if we have exact verified prizes in our database
+  // Check if we have exact verified prizes in dynamic cache or database
+  const liveDynamic = (DYNAMIC_DRAWS_CACHE as any)?.[dateStr]?.[slot] || (liveDrawsData as any)?.[dateStr]?.[slot];
   const verifiedDay = VERIFIED_DRAWS_DB[dateStr];
-  const slotPrizes = verifiedDay ? verifiedDay[slot] : null;
+  const slotPrizes = liveDynamic || (verifiedDay ? verifiedDay[slot] : null);
 
   // 1. Future dates: strictly UPCOMING
   if (dateStr > todayStr) {
