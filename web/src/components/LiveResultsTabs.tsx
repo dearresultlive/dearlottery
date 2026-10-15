@@ -158,7 +158,7 @@ export default function LiveResultsTabs({
 
   const pdfUrl = `/pdf/${todayStr}/${activeSlot.toLowerCase()}.pdf`;
   const sheetSvgUrl = `/api/gazette-sheet.svg?date=${todayStr}&slot=${activeSlot.toLowerCase()}`;
-  const activeSheetUrl = currentDrawForToday?.image_r2_url || sheetSvgUrl;
+  const activeSheetUrl = currentDrawForToday?.image_r2_url || `/results/${todayStr}/${activeSlot.toLowerCase()}.jpg` || sheetSvgUrl;
 
   const whatsappShareText = `🎯 *Dear Lottery Result Today (${currentDraw?.draw_time || activeSlot})*\n📅 তারিখ: ${todayStr}\n\n🏆 *১ম পুরস্কার (₹1 Crore Winner)*: *${firstPrize.series} ${firstPrize.number}*\n\n👉 সম্পূর্ণ অফিসিয়াল রেজাল্ট শিট ও সব প্রাইজ নম্বর দেখুন:\nhttps://dearresultlive.in/results/${todayStr}/${activeSlot.toLowerCase()}`;
   const whatsappUrl = `https://api.whatsapp.com/send?text=${encodeURIComponent(whatsappShareText)}`;
@@ -352,41 +352,43 @@ export default function LiveResultsTabs({
         </div>
       </div>
 
-      {/* 4. Direct Scanned Gazette Paper Preview (Embedded on page like Lottery Sambad) */}
-      <div className="bg-white border border-slate-200 rounded-2xl p-2.5 sm:p-3 shadow-sm text-center space-y-2">
-        <div className="flex items-center justify-between px-1.5 pb-1 border-b border-slate-100">
-          <div className="flex items-center gap-1.5 text-left">
-            <span className="text-sm">📜</span>
-            <span className="text-xs font-black text-slate-900">
-              {lang === 'bn' ? `অফিসিয়াল গেজেট শিট (${currentSlotInfo.time})` : lang === 'hi' ? `ऑफिशियल गजट शीट (${currentSlotInfo.time})` : `Official Gazette Sheet (${currentSlotInfo.time})`}
-            </span>
+      {/* 4. Direct Scanned Gazette Paper Preview (Only when Result is Declared) */}
+      {activeStatus === 'RESULT_OUT' && (
+        <div className="bg-white border border-slate-200 rounded-2xl p-2.5 sm:p-3 shadow-sm text-center space-y-2">
+          <div className="flex items-center justify-between px-1.5 pb-1 border-b border-slate-100">
+            <div className="flex items-center gap-1.5 text-left">
+              <span className="text-sm">📜</span>
+              <span className="text-xs font-black text-slate-900">
+                {lang === 'bn' ? `অফিসিয়াল গেজেট শিট (${currentSlotInfo.time})` : lang === 'hi' ? `ऑफिशियल गजट शीट (${currentSlotInfo.time})` : `Official Gazette Sheet (${currentSlotInfo.time})`}
+              </span>
+            </div>
+            <button
+              type="button"
+              onClick={() => openImageLightbox(activeSheetUrl)}
+              className="text-xs font-black text-blue-700 hover:underline flex items-center gap-1"
+            >
+              <span>{lang === 'bn' ? '🔍 ফুল স্ক্রিন জুম' : lang === 'hi' ? '🔍 फुल स्क्रीन ज़ूम' : '🔍 Full Screen Zoom'}</span>
+            </button>
           </div>
-          <button
-            type="button"
-            onClick={() => openImageLightbox(activeSheetUrl)}
-            className="text-xs font-black text-blue-700 hover:underline flex items-center gap-1"
-          >
-            <span>{lang === 'bn' ? '🔍 ফুল স্ক্রিন জুম' : lang === 'hi' ? '🔍 फुल स्क्रीन ज़ूम' : '🔍 Full Screen Zoom'}</span>
-          </button>
-        </div>
 
-        <div
-          onClick={() => openImageLightbox(activeSheetUrl)}
-          className="cursor-zoom-in relative rounded-xl overflow-hidden border border-slate-200 bg-[#fcfbf7] group shadow-inner"
-        >
-          <img
-            src={activeSheetUrl}
-            alt={`Official Gazette Result Sheet ${currentDraw.draw_name} ${currentSlotInfo.time}`}
-            className="w-full h-auto object-contain transition-transform group-hover:scale-[1.01]"
-            loading="eager"
-          />
-          <div className="absolute inset-0 bg-slate-900/5 group-hover:bg-transparent transition-colors flex items-center justify-center pointer-events-none">
-            <span className="bg-white/95 text-slate-900 text-xs font-black px-3 py-1.5 rounded-full shadow border border-slate-200 opacity-90 group-hover:opacity-100">
-              {lang === 'bn' ? '🔍 ট্যাপ করে ফুল স্ক্রিনে বড় করুন' : lang === 'hi' ? '🔍 टैप करके फुल स्क्रीन में बड़ा करें' : '🔍 Tap to view full screen zoom'}
-            </span>
+          <div
+            onClick={() => openImageLightbox(activeSheetUrl)}
+            className="cursor-zoom-in relative rounded-xl overflow-hidden border border-slate-200 bg-[#fcfbf7] group shadow-inner"
+          >
+            <img
+              src={activeSheetUrl}
+              alt={`Official Gazette Result Sheet ${currentDraw.draw_name} ${currentSlotInfo.time}`}
+              className="w-full h-auto object-contain transition-transform group-hover:scale-[1.01]"
+              loading="eager"
+            />
+            <div className="absolute inset-0 bg-slate-900/5 group-hover:bg-transparent transition-colors flex items-center justify-center pointer-events-none">
+              <span className="bg-white/95 text-slate-900 text-xs font-black px-3 py-1.5 rounded-full shadow border border-slate-200 opacity-90 group-hover:opacity-100">
+                {lang === 'bn' ? '🔍 ট্যাপ করে ফুল স্ক্রিনে বড় করুন' : lang === 'hi' ? '🔍 टैप करके फुल स्क्रीन में बड़ा करें' : '🔍 Tap to view full screen zoom'}
+              </span>
+            </div>
           </div>
         </div>
-      </div>
+      )}
 
       {/* 5. WhatsApp Share Button & 6. Clean Structured Text Prize Tables (Declared Results Only) */}
       {activeStatus === 'RESULT_OUT' && (

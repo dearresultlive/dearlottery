@@ -35,7 +35,7 @@ export const WEEKLY_SCHEMES: Record<number, { '1PM': string; '6PM': string; '8PM
   1: { '1PM': 'DEAR RISE MONDAY', '6PM': 'DEAR LEGEND MONDAY', '8PM': 'DEAR CLOVER MONDAY' },
   2: { '1PM': 'DEAR SHINE TUESDAY', '6PM': 'DEAR PRESTIGE TUESDAY', '8PM': 'DEAR DESTINY TUESDAY' },
   3: { '1PM': 'DEAR SPARK WEDNESDAY', '6PM': 'DEAR REGAL WEDNESDAY', '8PM': 'DEAR DREAM WEDNESDAY' },
-  4: { '1PM': 'DEAR MAHANADI THURSDAY', '6PM': 'DEAR LAKE THURSDAY', '8PM': 'DEAR SANDPIPER THURSDAY' },
+  4: { '1PM': 'DEAR STAR THURSDAY', '6PM': 'DEAR SUPREME THURSDAY', '8PM': 'DEAR FAME THURSDAY' },
   5: { '1PM': 'DEAR MEGHNA FRIDAY', '6PM': 'DEAR MOUNTAIN FRIDAY', '8PM': 'DEAR SEAGULL FRIDAY' },
   6: { '1PM': 'DEAR VISION SATURDAY', '6PM': 'DEAR ELITE SATURDAY', '8PM': 'DEAR LUCKY SATURDAY' }
 };
@@ -63,6 +63,25 @@ export const VERIFIED_DRAWS_DB: Record<string, Partial<Record<'1PM' | '6PM' | '8
         '6617', '6661', '6845', '6866', '7172', '7255', '7373', '7544', '7575', '7649',
         '7660', '7811', '7945', '7987', '8053', '8078', '8080', '8217', '8486', '8494',
         '8942', '9231', '9262', '9294', '9404', '9415', '9470', '9631', '9701', '9715'
+      ]
+    },
+    '6PM': {
+      first_prize: { series: '92G', number: '91256' },
+      consolation_prize_amount: 1000,
+      second_prize: ['10373', '23851', '26357', '40708', '54991', '73773', '88698', '89994', '95879', '97453'],
+      third_prize: ['2563', '2877', '3217', '6157', '6236', '7007', '7856', '8416', '9469', '9872'],
+      fourth_prize: ['0210', '1102', '1158', '2088', '4847', '6362', '8585', '8917', '9300', '9564'],
+      fifth_prize: [
+        '0080', '0145', '0248', '0888', '1023', '1052', '1074', '1114', '1340', '1396',
+        '1813', '1822', '1922', '2064', '2129', '2133', '2268', '2380', '2388', '2423',
+        '2503', '2561', '2573', '2579', '2730', '2883', '2973', '3142', '3200', '3207',
+        '3414', '3428', '3676', '3839', '4131', '4160', '4168', '4170', '4193', '4328',
+        '4385', '4674', '4801', '4900', '5005', '5146', '5245', '5292', '5328', '5334',
+        '5392', '5572', '5585', '5602', '5682', '5699', '6233', '6250', '6396', '6464',
+        '6509', '6588', '6598', '6793', '6824', '6921', '6996', '7005', '7057', '7239',
+        '7386', '7397', '7457', '7483', '7650', '7677', '7997', '8052', '8078', '8293',
+        '8300', '8321', '8328', '8449', '8567', '8570', '8598', '8627', '8631', '8872',
+        '9348', '9367', '9590', '9607', '9611', '9720', '9756', '9873', '9922', '9962'
       ]
     }
   },
@@ -420,15 +439,17 @@ export function getVerifiedDraw(dateStr: string, slot: '1PM' | '6PM' | '8PM', is
   // 2. Today's date: check if verified official results are available
   if (dateStr === todayStr) {
     if (slotPrizes && slotPrizes.first_prize?.number) {
+      const localImagePath = `/results/${dateStr}/${slot.toLowerCase()}.jpg`;
       const fullData = {
         draw_id: drawId,
         draw_date: dateStr,
         draw_time: timeLabel,
         draw_name: drawName,
-        draw_number: '74',
+        draw_number: slot === '6PM' ? '54' : '50',
         status: 'DECLARED',
         prizes: slotPrizes,
-        source_url: `https://www.nagalandlotteries.com/results/${dateStr}_${slot}.pdf`
+        source_url: `https://www.nagalandlotteries.com/results/${dateStr}_${slot}.pdf`,
+        image_r2_url: localImagePath
       };
 
       return {
@@ -436,11 +457,12 @@ export function getVerifiedDraw(dateStr: string, slot: '1PM' | '6PM' | '8PM', is
         draw_date: dateStr,
         draw_time: timeLabel,
         draw_name: drawName,
-        draw_number: '74',
+        draw_number: slot === '6PM' ? '54' : '50',
         status: 'DECLARED',
         checksum: 'official_gazette_' + drawId,
         prizes: slotPrizes,
         source_url: fullData.source_url,
+        image_r2_url: localImagePath,
         raw_json: JSON.stringify(fullData),
         parsed_data: fullData
       };
