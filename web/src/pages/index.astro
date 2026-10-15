@@ -16,6 +16,7 @@ const yesterdayDateStr = getISTDateString(yesterday);
 
 const draws = await fetchLatestDraws();
 const yesterdayDraws = await fetchDrawsByDate(yesterdayDateStr);
+const checkerDraws = [...draws, ...yesterdayDraws];
 const analytics = await fetchFrequencyAnalytics();
 ---
 
@@ -78,7 +79,7 @@ const analytics = await fetchFrequencyAnalytics();
         </p>
       </div>
 
-      <TicketChecker client:load initialDraws={draws} />
+      <TicketChecker client:load initialDraws={checkerDraws} />
     </section>
 
     {/* 4. Instant Result Notification Opt-in */}

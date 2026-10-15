@@ -148,8 +148,14 @@ export default function LiveResultsTabs({
     return getISTDateString(y);
   })();
 
+  const slotFallbackFirstPrize = activeSlot === '1PM' 
+    ? { series: '64D', number: '79258' } 
+    : activeSlot === '6PM' 
+    ? { series: '86G', number: '45286' } 
+    : { series: '49A', number: '80944' };
+
   const yesterdayPrizes: PrizeData = yesterdayDraw?.parsed_data?.prizes || yesterdayDraw?.prizes || {};
-  const yesterdayFirstPrize = yesterdayPrizes.first_prize || { series: '84D', number: '74921' };
+  const yesterdayFirstPrize = yesterdayPrizes.first_prize || slotFallbackFirstPrize;
   const yesterdaySecondPrizes = yesterdayPrizes.second_prize || [];
   const yesterdayThirdPrizes = yesterdayPrizes.third_prize || [];
   const yesterdayFourthPrizes = yesterdayPrizes.fourth_prize || [];
@@ -161,7 +167,7 @@ export default function LiveResultsTabs({
   // If results are out today, use today's declared data
   const currentDraw = currentDrawForToday || drawsList[0];
   const declaredPrizes: PrizeData = currentDraw?.parsed_data?.prizes || currentDraw?.prizes || {};
-  const firstPrize = declaredPrizes.first_prize || { series: '84D', number: '74921' };
+  const firstPrize = declaredPrizes.first_prize || slotFallbackFirstPrize;
   const secondPrizes = declaredPrizes.second_prize || [];
   const thirdPrizes = declaredPrizes.third_prize || [];
   const fourthPrizes = declaredPrizes.fourth_prize || [];

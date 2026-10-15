@@ -1,9 +1,16 @@
 ---
 import Layout from '../layouts/Layout.astro';
 import TicketChecker from '../components/TicketChecker';
-import { fetchLatestDraws } from '../lib/api';
+import { fetchLatestDraws, fetchDrawsByDate } from '../lib/api';
+import { getISTNow, getISTDateString } from '../lib/lottery-utils';
+
+const istNow = getISTNow();
+const yesterday = new Date(istNow);
+yesterday.setDate(yesterday.getDate() - 1);
 
 const draws = await fetchLatestDraws();
+const yesterdayDraws = await fetchDrawsByDate(getISTDateString(yesterday));
+const checkerDraws = [...draws, ...yesterdayDraws];
 ---
 
 <Layout
@@ -24,7 +31,7 @@ const draws = await fetchLatestDraws();
     </div>
 
     {/* Interactive Ticket Checker Island */}
-    <TicketChecker client:load initialDraws={draws} />
+    <TicketChecker client:load initialDraws={checkerDraws} />
 
     {/* Educational Content to Boost SEO & Dwell-Time */}
     <div class="bg-white border border-slate-200 rounded-2xl p-6 md:p-8 space-y-6 text-slate-700 shadow-sm">

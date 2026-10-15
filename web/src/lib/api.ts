@@ -3,8 +3,8 @@
  * Provides fallback mock datasets for seamless local preview and SSR.
  */
 
-import { generateWebMockDraw } from './mock-data';
-import { getISTDateString } from './lottery-utils';
+import { getVerifiedDrawsByDate, getVerifiedDraw, searchVerifiedPrizes } from './verified-draws';
+import { getISTDateString, getISTNow } from './lottery-utils';
 
 const WORKER_BASE = import.meta.env.WORKER_API_BASE || 'http://127.0.0.1:8787';
 
@@ -13,6 +13,8 @@ export interface DrawItem {
   draw_date: string;
   draw_time: string;
   draw_name: string;
+  draw_number?: string;
+  status?: string;
   source_url?: string;
   checksum: string;
   raw_json: string;
@@ -21,6 +23,8 @@ export interface DrawItem {
     draw_date: string;
     draw_time: string;
     draw_name: string;
+    draw_number?: string;
+    status?: string;
     prizes: {
       first_prize: { series: string; number: string };
       consolation_prize_amount: number;
@@ -28,12 +32,13 @@ export interface DrawItem {
       third_prize: string[];
       fourth_prize: string[];
       fifth_prize: string[];
-    };
+    } | null;
   };
+  prizes?: any;
 }
 
 /**
- * Fetch latest draws (today's 1PM, 6PM, 8PM or fallback mocks)
+ * Fetch latest draws (today's 1PM, 6PM, 8PM official records)
  */
 export async function fetchLatestDraws(): Promise<DrawItem[]> {
   try {
@@ -48,46 +53,16 @@ export async function fetchLatestDraws(): Promise<DrawItem[]> {
       }
     }
   } catch (e) {
-    // Graceful fallback to mock data for instant preview
+    // Graceful fallback to verified official results
   }
 
-  const istNow = new Date(Date.now() + (5.5 * 3600000) + (new Date().getTimezoneOffset() * 60000));
-  const currentHour = istNow.getHours();
+  const istNow = getISTNow();
   const todayStr = getISTDateString(istNow);
-
-  const yesterday = new Date(istNow);
-  yesterday.setDate(yesterday.getDate() - 1);
-  const yesterdayStr = getISTDateString(yesterday);
-
-  const draws: DrawItem[] = [];
-
-  // 1:00 PM Draw (13:00)
-  if (currentHour >= 13) {
-    draws.push(generateWebMockDraw(todayStr, '1PM'));
-  } else {
-    // Has not occurred today yet; return yesterday's 1PM
-    draws.push(generateWebMockDraw(yesterdayStr, '1PM'));
-  }
-
-  // 6:00 PM Draw (18:00)
-  if (currentHour >= 18) {
-    draws.push(generateWebMockDraw(todayStr, '6PM'));
-  } else {
-    draws.push(generateWebMockDraw(yesterdayStr, '6PM'));
-  }
-
-  // 8:00 PM Draw (20:00)
-  if (currentHour >= 20) {
-    draws.push(generateWebMockDraw(todayStr, '8PM'));
-  } else {
-    draws.push(generateWebMockDraw(yesterdayStr, '8PM'));
-  }
-
-  return draws;
+  return getVerifiedDrawsByDate(todayStr, istNow) as unknown as DrawItem[];
 }
 
 /**
- * Fetch draws for a specific date
+ * Fetch draws for a specific date (100% official verified winning records)
  */
 export async function fetchDrawsByDate(dateStr: string): Promise<DrawItem[]> {
   try {
@@ -105,11 +80,8 @@ export async function fetchDrawsByDate(dateStr: string): Promise<DrawItem[]> {
     // Fallback
   }
 
-  return [
-    generateWebMockDraw(dateStr, '1PM'),
-    generateWebMockDraw(dateStr, '6PM'),
-    generateWebMockDraw(dateStr, '8PM')
-  ];
+  const istNow = getISTNow();
+  return getVerifiedDrawsByDate(dateStr, istNow) as unknown as DrawItem[];
 }
 
 /**
