@@ -38,7 +38,37 @@ const currentPath = Astro.url.pathname;
         document.documentElement.setAttribute('data-lang', 'en');
       }
     } catch (e) {}
+
+    window.addEventListener('dearlottery:lang_change', function(e) {
+      if (e.detail) {
+        document.documentElement.lang = e.detail;
+        document.documentElement.setAttribute('data-lang', e.detail);
+      }
+    });
   </script>
+
+  <style is:global>
+    /* Instant CSS Multilingual Switching (English default, Bengali, Hindi) */
+    html:not([data-lang="bn"]):not([data-lang="hi"]) .lang-bn,
+    html:not([data-lang="bn"]):not([data-lang="hi"]) .lang-hi {
+      display: none !important;
+    }
+
+    html[data-lang="en"] .lang-bn,
+    html[data-lang="en"] .lang-hi {
+      display: none !important;
+    }
+
+    html[data-lang="bn"] .lang-en,
+    html[data-lang="bn"] .lang-hi {
+      display: none !important;
+    }
+
+    html[data-lang="hi"] .lang-en,
+    html[data-lang="hi"] .lang-bn {
+      display: none !important;
+    }
+  </style>
   <body class="notranslate min-h-screen flex flex-col font-sans bg-slate-100 text-slate-900 selection:bg-amber-400 selection:text-slate-950">
     <Header currentPath={currentPath} />
     <main class="flex-1">

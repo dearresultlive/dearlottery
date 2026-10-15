@@ -3,24 +3,31 @@ import Layout from '../layouts/Layout.astro';
 ---
 
 <Layout
-  title="Contact Us | Dear Result Live (যোগাযোগ)"
+  title="Contact Us | Dear Result Live"
   description="Contact the editorial and support team at Dear Result Live for data corrections, technical inquiries, or regulatory feedback."
 >
   <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-8 text-slate-700">
     
     <div class="border-b border-slate-200 pb-5">
       <span class="text-xs font-bold text-blue-700 uppercase tracking-widest bg-blue-50 px-2 py-0.5 rounded border border-blue-200">
-        Get In Touch
+        <span class="lang-en">Get In Touch</span>
+        <span class="lang-bn">যোগাযোগ করুন</span>
+        <span class="lang-hi">संपर्क करें</span>
       </span>
       <h1 class="text-2xl sm:text-4xl font-black text-slate-900 mt-2">
-        Contact Us (যোগাযোগ)
+        <span class="lang-en">Contact Us</span>
+        <span class="lang-bn">যোগাযোগ</span>
+        <span class="lang-hi">संपर्क करें</span>
       </h1>
       <p class="text-slate-600 text-xs sm:text-sm mt-1">
-        Have a question, feedback, or notice a data discrepancy? Reach out to our technical team.
+        <span class="lang-en">Have a question, feedback, or notice a data discrepancy? Reach out to our technical team.</span>
+        <span class="lang-bn">কোনো প্রশ্ন, মতামত বা তথ্যের অসঙ্গতি লক্ষ্য করলে আমাদের টেকনিক্যাল টিমের সাথে যোগাযোগ করুন।</span>
+        <span class="lang-hi">कोई प्रश्न, प्रतिक्रिया या डेटा में विसंगति दिखने पर हमारी तकनीकी टीम से संपर्क करें।</span>
       </p>
     </div>
 
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 text-sm">
+    {/* English Content (Default) */}
+    <div class="lang-en grid grid-cols-1 md:grid-cols-2 gap-6 text-sm">
       <div class="bg-white border border-slate-200 rounded-2xl p-6 space-y-4 shadow-sm">
         <div class="w-10 h-10 rounded-xl bg-blue-50 text-blue-700 flex items-center justify-center text-xl border border-blue-200">
           ✉️
@@ -41,6 +48,58 @@ import Layout from '../layouts/Layout.astro';
         <h3 class="text-lg font-bold text-slate-900">Legal & Compliance Notice</h3>
         <p class="text-slate-600 text-xs leading-relaxed">
           For official state lottery claim procedures, tickets and identity verification must be handled directly with the official Directorate of State Lotteries in Nagaland or Sikkim.
+        </p>
+      </div>
+    </div>
+
+    {/* Bengali Content */}
+    <div class="lang-bn grid grid-cols-1 md:grid-cols-2 gap-6 text-sm">
+      <div class="bg-white border border-slate-200 rounded-2xl p-6 space-y-4 shadow-sm">
+        <div class="w-10 h-10 rounded-xl bg-blue-50 text-blue-700 flex items-center justify-center text-xl border border-blue-200">
+          ✉️
+        </div>
+        <h3 class="text-lg font-bold text-slate-900">তথ্য সংশোধন ও সম্পাদকীয়</h3>
+        <p class="text-slate-600 text-xs leading-relaxed">
+          কোনো ড্র-এর নম্বরে ত্রুটি বা সরকারি গেজেট শিটের সাথে অমিল দেখতে পেলে সরাসরি আমাদের মেল করুন:
+        </p>
+        <p class="text-blue-700 font-mono font-bold text-base">
+          support@dearresultlive.in
+        </p>
+      </div>
+
+      <div class="bg-white border border-slate-200 rounded-2xl p-6 space-y-4 shadow-sm">
+        <div class="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-700 flex items-center justify-center text-xl border border-emerald-200">
+          ⚖️
+        </div>
+        <h3 class="text-lg font-bold text-slate-900">আইনি ও পুরস্কার দাবি সংক্রান্ত</h3>
+        <p class="text-slate-600 text-xs leading-relaxed">
+          পুরস্কারের অর্থ দাবি করার জন্য মূল টিকিট এবং পরিচয়পত্র নিয়ে সরাসরি নাগাল্যান্ড বা সিকিম রাজ্য লটারি অধিদপ্তরে যোগাযোগ করতে হবে।
+        </p>
+      </div>
+    </div>
+
+    {/* Hindi Content */}
+    <div class="lang-hi grid grid-cols-1 md:grid-cols-2 gap-6 text-sm">
+      <div class="bg-white border border-slate-200 rounded-2xl p-6 space-y-4 shadow-sm">
+        <div class="w-10 h-10 rounded-xl bg-blue-50 text-blue-700 flex items-center justify-center text-xl border border-blue-200">
+          ✉️
+        </div>
+        <h3 class="text-lg font-bold text-slate-900">संपादकीय एवं सुधार</h3>
+        <p class="text-slate-600 text-xs leading-relaxed">
+          किसी भी ड्रा के नंबर में त्रुटि या आधिकारिक गजट शीट से भिन्नता दिखने पर हमें ईमेल करें:
+        </p>
+        <p class="text-blue-700 font-mono font-bold text-base">
+          support@dearresultlive.in
+        </p>
+      </div>
+
+      <div class="bg-white border border-slate-200 rounded-2xl p-6 space-y-4 shadow-sm">
+        <div class="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-700 flex items-center justify-center text-xl border border-emerald-200">
+          ⚖️
+        </div>
+        <h3 class="text-lg font-bold text-slate-900">कानूनी एवं दावा संबंधी</h3>
+        <p class="text-slate-600 text-xs leading-relaxed">
+          पुरस्कार राशि का दावा करने हेतु मूल टिकट और पहचान पत्र के साथ सीधे नागालैंड या सिक्किम राज्य लॉटरी निदेशालय से संपर्क करें।
         </p>
       </div>
     </div>

@@ -13,20 +13,26 @@ const analytics = await fetchFrequencyAnalytics();
   <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-10 space-y-8">
     <div class="text-center max-w-3xl mx-auto">
       <span class="bg-blue-50 border border-blue-200 text-blue-700 text-xs font-black uppercase tracking-wider px-3 py-1 rounded-full">
-        📊 নম্বর বিশ্লেষণ ও পরিসংখ্যান
+        📊 <span class="lang-en">Number Analytics & Statistics</span><span class="lang-bn">নম্বর বিশ্লেষণ ও পরিসংখ্যান</span><span class="lang-hi">नंबर विश्लेषण और सांख्यिकी</span>
       </span>
       <h1 class="text-2xl sm:text-4xl font-black text-slate-900 mt-2">
-        গত ৩০ দিনের হট ও কোল্ড নম্বর (বেশি আসা নম্বর)
+        <span class="lang-en">Past 30 Days Hot & Cold Numbers (Frequency Analysis)</span>
+        <span class="lang-bn">গত ৩০ দিনের হট ও কোল্ড নম্বর (বেশি আসা নম্বর)</span>
+        <span class="lang-hi">पिछले 30 दिनों के हॉट और कोल्ड नंबर्स (आवृत्ति विश्लेषण)</span>
       </h1>
       <p class="text-slate-600 text-xs sm:text-sm mt-1">
-        সরকারি লটারি ড্র-এর ফলাফল থেকে তৈরি ৪ সংখ্যার রিপিটিং নম্বর ও হিটম্যাপ তালিকা।
+        <span class="lang-en">4-digit repeating numbers and positional digit frequency heatmaps compiled from official State Lottery draws.</span>
+        <span class="lang-bn">সরকারি লটারি ড্র-এর ফলাফল থেকে তৈরি ৪ সংখ্যার রিপিটিং নম্বর ও হিটম্যাপ তালিকা।</span>
+        <span class="lang-hi">सरकारी राज्य लॉटरी ड्रॉ के आधिकारिक परिणामों से तैयार 4 अंकों के रिपीटिंग नंबर और हीटमैप सूची।</span>
       </p>
 
       {/* Mandatory Statistical Disclaimer */}
       <div class="mt-3 bg-amber-50 border border-amber-300 rounded-xl px-4 py-2 text-xs text-amber-900 inline-flex items-center gap-2 shadow-2xs">
         <span class="text-base">⚠️</span>
         <span class="font-medium">
-          এই তথ্য শুধুমাত্র পূর্ববর্তী ফলাফলের পরিসংখ্যান ভিত্তিক; লটারির প্রতিটি ড্র সম্পূর্ণ স্বাধীন ও দৈবচয়ন ভিত্তিক।
+          <span class="lang-en">This information is based strictly on past draw statistics; each lottery draw is completely independent and random.</span>
+          <span class="lang-bn">এই তথ্য শুধুমাত্র পূর্ববর্তী ফলাফলের পরিসংখ্যান ভিত্তিক; লটারির প্রতিটি ড্র সম্পূর্ণ স্বাধীন ও দৈবচয়ন ভিত্তিক।</span>
+          <span class="lang-hi">यह जानकारी पूरी तरह से पिछले परिणामों के सांख्यिकी पर आधारित है; प्रत्येक लॉटरी ड्रा पूरी तरह स्वतंत्र और यादृच्छिक होता है।</span>
         </span>
       </div>
     </div>
@@ -41,19 +47,35 @@ const analytics = await fetchFrequencyAnalytics();
 
     {/* Educational Content on Frequency Analysis */}
     <div class="bg-white border border-slate-200 rounded-2xl p-6 md:p-8 space-y-6 text-slate-700 shadow-sm">
-      <h2 class="text-xl font-black text-slate-900">লটারি নম্বর বিশ্লেষণ কীভাবে বুঝবেন?</h2>
+      <h2 class="text-xl font-black text-slate-900">
+        <span class="lang-en">How to Understand Lottery Number Analytics?</span>
+        <span class="lang-bn">লটারি নম্বর বিশ্লেষণ কীভাবে বুঝবেন?</span>
+        <span class="lang-hi">लॉटरी नंबर विश्लेषण कैसे समझें?</span>
+      </h2>
       <div class="grid md:grid-cols-2 gap-6 text-sm">
         <div class="space-y-2 bg-slate-50 p-5 rounded-xl border border-slate-200">
-          <h3 class="font-bold text-slate-900">"হট নম্বর" (Hot Numbers) কী?</h3>
+          <h3 class="font-bold text-slate-900">
+            <span class="lang-en">What are "Hot Numbers"?</span>
+            <span class="lang-bn">"হট নম্বর" (Hot Numbers) কী?</span>
+            <span class="lang-hi">"हॉट नंबर्स" (Hot Numbers) क्या हैं?</span>
+          </h3>
           <p class="text-xs text-slate-600 leading-relaxed">
-            যেসব ৪ সংখ্যার নম্বর সাম্প্রতিক সপ্তাহগুলোতে একাধিকবার ৫ম পুরস্কার জিতেছে, তাদের হট নম্বর বলা হয়। অনেক খেলোয়াড় এই নম্বরগুলোকে বেশি প্রাধান্য দেন।
+            <span class="lang-en">These are 4-digit numbers that have appeared most frequently across 5th prize tiers in recent weeks. Many players track these numbers to study historical repetition.</span>
+            <span class="lang-bn">যেসব ৪ সংখ্যার নম্বর সাম্প্রতিক সপ্তাহগুলোতে একাধিকবার ৫ম পুরস্কার জিতেছে, তাদের হট নম্বর বলা হয়। অনেক খেলোয়াড় এই নম্বরগুলোকে বেশি প্রাধান্য দেন।</span>
+            <span class="lang-hi">ये वे 4-अंकीय नंबर हैं जिन्होंने हाल के हफ्तों में 5वें पुरस्कार में सबसे ज्यादा बार जीत हासिल की है। कई खिलाड़ी रुझानों के लिए इन्हें ट्रैक करते हैं।</span>
           </p>
         </div>
 
         <div class="space-y-2 bg-slate-50 p-5 rounded-xl border border-slate-200">
-          <h3 class="font-bold text-slate-900">"কোল্ড নম্বর" (Cold Numbers) কী?</h3>
+          <h3 class="font-bold text-slate-900">
+            <span class="lang-en">What are "Cold Numbers"?</span>
+            <span class="lang-bn">"কোল্ড নম্বর" (Cold Numbers) কী?</span>
+            <span class="lang-hi">"कोल्ड नंबर्स" (Cold Numbers) क्या हैं?</span>
+          </h3>
           <p class="text-xs text-slate-600 leading-relaxed">
-            যেসব নম্বর দীর্ঘদিন ধরে সাম্প্রতিক ড্র-তে আসেনি, সেগুলোকে কোল্ড নম্বর বলা হয়। লটারির সম্ভাবনা অনুযায়ী যেকোনো ড্র-তে যেকোনো নম্বর ওঠার সুযোগ সমান থাকে।
+            <span class="lang-en">These are numbers that have not appeared for an extended period or have the lowest occurrence count. Remember that mathematically every number has an equal probability in every draw.</span>
+            <span class="lang-bn">যেসব নম্বর দীর্ঘদিন ধরে সাম্প্রতিক ড্র-তে আসেনি, সেগুলোকে কোল্ড নম্বর বলা হয়। লটারির সম্ভাবনা অনুযায়ী যেকোনো ড্র-তে যেকোনো নম্বর ওঠার সুযোগ সমান থাকে।</span>
+            <span class="lang-hi">ये वे नंबर हैं जो हाल के ड्रा में लंबे समय से नहीं आए हैं या जिनकी आवृत्ति सबसे कम है। याद रखें कि गणितीय रूप से हर ड्रा में हर नंबर की संभावना समान होती है।</span>
           </p>
         </div>
       </div>

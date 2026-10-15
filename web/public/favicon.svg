@@ -1,4 +1,37 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" fill="none">
-  <rect width="100" height="100" rx="24" fill="#10B981"/>
-  <text x="50" y="70" font-family="Arial, sans-serif" font-size="64" font-weight="900" fill="#020617" text-anchor="middle">₹</text>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="100%" height="100%">
+  <defs>
+    <!-- Brand Gold / Amber Gradient -->
+    <linearGradient id="brandGold" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#F59E0B" />
+      <stop offset="45%" stop-color="#FBBF24" />
+      <stop offset="100%" stop-color="#D97706" />
+    </linearGradient>
+    <!-- Live Red Pulse Indicator Gradient -->
+    <linearGradient id="liveRed" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#EF4444" />
+      <stop offset="100%" stop-color="#B91C1C" />
+    </linearGradient>
+    <filter id="shadow" x="-10%" y="-10%" width="125%" height="125%">
+      <feDropShadow dx="0" dy="2" stdDeviation="3" flood-color="#000" flood-opacity="0.25"/>
+    </filter>
+  </defs>
+
+  <!-- Golden Rounded Badge Background (Matches Header & Footer Logo) -->
+  <rect x="4" y="4" width="120" height="120" rx="28" fill="url(#brandGold)" filter="url(#shadow)" stroke="#FDE68A" stroke-width="2"/>
+
+  <!-- High-Contrast Bold Currency Symbol (₹) -->
+  <text 
+    x="64" 
+    y="88" 
+    font-family="system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" 
+    font-size="78" 
+    font-weight="900" 
+    fill="#0F172A" 
+    text-anchor="middle"
+    letter-spacing="-2"
+  >₹</text>
+
+  <!-- Vibrant Red "LIVE" Status Badge (Top-Right) -->
+  <circle cx="104" cy="24" r="16" fill="url(#liveRed)" stroke="#FFFFFF" stroke-width="3"/>
+  <circle cx="104" cy="24" r="6" fill="#FFFFFF"/>
 </svg>

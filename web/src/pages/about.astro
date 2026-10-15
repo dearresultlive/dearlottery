@@ -3,38 +3,45 @@ import Layout from '../layouts/Layout.astro';
 ---
 
 <Layout
-  title="About Us | Dear Result Live (আমাদের সম্পর্কে)"
+  title="About Us | Dear Result Live"
   description="Learn about Dear Result Live (dearresultlive.in), an independent 3rd-party public utility service providing fast, accurate Nagaland & Sikkim Dear Lottery results."
 >
   <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-8 text-slate-700">
     
     <div class="border-b border-slate-200 pb-5">
       <span class="text-xs font-bold text-blue-700 uppercase tracking-widest bg-blue-50 px-2 py-0.5 rounded border border-blue-200">
-        Public Utility Service
+        <span class="lang-en">Public Utility Service</span>
+        <span class="lang-bn">জনসেবামূলক পোর্টাল</span>
+        <span class="lang-hi">सार्वजनिक सेवा पोर्टल</span>
       </span>
       <h1 class="text-2xl sm:text-4xl font-black text-slate-900 mt-2">
-        About Dear Result Live (আমাদের সম্পর্কে)
+        <span class="lang-en">About Dear Result Live</span>
+        <span class="lang-bn">আমাদের সম্পর্কে</span>
+        <span class="lang-hi">हमारे बारे में</span>
       </h1>
       <p class="text-slate-600 text-xs sm:text-sm mt-1">
-        Independent information engine publishing daily official Nagaland and Sikkim State Lottery Sambad results.
+        <span class="lang-en">Independent information engine publishing daily official Nagaland and Sikkim State Lottery Sambad results.</span>
+        <span class="lang-bn">নাগাল্যান্ড ও সিকিম রাজ্য লটারির দৈনিক অফিশিয়াল রেজাল্ট প্রকাশের নিরপেক্ষ তথ্য পোর্টাল।</span>
+        <span class="lang-hi">नागालैंड और सिक्किम राज्य लॉटरी के दैनिक आधिकारिक परिणाम प्रकाशित करने वाला स्वतंत्र सूचना पोर्टल।</span>
       </p>
     </div>
 
-    <div class="space-y-6 text-sm leading-relaxed">
+    {/* English Content (Default) */}
+    <div class="lang-en space-y-6 text-sm leading-relaxed">
       <section class="space-y-3 bg-white border border-slate-200 rounded-2xl p-6 shadow-sm">
         <h2 class="text-xl font-bold text-slate-900">Our Mission</h2>
         <p>
           <strong>Dear Result Live (dearresultlive.in)</strong> was established to provide a clean, high-speed, and reliable public utility platform for citizens to check officially declared Nagaland, Sikkim, and West Bengal Dear State Lottery results without intrusive ads, misleading popups, or delays.
         </p>
         <p>
-          We publish verified lottery draw numbers for all three daily draws: <strong>1:00 PM Morning (দুপুর ১টা)</strong>, <strong>6:00 PM Day (সন্ধ্যা ৬টা)</strong>, and <strong>8:00 PM Night (রাত ৮টা)</strong> immediately after their official declaration by the State Lottery Directorate.
+          We publish verified lottery draw numbers for all three daily draws: <strong>1:00 PM Morning</strong>, <strong>6:00 PM Day</strong>, and <strong>8:00 PM Night</strong> immediately after their official declaration by the State Lottery Directorate.
         </p>
       </section>
 
       <section class="space-y-3 bg-white border border-slate-200 rounded-2xl p-6 shadow-sm">
         <h2 class="text-xl font-bold text-slate-900">Editorial & Verification Standards</h2>
         <p>
-          Every winning number displayed on our portal is parsed and cross-checked directly against the official Government Gazette publications released by the Directorate of Nagaland State Lotteries and Directorate of Sikkim State Lotteries. We provide direct access to the scanned official JPG sheets and signed Gazette PDFs so players can verify their tickets with 100% confidence.
+          Every winning number displayed on our portal is parsed and cross-checked directly against the official Government Gazette publications released by the Directorate of Nagaland State Lotteries and Directorate of Sikkim State Lotteries. We provide direct access to scanned official JPG sheets and signed Gazette PDFs so players can verify their tickets with 100% confidence.
         </p>
       </section>
 
@@ -45,6 +52,66 @@ import Layout from '../layouts/Layout.astro';
         </h3>
         <p class="text-xs text-slate-700 leading-relaxed">
           Dear Result Live is an independent informational and reporting portal. We are <strong>not affiliated with, authorized, endorsed, or operated</strong> by the Government of Nagaland, Government of Sikkim, Government of West Bengal, or any lottery distributor. We <strong>do not sell lottery tickets</strong>, accept bets, process payments, or promote gambling in any form. Lottery participation is restricted to adults aged 18+ in legal jurisdictions only.
+        </p>
+      </section>
+    </div>
+
+    {/* Bengali Content */}
+    <div class="lang-bn space-y-6 text-sm leading-relaxed">
+      <section class="space-y-3 bg-white border border-slate-200 rounded-2xl p-6 shadow-sm">
+        <h2 class="text-xl font-bold text-slate-900">আমাদের লক্ষ্য</h2>
+        <p>
+          <strong>Dear Result Live (dearresultlive.in)</strong> তৈরি করা হয়েছে একটি বিজ্ঞাপনমুক্ত, দ্রুত ও নির্ভরযোগ্য প্ল্যাটফর্ম হিসেবে, যাতে সাধারণ মানুষ কোনো বিভ্রান্তিকর পপ-আপ বা অপ্রয়োজনীয় দেরি ছাড়াই নাগাল্যান্ড ও সিকিম রাজ্য লটারির অফিশিয়াল রেজাল্ট সরাসরি যাচাই করতে পারেন।
+        </p>
+        <p>
+          আমরা প্রতিদিন তিনটি সরকারি ড্র: <strong>দুপুর ১:০০ টা</strong>, <strong>সন্ধ্যা ৬:০০ টা</strong> এবং <strong>রাত ৮:০০ টা</strong>-এর ফলাফল প্রকাশের সাথে সাথে তা সরাসরি শিট সহ যাচাই করে প্রকাশ করি।
+        </p>
+      </section>
+
+      <section class="space-y-3 bg-white border border-slate-200 rounded-2xl p-6 shadow-sm">
+        <h2 class="text-xl font-bold text-slate-900">তথ্য যাচাইকরণ মানদণ্ড</h2>
+        <p>
+          আমাদের সাইটে প্রদর্শিত প্রতিটি বিজয়ী নম্বর সরকারি গেজেট ও অফিশিয়াল স্ক্যান করা শিটের সাথে মিলিয়ে ১০০% নির্ভুলভাবে তুলে ধরা হয়। যাতে ব্যবহারকারীরা পূর্ণ আত্মবিশ্বাসের সাথে তাদের টিকিট মেলাতে পারেন।
+        </p>
+      </section>
+
+      <section class="bg-amber-50 border border-amber-300 rounded-2xl p-6 space-y-2 text-slate-800 shadow-sm">
+        <h3 class="text-base font-bold text-amber-900 flex items-center gap-2">
+          <span>🛡️</span>
+          <span>আইনি ও বিধিবদ্ধ সতর্কতা</span>
+        </h3>
+        <p class="text-xs text-slate-700 leading-relaxed">
+          ডিয়ার রেজাল্ট লাইভ একটি স্বতন্ত্র তথ্য প্রকাশক পোর্টাল। আমরা কোনো রাজ্য সরকার বা লটারি সংস্থার সাথে যুক্ত নই। আমরা কোনো টিকিট বিক্রি করি না বা জুয়া প্রচার করি না। লটারিতে অংশগ্রহণ শুধুমাত্র ১৮ বছরের ঊর্ধ্বে প্রাপ্তবয়স্কদের জন্য প্রযোজ্য।
+        </p>
+      </section>
+    </div>
+
+    {/* Hindi Content */}
+    <div class="lang-hi space-y-6 text-sm leading-relaxed">
+      <section class="space-y-3 bg-white border border-slate-200 rounded-2xl p-6 shadow-sm">
+        <h2 class="text-xl font-bold text-slate-900">हमारा उद्देश्य</h2>
+        <p>
+          <strong>Dear Result Live (dearresultlive.in)</strong> की शुरुआत एक स्वच्छ, सुरक्षित और तेज सूचना सेवा के रूप में की गई है, ताकि आम नागरिक बिना किसी भ्रामक विज्ञापन या देरी के सीधे आधिकारिक नागालैंड और सिक्किम डियर स्टेट लॉटरी का परिणाम देख सकें।
+        </p>
+        <p>
+          हम प्रतिदिन तीनों आधिकारिक ड्रॉ: <strong>दोपहर 1:00 बजे</strong>, <strong>शाम 6:00 बजे</strong> और <strong>रात 8:00 बजे</strong> के परिणाम तुरंत सत्यापित करके प्रकाशित करते हैं।
+        </p>
+      </section>
+
+      <section class="space-y-3 bg-white border border-slate-200 rounded-2xl p-6 shadow-sm">
+        <h2 class="text-xl font-bold text-slate-900">सत्यापन मानक</h2>
+        <p>
+          पोर्टल पर प्रकाशित प्रत्येक संख्या आधिकारिक सरकारी गजट और स्कैन की गई शीट से 100% मिलान के बाद ही दर्ज की जाती है, जिससे दर्शक पूरी विश्वसनीयता के साथ अपने टिकट का मिलान कर सकें।
+        </p>
+      </section>
+
+      <section class="bg-amber-50 border border-amber-300 rounded-2xl p-6 space-y-2 text-slate-800 shadow-sm">
+        <h3 class="text-base font-bold text-amber-900 flex items-center gap-2">
+          <span>🛡️</span>
+          <span>महत्वपूर्ण कानूनी सूचना</span>
+        </h3>
+        <p class="text-xs text-slate-700 leading-relaxed">
+          डियर रिजल्ट लाइव एक स्वतंत्र सूचना पोर्टल है। हम किसी सरकारी विभाग या लॉटरी एजेंसी से संबद्ध नहीं हैं। हम टिकटों की बिक्री या जुए का प्रचार नहीं करते हैं। लॉटरी में भाग लेना केवल 18 वर्ष से अधिक आयु के वयस्कों के लिए वैध राज्यों में मान्य है।
         </p>
       </section>
     </div>

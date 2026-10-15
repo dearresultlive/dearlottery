@@ -3,24 +3,31 @@ import Layout from '../layouts/Layout.astro';
 ---
 
 <Layout
-  title="Terms of Service | Dear Result Live (ব্যবহারের শর্তাবলী)"
+  title="Terms of Service | Dear Result Live"
   description="Terms of Service and legal usage rules for Dear Result Live public lottery result portal."
 >
   <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-8 text-slate-700">
     
     <div class="border-b border-slate-200 pb-5">
       <span class="text-xs font-bold text-blue-700 uppercase tracking-widest bg-blue-50 px-2 py-0.5 rounded border border-blue-200">
-        User Agreement
+        <span class="lang-en">User Agreement</span>
+        <span class="lang-bn">ব্যবহারকারী চুক্তি</span>
+        <span class="lang-hi">उपयोगकर्ता अनुबंध</span>
       </span>
       <h1 class="text-2xl sm:text-4xl font-black text-slate-900 mt-2">
-        Terms of Service (ব্যবহারের শর্তাবলী)
+        <span class="lang-en">Terms of Service</span>
+        <span class="lang-bn">ব্যবহারের শর্তাবলী</span>
+        <span class="lang-hi">सेवा की शर्तें</span>
       </h1>
       <p class="text-slate-600 text-xs sm:text-sm mt-1">
-        Please read these terms carefully before using Dear Result Live.
+        <span class="lang-en">Please review the rules and legal terms governing the use of Dear Result Live.</span>
+        <span class="lang-bn">ডিয়ার রেজাল্ট লাইভ ব্যবহারের নিয়ম ও আইনি শর্তাবলী মনোযোগ সহকারে পড়ুন।</span>
+        <span class="lang-hi">कृपया डियर रिजल्ट लाइव के उपयोग से संबंधित नियम और शर्तें ध्यानपूर्वक पढ़ें।</span>
       </p>
     </div>
 
-    <div class="space-y-5 text-sm leading-relaxed">
+    {/* English Content (Default) */}
+    <div class="lang-en space-y-5 text-sm leading-relaxed">
       <section class="space-y-2 bg-white border border-slate-200 rounded-2xl p-6 shadow-sm">
         <h2 class="text-lg font-bold text-slate-900">1. Informational Service Only</h2>
         <p>
@@ -46,6 +53,68 @@ import Layout from '../layouts/Layout.astro';
         <h2 class="text-lg font-bold text-slate-900">4. Official Gazette Primacy</h2>
         <p>
           In the rare event of any discrepancy between numbers displayed on this website and the printed Government Gazette published by the Directorate of State Lotteries, the official printed Gazette shall take precedence as the sole legal authority.
+        </p>
+      </section>
+    </div>
+
+    {/* Bengali Content */}
+    <div class="lang-bn space-y-5 text-sm leading-relaxed">
+      <section class="space-y-2 bg-white border border-slate-200 rounded-2xl p-6 shadow-sm">
+        <h2 class="text-lg font-bold text-slate-900">১. শুধুমাত্র তথ্য প্রকাশের সেবা</h2>
+        <p>
+          ডিয়ার রেজাল্ট লাইভ শুধুমাত্র সাধারণ নাগরিক ও পাঠকদের সুবিধার্থে সরকারি ড্র-এর ফলাফল পরিবেশন করে। এটি কোনো বাণিজ্যিক লটারি সেবা প্রদানকারী প্রতিষ্ঠান নয়।
+        </p>
+      </section>
+
+      <section class="space-y-2 bg-white border border-slate-200 rounded-2xl p-6 shadow-sm">
+        <h2 class="text-lg font-bold text-slate-900">২. কোনো জুয়া বা টিকিট বিক্রি নয়</h2>
+        <p>
+          আমরা কোনো টিকিট বিক্রি করি না বা কোনো প্রকার বাজি গ্রহণ করি না। টিকিট ক্রয় সংক্রান্ত সমস্ত কার্যকলাপ শুধুমাত্র সরকার অনুমোদিত বৈধ বিক্রেতাদের মাধ্যমেই সম্পন্ন হতে হবে।
+        </p>
+      </section>
+
+      <section class="space-y-2 bg-white border border-slate-200 rounded-2xl p-6 shadow-sm">
+        <h2 class="text-lg font-bold text-slate-900">৩. ১৮+ বয়স সংক্রান্ত বাধ্যবাধকতা</h2>
+        <p>
+          ভারতীয় আইন অনুযায়ী লটারিতে অংশগ্রহণ ১৮ বছরের ঊর্ধ্বে প্রাপ্তবয়স্কদের জন্য সীমাবদ্ধ। ১৮ বছরের কম বয়সীদের লটারিতে অংশগ্রহণ করা সম্পূর্ণ নিষিদ্ধ।
+        </p>
+      </section>
+
+      <section class="space-y-2 bg-white border border-slate-200 rounded-2xl p-6 shadow-sm">
+        <h2 class="text-lg font-bold text-slate-900">৪. সরকারি গেজেটের চূড়ান্ত বৈধতা</h2>
+        <p>
+          কোনো সংখ্যা প্রকাশের ক্ষেত্রে কোনো বিরোধ সৃষ্টি হলে সংশ্লিষ্ট রাজ্য সরকারের লটারি অধিদপ্তর কর্তৃক প্রকাশিত মুদ্রিত গেজেট কপিই একমাত্র চূড়ান্ত প্রমাণ হিসেবে গণ্য হবে।
+        </p>
+      </section>
+    </div>
+
+    {/* Hindi Content */}
+    <div class="lang-hi space-y-5 text-sm leading-relaxed">
+      <section class="space-y-2 bg-white border border-slate-200 rounded-2xl p-6 shadow-sm">
+        <h2 class="text-lg font-bold text-slate-900">1. केवल सूचनात्मक सेवा</h2>
+        <p>
+          डियर रिजल्ट लाइव केवल आम नागरिकों की सुविधा के लिए आधिकारिक परिणामों का संकलन और प्रकाशन करता है। यह कोई वाणिज्यिक लॉटरी एजेंसी नहीं है।
+        </p>
+      </section>
+
+      <section class="space-y-2 bg-white border border-slate-200 rounded-2xl p-6 shadow-sm">
+        <h2 class="text-lg font-bold text-slate-900">2. कोई जुआ या टिकट बिक्री नहीं</h2>
+        <p>
+          हम लॉटरी टिकट नहीं बेचते हैं और न ही किसी प्रकार का सट्टा स्वीकार करते हैं। टिकट खरीद संबंधी समस्त कार्य केवल सरकारी अधिकृत काउंटरों द्वारा ही किए जाने चाहिए।
+        </p>
+      </section>
+
+      <section class="space-y-2 bg-white border border-slate-200 rounded-2xl p-6 shadow-sm">
+        <h2 class="text-lg font-bold text-slate-900">3. 18+ आयु प्रतिबंध</h2>
+        <p>
+          भारतीय कानून के अनुसार लॉटरी में भागीदारी 18 वर्ष और उससे अधिक आयु के वयस्कों के लिए ही वैध है। 18 वर्ष से कम आयु के लोगों का भाग लेना वर्जित है।
+        </p>
+      </section>
+
+      <section class="space-y-2 bg-white border border-slate-200 rounded-2xl p-6 shadow-sm">
+        <h2 class="text-lg font-bold text-slate-900">4. आधिकारिक सरकारी गजट की प्राथमिकता</h2>
+        <p>
+          किसी भी संख्या के संबंध में किसी विसंगति की स्थिति में, संबंधित राज्य सरकार के लॉटरी निदेशालय द्वारा जारी मुद्रित गजट ही एकमात्र कानूनी प्रमाण माना जाएगा।
         </p>
       </section>
     </div>

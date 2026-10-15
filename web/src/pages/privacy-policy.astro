@@ -3,24 +3,31 @@ import Layout from '../layouts/Layout.astro';
 ---
 
 <Layout
-  title="Privacy Policy | Dear Result Live (গোপনীয়তা নীতি)"
+  title="Privacy Policy | Dear Result Live"
   description="Read the Privacy Policy of Dear Result Live. We respect user privacy, collect zero personal lottery transaction data, and ensure compliant analytics."
 >
   <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-8 text-slate-700">
     
     <div class="border-b border-slate-200 pb-5">
       <span class="text-xs font-bold text-blue-700 uppercase tracking-widest bg-blue-50 px-2 py-0.5 rounded border border-blue-200">
-        Legal Information
+        <span class="lang-en">Legal Information</span>
+        <span class="lang-bn">আইনি তথ্য</span>
+        <span class="lang-hi">कानूनी जानकारी</span>
       </span>
       <h1 class="text-2xl sm:text-4xl font-black text-slate-900 mt-2">
-        Privacy Policy (গোপনীয়তা নীতি)
+        <span class="lang-en">Privacy Policy</span>
+        <span class="lang-bn">গোপনীয়তা নীতি</span>
+        <span class="lang-hi">गोपनीयता नीति</span>
       </h1>
       <p class="text-slate-600 text-xs sm:text-sm mt-1">
-        Last updated: October 2026. How Dear Result Live handles data and privacy.
+        <span class="lang-en">How Dear Result Live protects user data and privacy.</span>
+        <span class="lang-bn">ডিয়ার রেজাল্ট লাইভ কীভাবে ব্যবহারকারীর গোপনীয়তা রক্ষা করে।</span>
+        <span class="lang-hi">डियर रिजल्ट लाइव उपयोगकर्ता डेटा और गोपनीयता की रक्षा कैसे करता है।</span>
       </p>
     </div>
 
-    <div class="space-y-5 text-sm leading-relaxed">
+    {/* English Content (Default) */}
+    <div class="lang-en space-y-5 text-sm leading-relaxed">
       <section class="space-y-2 bg-white border border-slate-200 rounded-2xl p-6 shadow-sm">
         <h2 class="text-lg font-bold text-slate-900">1. Information We Do Not Collect</h2>
         <p>
@@ -36,16 +43,78 @@ import Layout from '../layouts/Layout.astro';
       </section>
 
       <section class="space-y-2 bg-white border border-slate-200 rounded-2xl p-6 shadow-sm">
-        <h2 class="text-lg font-bold text-slate-900">3. Web Push Notifications (OneSignal)</h2>
+        <h2 class="text-lg font-bold text-slate-900">3. Web Push Notifications</h2>
         <p>
-          If you opt in to receive draw notifications, a non-personal anonymous device token is generated via OneSignal to deliver draw alerts at 1:00 PM, 6:00 PM, and 8:00 PM. You can disable notifications at any time in your browser settings.
+          If you opt in to receive draw notifications, an anonymous device token is generated via OneSignal to deliver draw alerts at 1:00 PM, 6:00 PM, and 8:00 PM. You can disable notifications at any time in your browser settings.
         </p>
       </section>
 
       <section class="space-y-2 bg-white border border-slate-200 rounded-2xl p-6 shadow-sm">
-        <h2 class="text-lg font-bold text-slate-900">4. Cookies & Web Analytics</h2>
+        <h2 class="text-lg font-bold text-slate-900">4. Cookies & Web Preferences</h2>
         <p>
-          We use minimal, privacy-friendly technical cookies to preserve UI preferences (such as dismissed alert banners). Aggregated, anonymized performance metrics may be collected to monitor site uptime.
+          We use minimal, privacy-friendly technical cookies solely to preserve UI preferences (such as selected language and dismissed alert banners). No tracking pixels or invasive identifiers are used.
+        </p>
+      </section>
+    </div>
+
+    {/* Bengali Content */}
+    <div class="lang-bn space-y-5 text-sm leading-relaxed">
+      <section class="space-y-2 bg-white border border-slate-200 rounded-2xl p-6 shadow-sm">
+        <h2 class="text-lg font-bold text-slate-900">১. ব্যক্তিগত তথ্য সংগ্রহ না করা</h2>
+        <p>
+          ডিয়ার রেজাল্ট লাইভ ব্যবহারকারীদের কাছ থেকে কোনো ব্যাংক অ্যাকাউন্ট, ক্রেডিট কার্ড বা ব্যক্তিগত আর্থিক তথ্য সংগ্রহ করে না। আমরা কোনো টিকিট বিক্রি বা লেনদেন করি না।
+        </p>
+      </section>
+
+      <section class="space-y-2 bg-white border border-slate-200 rounded-2xl p-6 shadow-sm">
+        <h2 class="text-lg font-bold text-slate-900">২. টিকিট সার্চ সংক্রান্ত গোপনীয়তা</h2>
+        <p>
+          টিকিট চেকার টুলে আপনি যে নম্বরটি লেখেন তা শুধুমাত্র ফলাফলের সাথে মেলানোর উদ্দেশ্যে ব্যবহৃত হয়; আপনার কোনো সার্চ রেকর্ড সংরক্ষণ করা হয় না।
+        </p>
+      </section>
+
+      <section class="space-y-2 bg-white border border-slate-200 rounded-2xl p-6 shadow-sm">
+        <h2 class="text-lg font-bold text-slate-900">৩. ড্র নোটিফিকেশন</h2>
+        <p>
+          আপনি ফলাফল প্রকাশের নোটিফিকেশন চালু করলে একটি পরিচয়হীন টোকেনের মাধ্যমে অ্যালার্ট পাঠানো হয়। যেকোনো সময় ব্রাউজার থেকে এটি বন্ধ করা সম্ভব।
+        </p>
+      </section>
+
+      <section class="space-y-2 bg-white border border-slate-200 rounded-2xl p-6 shadow-sm">
+        <h2 class="text-lg font-bold text-slate-900">৪. কুকিজ ও ভাষা সেটিং</h2>
+        <p>
+          ব্যবহারকারীর পছন্দের ভাষা (ইংরেজি, বাংলা, হিন্দি) মনে রাখার সুবিধার্থে শুধুমাত্র ন্যূনতম লোকাল স্টোরেজ ব্যবহার করা হয়।
+        </p>
+      </section>
+    </div>
+
+    {/* Hindi Content */}
+    <div class="lang-hi space-y-5 text-sm leading-relaxed">
+      <section class="space-y-2 bg-white border border-slate-200 rounded-2xl p-6 shadow-sm">
+        <h2 class="text-lg font-bold text-slate-900">1. कोई व्यक्तिगत जानकारी एकत्र नहीं</h2>
+        <p>
+          डियर रिजल्ट लाइव उपयोगकर्ताओं से कोई बैंक खाता, क्रेडिट कार्ड या निजी वित्तीय जानकारी नहीं मांगता है। हम कोई वित्तीय लेन-देन नहीं करते हैं।
+        </p>
+      </section>
+
+      <section class="space-y-2 bg-white border border-slate-200 rounded-2xl p-6 shadow-sm">
+        <h2 class="text-lg font-bold text-slate-900">2. टिकट खोज गोपनीयता</h2>
+        <p>
+          टिकट चेकर टूल में दर्ज किया गया टिकट नंबर केवल परिणाम मिलान के लिए उपयोग किया जाता है; हम किसी भी टिकट संख्या को संग्रहीत नहीं करते हैं।
+        </p>
+      </section>
+
+      <section class="space-y-2 bg-white border border-slate-200 rounded-2xl p-6 shadow-sm">
+        <h2 class="text-lg font-bold text-slate-900">3. वेब पुश सूचनाएं</h2>
+        <p>
+          यदि आप ड्रॉ अलर्ट की अनुमति देते हैं, तो अनाम टोकन द्वारा 1:00 PM, 6:00 PM और 8:00 PM पर सूचनाएं भेजी जाती हैं। इसे कभी भी ब्राउज़र सेटिंग में बंद किया जा सकता है।
+        </p>
+      </section>
+
+      <section class="space-y-2 bg-white border border-slate-200 rounded-2xl p-6 shadow-sm">
+        <h2 class="text-lg font-bold text-slate-900">4. कुकीज़ एवं भाषा प्राथमिकता</h2>
+        <p>
+          उपयोगकर्ता द्वारा चुनी गई भाषा (अंग्रेजी, बंगाली, हिंदी) याद रखने के लिए केवल न्यूनतम लोकल स्टोरेज का उपयोग किया जाता है।
         </p>
       </section>
     </div>

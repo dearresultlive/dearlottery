@@ -19,35 +19,75 @@ for (let i = 1; i <= 30; i++) {
 ---
 
 <Layout
-  title="Dear Lottery Old Result Archive (Past 30 Days) | Lottery Sambad পুরোনো রেজাল্ট"
+  title="Dear Lottery Old Result Archive (Past 30 Days) | Lottery Sambad"
   description="Check Dear Lottery old results and past winning sheets for the last 30 days. Daily 1:00 PM Morning, 6:00 PM Day, and 8:00 PM Night 1st prize ₹1 Crore numbers."
 >
   <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-10 space-y-6 sm:space-y-8">
     
+    {/* Page Header (Trilingual) */}
     <div class="border-b border-slate-200 pb-5">
-      <span class="text-xs font-black text-blue-700 uppercase tracking-widest bg-blue-50 px-2.5 py-0.5 rounded border border-blue-200">
-        পুরনো রেজাল্ট রেকর্ড
-      </span>
-      <h1 class="text-2xl sm:text-4xl font-black text-slate-900 mt-2">
-        পুরনো ডিয়ার লটারি রেজাল্ট (গত ৩০ দিনের ড্র)
-      </h1>
-      <p class="text-slate-600 text-xs sm:text-sm mt-1">
-        নাগাল্যান্ড ও সিকিম রাজ্য লটারি সংবাদের বিগত ৩০ দিনের অফিসিয়াল রেজাল্ট শিট ও সকল প্রাইজ নম্বর।
-      </p>
+      {/* English Header (Default) */}
+      <div class="lang-en space-y-1">
+        <span class="text-xs font-black text-blue-700 uppercase tracking-widest bg-blue-50 px-2.5 py-0.5 rounded border border-blue-200">
+          Historical Draw Archive
+        </span>
+        <h1 class="text-2xl sm:text-4xl font-black text-slate-900 mt-2">
+          Dear Lottery Old Results (Past 30 Days)
+        </h1>
+        <p class="text-slate-600 text-xs sm:text-sm mt-1">
+          Complete daily official result sheets and all winning prize numbers for Nagaland &amp; Sikkim State Lotteries.
+        </p>
+      </div>
+
+      {/* Bengali Header */}
+      <div class="lang-bn space-y-1">
+        <span class="text-xs font-black text-blue-700 uppercase tracking-widest bg-blue-50 px-2.5 py-0.5 rounded border border-blue-200">
+          পুরনো রেজাল্ট রেকর্ড
+        </span>
+        <h1 class="text-2xl sm:text-4xl font-black text-slate-900 mt-2">
+          পুরনো ডিয়ার লটারি রেজাল্ট (গত ৩০ দিনের ড্র)
+        </h1>
+        <p class="text-slate-600 text-xs sm:text-sm mt-1">
+          নাগাল্যান্ড ও সিকিম রাজ্য লটারি সংবাদের বিগত ৩০ দিনের অফিসিয়াল রেজাল্ট শিট ও সকল প্রাইজ নম্বর।
+        </p>
+      </div>
+
+      {/* Hindi Header */}
+      <div class="lang-hi space-y-1">
+        <span class="text-xs font-black text-blue-700 uppercase tracking-widest bg-blue-50 px-2.5 py-0.5 rounded border border-blue-200">
+          पुराने परिणाम संग्रह
+        </span>
+        <h1 class="text-2xl sm:text-4xl font-black text-slate-900 mt-2">
+          पुराने डियर लॉटरी रिजल्ट (पिछले 30 दिन)
+        </h1>
+        <p class="text-slate-600 text-xs sm:text-sm mt-1">
+          नागालैंड और सिक्किम स्टेट लॉटरी संबाद के पिछले 30 दिनों के आधिकारिक परिणाम और सभी पुरस्कार नंबर।
+        </p>
+      </div>
     </div>
 
-    {/* Quick Filter Yesterday */}
+    {/* Quick Filter Yesterday (Trilingual) */}
     <div class="bg-gradient-to-r from-amber-50 via-white to-amber-50 border border-amber-300 rounded-2xl p-5 sm:p-6 flex flex-col sm:flex-row items-center justify-between gap-4 shadow-sm">
       <div>
-        <span class="text-xs font-bold text-amber-800 uppercase tracking-wider">জরুরি খোঁজ</span>
-        <h2 class="text-lg sm:text-xl font-black text-slate-900 mt-0.5">গতকালকের রেজাল্ট খুঁজছেন?</h2>
-        <p class="text-xs text-slate-600 mt-1">গতকালকের দুপুর ১:০০, সন্ধ্যা ৬:০০ ও রাত ৮:০০ টার সব কটি ড্র-এর বিজয়ী নম্বর দেখুন।</p>
+        <span class="lang-en text-xs font-bold text-amber-800 uppercase tracking-wider">Quick Search</span>
+        <span class="lang-bn text-xs font-bold text-amber-800 uppercase tracking-wider">জরুরি খোঁজ</span>
+        <span class="lang-hi text-xs font-bold text-amber-800 uppercase tracking-wider">त्वरित खोज</span>
+
+        <h2 class="lang-en text-lg sm:text-xl font-black text-slate-900 mt-0.5">Looking for Yesterday's Result?</h2>
+        <h2 class="lang-bn text-lg sm:text-xl font-black text-slate-900 mt-0.5">গতকালকের রেজাল্ট খুঁজছেন?</h2>
+        <h2 class="lang-hi text-lg sm:text-xl font-black text-slate-900 mt-0.5">कल का परिणाम ढूंढ रहे हैं?</h2>
+
+        <p class="lang-en text-xs text-slate-600 mt-1">View yesterday's winning numbers for 1:00 PM, 6:00 PM, and 8:00 PM draws.</p>
+        <p class="lang-bn text-xs text-slate-600 mt-1">গতকালকের দুপুর ১:০০, সন্ধ্যা ৬:০০ ও রাত ৮:০০ টার সব কটি ড্র-এর বিজয়ী নম্বর দেখুন।</p>
+        <p class="lang-hi text-xs text-slate-600 mt-1">कल के दोपहर 1:00, शाम 6:00 और रात 8:00 बजे के सभी विजयी नंबर देखें।</p>
       </div>
       <a
         href={`/results/${datesList[0]?.date}`}
         class="bg-blue-700 hover:bg-blue-800 text-white font-black text-xs sm:text-sm px-5 py-2.5 rounded-xl shadow-sm transition-all whitespace-nowrap active:scale-95"
       >
-        গতকালকের রেজাল্ট দেখুন ({datesList[0]?.displayDate}) →
+        <span class="lang-en">View Yesterday's Results ({datesList[0]?.displayDate}) →</span>
+        <span class="lang-bn">গতকালকের রেজাল্ট দেখুন ({datesList[0]?.displayDate}) →</span>
+        <span class="lang-hi">कल का रिजल्ट देखें ({datesList[0]?.displayDate}) →</span>
       </a>
     </div>
 
@@ -55,7 +95,7 @@ for (let i = 1; i <= 30; i++) {
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
       {datesList.map((item) => (
         <div class="bg-white border border-slate-200 hover:border-blue-400 rounded-2xl p-4 sm:p-5 space-y-3 transition-colors shadow-sm">
-          <div className="flex items-center justify-between border-b border-slate-100 pb-2.5">
+          <div class="flex items-center justify-between border-b border-slate-100 pb-2.5">
             <div>
               <span class="text-base font-black text-slate-900 block">{item.displayDate}</span>
               <span class="text-[11px] text-blue-700 font-bold">{item.dayName}</span>
@@ -65,7 +105,9 @@ for (let i = 1; i <= 30; i++) {
               href={`/results/${item.date}`}
               class="text-xs font-bold text-slate-600 hover:text-blue-700 bg-slate-50 border border-slate-200 px-2.5 py-1 rounded-lg transition-colors"
             >
-              সব ড্র →
+              <span class="lang-en">All Draws →</span>
+              <span class="lang-bn">সব ড্র →</span>
+              <span class="lang-hi">सभी ड्रा →</span>
             </a>
           </div>
 
@@ -75,7 +117,9 @@ for (let i = 1; i <= 30; i++) {
               class="bg-slate-50 hover:bg-blue-50 border border-slate-200 hover:border-blue-300 text-slate-700 hover:text-blue-900 rounded-xl py-2 px-1 text-center transition-colors flex flex-col items-center"
             >
               <span class="text-xs font-bold text-blue-700">1:00 PM</span>
-              <span class="text-[10px] text-slate-500">দুপুর</span>
+              <span class="lang-en text-[10px] text-slate-500">Morning</span>
+              <span class="lang-bn text-[10px] text-slate-500">দুপুর</span>
+              <span class="lang-hi text-[10px] text-slate-500">दोपहर</span>
             </a>
 
             <a
@@ -83,7 +127,9 @@ for (let i = 1; i <= 30; i++) {
               class="bg-slate-50 hover:bg-blue-50 border border-slate-200 hover:border-blue-300 text-slate-700 hover:text-blue-900 rounded-xl py-2 px-1 text-center transition-colors flex flex-col items-center"
             >
               <span class="text-xs font-bold text-blue-700">6:00 PM</span>
-              <span class="text-[10px] text-slate-500">সন্ধ্যা</span>
+              <span class="lang-en text-[10px] text-slate-500">Day</span>
+              <span class="lang-bn text-[10px] text-slate-500">সন্ধ্যা</span>
+              <span class="lang-hi text-[10px] text-slate-500">शाम</span>
             </a>
 
             <a
@@ -91,7 +137,9 @@ for (let i = 1; i <= 30; i++) {
               class="bg-slate-50 hover:bg-blue-50 border border-slate-200 hover:border-blue-300 text-slate-700 hover:text-blue-900 rounded-xl py-2 px-1 text-center transition-colors flex flex-col items-center"
             >
               <span class="text-xs font-bold text-blue-700">8:00 PM</span>
-              <span class="text-[10px] text-slate-500">রাত</span>
+              <span class="lang-en text-[10px] text-slate-500">Night</span>
+              <span class="lang-bn text-[10px] text-slate-500">রাত</span>
+              <span class="lang-hi text-[10px] text-slate-500">रात</span>
             </a>
           </div>
         </div>

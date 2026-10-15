@@ -18,46 +18,129 @@ const checkerDraws = [...draws, ...yesterdayDraws];
   description="Check your Dear Lottery ticket number online instantly. Search by last 4-5 digits or full ticket number to see if you won 1st prize ₹1 Crore, 2nd, 3rd, 4th, or 5th prize."
 >
   <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-10 space-y-8">
+    
+    {/* Page Header (Trilingual) */}
     <div class="text-center max-w-3xl mx-auto">
-      <span class="bg-blue-50 border border-blue-200 text-blue-700 text-xs font-black uppercase tracking-wider px-3 py-1 rounded-full">
-        ⚡ সঙ্গে সঙ্গে টিকিট মেলান
-      </span>
-      <h1 class="text-2xl sm:text-4xl font-black text-slate-900 mt-2">
-        অনলাইন ডিয়ার লটারি টিকিট মেলানোর সহজ টুল
-      </h1>
-      <p class="text-slate-600 text-xs sm:text-sm mt-1">
-        ১ম পুরস্কার (₹১ কোটি), ২য় পুরস্কার (₹১০,০০০), ৩য় পুরস্কার (₹৫০০), ৪র্থ পুরস্কার (₹২৫০), ৫ম পুরস্কার (₹১২০) এবং সান্ত্বনা পুরস্কার (₹১,০০০) এক নিমেষে স্বয়ংক্রিয়ভাবে মিলিয়ে নিন।
-      </p>
+      {/* English Header (Default) */}
+      <div class="lang-en space-y-2">
+        <span class="bg-blue-50 border border-blue-200 text-blue-700 text-xs font-black uppercase tracking-wider px-3 py-1 rounded-full">
+          ⚡ 1-Second Instant Checker
+        </span>
+        <h1 class="text-2xl sm:text-4xl font-black text-slate-900 mt-2">
+          Online Dear Lottery Ticket Checker Tool
+        </h1>
+        <p class="text-slate-600 text-xs sm:text-sm mt-1">
+          Instantly check your ticket against 1st Prize (₹1 Crore), 2nd Prize (₹10,000), 3rd Prize (₹500), 4th Prize (₹250), 5th Prize (₹120), and Consolation Prize (₹1,000).
+        </p>
+      </div>
+
+      {/* Bengali Header */}
+      <div class="lang-bn space-y-2">
+        <span class="bg-blue-50 border border-blue-200 text-blue-700 text-xs font-black uppercase tracking-wider px-3 py-1 rounded-full">
+          ⚡ সঙ্গে সঙ্গে টিকিট মেলান
+        </span>
+        <h1 class="text-2xl sm:text-4xl font-black text-slate-900 mt-2">
+          অনলাইন ডিয়ার লটারি টিকিট মেলানোর সহজ টুল
+        </h1>
+        <p class="text-slate-600 text-xs sm:text-sm mt-1">
+          ১ম পুরস্কার (₹১ কোটি), ২য় পুরস্কার (₹১০,০০০), ৩য় পুরস্কার (₹৫০০), ৪র্থ পুরস্কার (₹২৫০), ৫ম পুরস্কার (₹১২০) এবং সান্ত্বনা পুরস্কার (₹১,০০০) এক নিমেষে স্বয়ংক্রিয়ভাবে মিলিয়ে নিন।
+        </p>
+      </div>
+
+      {/* Hindi Header */}
+      <div class="lang-hi space-y-2">
+        <span class="bg-blue-50 border border-blue-200 text-blue-700 text-xs font-black uppercase tracking-wider px-3 py-1 rounded-full">
+          ⚡ 1-सेकंड में टिकट चेक करें
+        </span>
+        <h1 class="text-2xl sm:text-4xl font-black text-slate-900 mt-2">
+          ऑनलाइन डियर लॉटरी टिकट चेकर टूल
+        </h1>
+        <p class="text-slate-600 text-xs sm:text-sm mt-1">
+          प्रथम पुरस्कार (₹1 करोड़), 2रा पुरस्कार (₹10,000), 3रा पुरस्कार (₹500), 4था पुरस्कार (₹250), 5वां पुरस्कार (₹120) और सांत्वना पुरस्कार (₹1,000) से तुरंत टिकट मिलाएं।
+        </p>
+      </div>
     </div>
 
     {/* Interactive Ticket Checker Island */}
     <TicketChecker client:load initialDraws={checkerDraws} />
 
-    {/* Educational Content to Boost SEO & Dwell-Time */}
+    {/* Educational Content to Boost SEO & Dwell-Time (Trilingual) */}
     <div class="bg-white border border-slate-200 rounded-2xl p-6 md:p-8 space-y-6 text-slate-700 shadow-sm">
-      <h2 class="text-xl font-black text-slate-900">টিকিট নম্বর কীভাবে মেলাবেন?</h2>
-      <div class="grid md:grid-cols-3 gap-5 text-sm">
-        <div class="bg-slate-50 p-5 rounded-xl border border-slate-200">
-          <div class="text-blue-700 font-bold mb-2">১. শেষের ৪ সংখ্যা দিয়ে খোঁজ</div>
-          <p class="text-xs text-slate-600 leading-relaxed">
-            ৩য়, ৪র্থ ও ৫ম পুরস্কার মূলত আপনার টিকিটের শেষ ৪ সংখ্যার ওপর দেওয়া হয়। শুধু শেষ ৪টি সংখ্যা লিখলেই ১০০+ প্রাইজ নম্বরের সাথে সঙ্গে সঙ্গে মিলে যাবে।
-          </p>
+      {/* English Instructions */}
+      <div class="lang-en space-y-6">
+        <h2 class="text-xl font-black text-slate-900">How to Check Your Lottery Ticket Number?</h2>
+        <div class="grid md:grid-cols-3 gap-5 text-sm">
+          <div class="bg-slate-50 p-5 rounded-xl border border-slate-200">
+            <div class="text-blue-700 font-bold mb-2">1. Search by Last 4 Digits</div>
+            <p class="text-xs text-slate-600 leading-relaxed">
+              3rd, 4th, and 5th prizes are awarded based on the last 4 digits of your ticket. Typing just 4 numbers automatically checks against all 120+ winning entries.
+            </p>
+          </div>
+          <div class="bg-slate-50 p-5 rounded-xl border border-slate-200">
+            <div class="text-amber-800 font-bold mb-2">2. Full 5-Digit Matching</div>
+            <p class="text-xs text-slate-600 leading-relaxed">
+              The 2nd prize features 10 five-digit winning numbers worth ₹10,000 each. For the 1st prize (₹1 Crore), both the series letter and 5 digits must match.
+            </p>
+          </div>
+          <div class="bg-slate-50 p-5 rounded-xl border border-slate-200">
+            <div class="text-emerald-800 font-bold mb-2">3. Consolation Prize (₹1,000)</div>
+            <p class="text-xs text-slate-600 leading-relaxed">
+              If your ticket matches the 5 numbers of the 1st prize winner but has a different series code, you automatically win the ₹1,000 consolation prize.
+            </p>
+          </div>
         </div>
+      </div>
 
-        <div class="bg-slate-50 p-5 rounded-xl border border-slate-200">
-          <div class="text-amber-800 font-bold mb-2">২. ৫টি সংখ্যার সম্পূর্ণ মিল</div>
-          <p class="text-xs text-slate-600 leading-relaxed">
-            ২য় পুরস্কারে ১০টি পাঁচ সংখ্যার টিকিট থাকে যার প্রতিটি মূল্য ₹১০,০০০ টাকা। ১ম পুরস্কারের ক্ষেত্রে ৫টি সংখ্যা এবং সিরিজের অক্ষর দুটোই মিলতে হয়।
-          </p>
+      {/* Bengali Instructions */}
+      <div class="lang-bn space-y-6">
+        <h2 class="text-xl font-black text-slate-900">টিকিট নম্বর কীভাবে মেলাবেন?</h2>
+        <div class="grid md:grid-cols-3 gap-5 text-sm">
+          <div class="bg-slate-50 p-5 rounded-xl border border-slate-200">
+            <div class="text-blue-700 font-bold mb-2">১. শেষের ৪ সংখ্যা দিয়ে খোঁজ</div>
+            <p class="text-xs text-slate-600 leading-relaxed">
+              ৩য়, ৪র্থ ও ৫ম পুরস্কার মূলত আপনার টিকিটের শেষ ৪ সংখ্যার ওপর দেওয়া হয়। শুধু শেষ ৪টি সংখ্যা লিখলেই ১২০+ প্রাইজ নম্বরের সাথে সঙ্গে সঙ্গে মিলে যাবে।
+            </p>
+          </div>
+          <div class="bg-slate-50 p-5 rounded-xl border border-slate-200">
+            <div class="text-amber-800 font-bold mb-2">২. ৫টি সংখ্যার সম্পূর্ণ মিল</div>
+            <p class="text-xs text-slate-600 leading-relaxed">
+              ২য় পুরস্কারে ১০টি পাঁচ সংখ্যার টিকিট থাকে যার প্রতিটি মূল্য ₹১০,০০০ টাকা। ১ম পুরস্কারের ক্ষেত্রে ৫টি সংখ্যা এবং সিরিজের অক্ষর দুটোই মিলতে হয়।
+            </p>
+          </div>
+          <div class="bg-slate-50 p-5 rounded-xl border border-slate-200">
+            <div class="text-emerald-800 font-bold mb-2">৩. সান্ত্বনা পুরস্কার (₹১,০০০)</div>
+            <p class="text-xs text-slate-600 leading-relaxed">
+              আপনার টিকিটের ৫টি সংখ্যা ১ম পুরস্কারের সাথে মিললে কিন্তু সিরিজ আলাদা হলে আপনি পেয়ে যাবেন ₹১,০০০ টাকা সান্ত্বনা পুরস্কার।
+            </p>
+          </div>
         </div>
+      </div>
 
-        <div class="bg-slate-50 p-5 rounded-xl border border-slate-200">
-          <div class="text-emerald-800 font-bold mb-2">৩. সান্ত্বনা পুরস্কার (₹১,০০০)</div>
-          <p class="text-xs text-slate-600 leading-relaxed">
-            আপনার টিকিটের ৫টি সংখ্যা ১ম পুরস্কারের সাথে মিললে কিন্তু সিরিজ আলাদা হলে আপনি পেয়ে যাবেন ₹১,০০০ টাকা সান্ত্বনা পুরস্কার।
-          </p>
+      {/* Hindi Instructions */}
+      <div class="lang-hi space-y-6">
+        <h2 class="text-xl font-black text-slate-900">लॉटरी टिकट नंबर कैसे चेक करें?</h2>
+        <div class="grid md:grid-cols-3 gap-5 text-sm">
+          <div class="bg-slate-50 p-5 rounded-xl border border-slate-200">
+            <div class="text-blue-700 font-bold mb-2">1. अंतिम 4 अंकों से खोजें</div>
+            <p class="text-xs text-slate-600 leading-relaxed">
+              तीसरे, चौथे और पांचवें पुरस्कार आपके टिकट के अंतिम 4 अंकों पर आधारित होते हैं। केवल अंतिम 4 अंक लिखने पर 120+ विजयी नंबरों से तुरंत मिलान हो जाता है।
+            </p>
+          </div>
+          <div class="bg-slate-50 p-5 rounded-xl border border-slate-200">
+            <div class="text-amber-800 font-bold mb-2">2. पूरे 5 अंकों का मिलान</div>
+            <p class="text-xs text-slate-600 leading-relaxed">
+              दूसरे पुरस्कार में ₹10,000 मूल्य के 10 पांच-अंकीय टिकट होते हैं। प्रथम पुरस्कार (₹1 करोड़) के लिए 5 अंक और सीरीज दोनों का मिलना आवश्यक है।
+            </p>
+          </div>
+          <div class="bg-slate-50 p-5 rounded-xl border border-slate-200">
+            <div class="text-emerald-800 font-bold mb-2">3. सांत्वना पुरस्कार (₹1,000)</div>
+            <p class="text-xs text-slate-600 leading-relaxed">
+              यदि आपके टिकट के 5 अंक पहले पुरस्कार से मिलते हैं लेकिन सीरीज अलग है, तो आप ₹1,000 का सांत्वना पुरस्कार जीतते हैं।
+            </p>
+          </div>
         </div>
       </div>
     </div>
+
   </div>
 </Layout>

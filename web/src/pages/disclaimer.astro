@@ -3,28 +3,35 @@ import Layout from '../layouts/Layout.astro';
 ---
 
 <Layout
-  title="Official Disclaimer | Dear Result Live (দাবি পরিত্যাগ)"
+  title="Official Disclaimer | Dear Result Live"
   description="Official 3rd-party independent disclaimer for Dear Result Live. Not affiliated with Nagaland, Sikkim, or West Bengal State Lotteries."
 >
   <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-8 text-slate-700">
     
     <div class="border-b border-slate-200 pb-5">
       <span class="text-xs font-bold text-blue-700 uppercase tracking-widest bg-blue-50 px-2 py-0.5 rounded border border-blue-200">
-        Legal Notice
+        <span class="lang-en">Legal Notice</span>
+        <span class="lang-bn">আইনি বিজ্ঞপ্তি</span>
+        <span class="lang-hi">कानूनी नोटिस</span>
       </span>
       <h1 class="text-2xl sm:text-4xl font-black text-slate-900 mt-2">
-        Official Disclaimer (দাবি পরিত্যাগ)
+        <span class="lang-en">Official Disclaimer</span>
+        <span class="lang-bn">অফিসিয়াল ডিসক্লেইমার (দাবি পরিত্যাগ)</span>
+        <span class="lang-hi">आधिकारिक अस्वीकरण (डिस्क्लेमर)</span>
       </h1>
       <p class="text-slate-600 text-xs sm:text-sm mt-1">
-        Independent third-party status and verification disclaimer.
+        <span class="lang-en">Independent third-party status and verification disclaimer.</span>
+        <span class="lang-bn">স্বতন্ত্র তৃতীয় পক্ষ মর্যাদা এবং ফলাফল যাচাইকরণ নির্দেশিকা।</span>
+        <span class="lang-hi">स्वतंत्र तृतीय-पक्ष स्थिति और परिणाम सत्यापन दिशानिर्देश।</span>
       </p>
     </div>
 
-    <div class="space-y-6 text-sm leading-relaxed">
+    {/* English Content (Default) */}
+    <div class="lang-en space-y-6 text-sm leading-relaxed">
       <section class="bg-amber-50 border-2 border-amber-300 rounded-2xl p-6 sm:p-7 space-y-3 shadow-sm">
         <h2 class="text-lg sm:text-xl font-black text-amber-950 flex items-center gap-2">
           <span>🛡️</span>
-          <span>Non-Affiliation Notice (স্বতন্ত্র বিজ্ঞপ্তি)</span>
+          <span>Non-Affiliation Notice</span>
         </h2>
         <p class="text-xs sm:text-sm text-slate-800 leading-relaxed">
           Dear Result Live (<strong>dearresultlive.in</strong>) is an independent, privately operated web platform and is <strong>NOT affiliated with, sponsored by, endorsed by, or connected to</strong> the Government of Nagaland, Government of Sikkim, Government of West Bengal, Directorate of Nagaland State Lotteries, or any official lottery organizing body.
@@ -45,6 +52,66 @@ import Layout from '../layouts/Layout.astro';
         <h3 class="text-lg font-bold text-slate-900">No Ticket Sales & 18+ Advisory</h3>
         <p>
           This website does not sell lottery tickets, solicit lottery investments, or operate any gambling games. Lottery participation is permitted only in designated legal states in India and is strictly restricted to adults aged 18 and older.
+        </p>
+      </section>
+    </div>
+
+    {/* Bengali Content */}
+    <div class="lang-bn space-y-6 text-sm leading-relaxed">
+      <section class="bg-amber-50 border-2 border-amber-300 rounded-2xl p-6 sm:p-7 space-y-3 shadow-sm">
+        <h2 class="text-lg sm:text-xl font-black text-amber-950 flex items-center gap-2">
+          <span>🛡️</span>
+          <span>স্বতন্ত্র বিজ্ঞপ্তি (অ-অনুমোদন ঘোষণা)</span>
+        </h2>
+        <p class="text-xs sm:text-sm text-slate-800 leading-relaxed">
+          ডিয়ার রেজাল্ট লাইভ (<strong>dearresultlive.in</strong>) একটি স্বাধীন ও ব্যক্তিগতভাবে পরিচালিত প্ল্যাটফর্ম। আমরা নাগাল্যান্ড সরকার, সিকিম সরকার, পশ্চিমবঙ্গ সরকার বা রাজ্য লটারি অধিদপ্তরের সাথে কোনোভাবেই <strong>যুক্ত, অনুমোদিত বা পরিচালিত নই</strong>।
+        </p>
+      </section>
+
+      <section class="space-y-3 bg-white border border-slate-200 rounded-2xl p-6 shadow-sm">
+        <h3 class="text-lg font-bold text-slate-900">গেজেট যাচাইকরণ পরামর্শ</h3>
+        <p>
+          আমরা স্বয়ংক্রিয় প্রযুক্তির মাধ্যমে শতভাগ নির্ভুল তথ্য প্রকাশের সর্বোচ্চ চেষ্টা করি, তবুও কোনো পুরস্কার দাবি করার আগে বা টিকিট বাতিল করার পূর্বে সরকারি ছাপা গেজেট শিটের সাথে নম্বর মিলিয়ে নেওয়া বাধ্যতামূলক।
+        </p>
+        <p>
+          কোনো অনিচ্ছাকৃত ভুল বা টাইপিং সংক্রান্ত ত্রুটির জন্য ডিয়ার রেজাল্ট লাইভ কর্তৃপক্ষ কোনোভাবেই দায়বদ্ধ থাকবে না।
+        </p>
+      </section>
+
+      <section class="space-y-3 bg-white border border-slate-200 rounded-2xl p-6 shadow-sm">
+        <h3 class="text-lg font-bold text-slate-900">টিকিট বিক্রয় নিষিদ্ধ ও ১৮+ নিয়মাবলী</h3>
+        <p>
+          এই ওয়েবসাইট কোনো লটারি টিকিট বিক্রি করে না এবং কোনো ধরনের আর্থিক লেনদেন বা বাজি পরিচালন করে না। লটারি শুধুমাত্র আইনসম্মত রাজ্যে এবং ১৮ বছর বা তদূর্ধ্ব ব্যক্তিদের জন্য প্রযোজ্য।
+        </p>
+      </section>
+    </div>
+
+    {/* Hindi Content */}
+    <div class="lang-hi space-y-6 text-sm leading-relaxed">
+      <section class="bg-amber-50 border-2 border-amber-300 rounded-2xl p-6 sm:p-7 space-y-3 shadow-sm">
+        <h2 class="text-lg sm:text-xl font-black text-amber-950 flex items-center gap-2">
+          <span>🛡️</span>
+          <span>गैर-संबद्धता नोटिस (अस्वीकरण)</span>
+        </h2>
+        <p class="text-xs sm:text-sm text-slate-800 leading-relaxed">
+          डियर रिजल्ट लाइव (<strong>dearresultlive.in</strong>) एक स्वतंत्र रूप से संचालित वेब पोर्टल है और नागालैंड सरकार, सिक्किम सरकार, पश्चिम बंगाल सरकार या राज्य लॉटरी निदेशालय से किसी भी रूप में <strong>संबद्ध, प्रायोजित या अधिकृत नहीं है</strong>।
+        </p>
+      </section>
+
+      <section class="space-y-3 bg-white border border-slate-200 rounded-2xl p-6 shadow-sm">
+        <h3 class="text-lg font-bold text-slate-900">गजट सत्यापन सलाह</h3>
+        <p>
+          यद्यपि हम स्वचालित तकनीक के माध्यम से 100% सटीकता सुनिश्चित करने का प्रयास करते हैं, फिर भी पुरस्कार का दावा करने या टिकट नष्ट करने से पहले आधिकारिक प्रकाशित सरकारी गजट से परिणाम का मिलान अवश्य करें।
+        </p>
+        <p>
+          इस पोर्टल पर प्रकाशित सामग्री के उपयोग से उत्पन्न किसी भी विसंगति के लिए डियर रिजल्ट लाइव उत्तरदायी नहीं होगा।
+        </p>
+      </section>
+
+      <section class="space-y-3 bg-white border border-slate-200 rounded-2xl p-6 shadow-sm">
+        <h3 class="text-lg font-bold text-slate-900">कोई टिकट बिक्री नहीं एवं 18+ नियम</h3>
+        <p>
+          यह वेबसाइट लॉटरी टिकट नहीं बेचती है और न ही जुए या सट्टेबाजी का संचालन करती है। लॉटरी में भाग लेना केवल भारत के कानूनी राज्यों में और 18 वर्ष या उससे अधिक आयु के वयस्कों के लिए ही अनुमत है।
         </p>
       </section>
     </div>

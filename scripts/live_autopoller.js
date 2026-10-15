@@ -156,16 +156,23 @@ async function checkNagalandLotteryResults(dateStr, slot) {
 }
 
 /**
- * Download remote file buffer
+ * Download remote file buffer with retry
  */
-async function downloadBuffer(url) {
-  const res = await fetch(url, {
-    headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36' },
-    signal: AbortSignal.timeout(15000)
-  });
-  if (!res.ok) throw new Error(`HTTP ${res.status} fetching ${url}`);
-  const ab = await res.arrayBuffer();
-  return Buffer.from(ab);
+async function downloadBuffer(url, retries = 2) {
+  for (let attempt = 1; attempt <= retries; attempt++) {
+    try {
+      const res = await fetch(url, {
+        headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36' },
+        signal: AbortSignal.timeout(30000)
+      });
+      if (!res.ok) throw new Error(`HTTP ${res.status} fetching ${url}`);
+      const ab = await res.arrayBuffer();
+      return Buffer.from(ab);
+    } catch (e) {
+      if (attempt === retries) throw e;
+      await new Promise(r => setTimeout(r, 1000));
+    }
+  }
 }
 
 /**
@@ -175,61 +182,38 @@ function parseOcrLines(lines, slot, dateStr, sambadFirstPrize) {
   let firstPrize = sambadFirstPrize || { series: '', number: '' };
 
   if (!firstPrize.number) {
-    for (let i = 0; i < Math.min(12, lines.length); i++) {
-      const m = lines[i].match(/\b([0-9]{1,2}[A-Z]{1,2})\s+([0-9]{5})\b/i);
+    for (let i = 0; i < Math.min(15, lines.length); i++) {
+      const m = lines[i].match(/\b([0-9]{1,2}\s*[A-Z]{1,2})\s+([0-9\s]{5,7})\b/i);
       if (m) {
-        firstPrize = { series: m[1].toUpperCase(), number: m[2] };
+        firstPrize = {
+          series: m[1].replace(/\s+/g, '').toUpperCase(),
+          number: m[2].replace(/\D/g, '')
+        };
         break;
       }
     }
   }
 
-  const consNumber = firstPrize.number;
+  const consLast4 = firstPrize.number ? firstPrize.number.slice(-4) : '';
 
-  // 2nd Prize: 10 five-digit numbers following 2nd
-  let secondPrize = [];
-  let secStartLine = -1;
-  for (let i = 0; i < lines.length; i++) {
-    if (lines[i].match(/\b2nd\b/i)) {
-      secStartLine = i;
-      break;
-    }
-  }
-  if (secStartLine !== -1) {
-    const secLines = lines.slice(secStartLine, secStartLine + 4).join(' ');
-    const m5 = secLines.match(/\b\d{5}\b/g) || [];
-    secondPrize = [...new Set(m5.filter(n => n !== consNumber))].slice(0, 10);
-  }
+  // Identify 5th Prize start boundary
+  let fifthStartLine = lines.findIndex(l => /\b(?:5th|Fifth)\s*Prize/i.test(l));
+  const beforeFifth = fifthStartLine !== -1 ? lines.slice(0, fifthStartLine).join(' ') : lines.join(' ');
+  const afterFifth = fifthStartLine !== -1 ? lines.slice(fifthStartLine).join(' ') : '';
 
-  // 3rd & 4th Prize (10 four-digit numbers each)
-  let midLines = [];
-  if (secStartLine !== -1) {
-    for (let i = secStartLine + 2; i < lines.length; i++) {
-      if (lines[i].match(/\b(?:5th|Fifth)\s*Prize|CROREPATIS|WINNER|Congratulations/i)) {
-        break;
-      }
-      midLines.push(lines[i]);
-    }
-  }
-  const mid4 = midLines.join(' ').match(/\b\d{4}\b/g) || [];
-  const uniqueMid4 = [...new Set(mid4)];
-  const thirdPrize = uniqueMid4.slice(0, 10);
-  const fourthPrize = uniqueMid4.slice(10, 20);
+  // 2nd Prize: 10 five-digit numbers occurring before 5th prize, excluding 1st prize number
+  const m5 = beforeFifth.match(/\b\d{5}\b/g) || [];
+  const secondPrize = [...new Set(m5.filter(n => n !== firstPrize.number))].slice(0, 10);
 
-  // 5th Prize: 100 four-digit numbers after "5th Prize"
-  let fifthPrize = [];
-  let fifthStartLine = -1;
-  for (let i = 0; i < lines.length; i++) {
-    if (lines[i].match(/\b(?:5th|Fifth)\s*Prize/i)) {
-      fifthStartLine = i;
-      break;
-    }
-  }
-  if (fifthStartLine !== -1) {
-    const fifthLines = lines.slice(fifthStartLine + 1).join(' ');
-    const m4 = fifthLines.match(/\b\d{4}\b/g) || [];
-    fifthPrize = [...new Set(m4)].slice(0, 100);
-  }
+  // 3rd & 4th Prize: 4-digit numbers before 5th prize, excluding consolation last 4 digits
+  const m4Before = beforeFifth.match(/\b\d{4}\b/g) || [];
+  const mid4 = [...new Set(m4Before.filter(n => n !== consLast4))];
+  const thirdPrize = mid4.slice(0, 10);
+  const fourthPrize = mid4.slice(10, 20);
+
+  // 5th Prize: 100 four-digit numbers following 5th Prize header
+  const m4After = afterFifth.match(/\b\d{4}\b/g) || [];
+  const fifthPrize = [...new Set(m4After)].slice(0, 100);
 
   return {
     first_prize: firstPrize,

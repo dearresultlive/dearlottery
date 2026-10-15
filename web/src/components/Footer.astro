@@ -6,80 +6,172 @@ const currentYear = new Date().getFullYear();
   <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
     <div class="grid grid-cols-1 md:grid-cols-4 gap-8 mb-8 pb-8 border-b border-slate-200">
       
+      {/* Brand Identity Column (Matches Header Logo) */}
       <div class="md:col-span-2">
         <div class="flex items-center gap-2 mb-3">
-          <div class="w-8 h-8 rounded-lg bg-gradient-to-tr from-amber-500 to-yellow-400 flex items-center justify-center text-slate-950 font-black text-base shadow-sm">
+          <div class="w-8 h-8 rounded-xl bg-gradient-to-tr from-amber-500 via-amber-400 to-yellow-500 flex items-center justify-center text-slate-950 font-black text-base shadow-sm">
             ₹
           </div>
           <div>
             <span class="font-black text-base text-slate-900 tracking-wide">DEAR RESULT LIVE</span>
-            <span class="block text-[10px] text-blue-700 font-bold">ডিয়ার লটারি রেজাল্ট লাইভ পোর্টাল</span>
+            <span class="lang-en block text-[10px] text-blue-700 font-bold">Lottery Sambad • Live Result Portal</span>
+            <span class="lang-bn block text-[10px] text-blue-700 font-bold">ডিয়ার লটারি রেজাল্ট লাইভ পোর্টাল</span>
+            <span class="lang-hi block text-[10px] text-blue-700 font-bold">डियर लॉटरी रिजल्ट लाइव पोर्टल</span>
           </div>
         </div>
-        <p class="text-slate-600 leading-relaxed max-w-md text-xs">
-          Dear Result Live (<strong>dearresultlive.in</strong>) is a fast, trusted, independent public utility portal for checking official Nagaland, Sikkim, and West Bengal Dear State Lottery results. We publish winning numbers accurately for all daily 1:00 PM (দুপুর), 6:00 PM (সন্ধ্যা), and 8:00 PM (রাত) draws.
+
+        <p class="lang-en text-slate-600 leading-relaxed max-w-md text-xs">
+          Dear Result Live (<strong>dearresultlive.in</strong>) is a fast, trusted, independent public utility portal for checking official Nagaland and Sikkim Dear State Lottery results. We publish authentic winning numbers accurately for all daily 1:00 PM (Morning), 6:00 PM (Day), and 8:00 PM (Night) draws.
+        </p>
+        <p class="lang-bn text-slate-600 leading-relaxed max-w-md text-xs">
+          ডিয়ার রেজাল্ট লাইভ (<strong>dearresultlive.in</strong>) একটি দ্রুত, নির্ভরযোগ্য ও স্বাধীন পাবলিক পোর্টাল। আমরা নাগাল্যান্ড ও সিকিম রাজ্য লটারির প্রতিদিনের দুপুর ১:০০ (দুপুর), সন্ধ্যা ৬:০০ (সন্ধ্যা) ও রাত ৮:০০ (রাত) ড্র-এর শতভাগ খাঁটি ও সরকারি স্বাক্ষরিত ফলাফল পরিবেশন করি।
+        </p>
+        <p class="lang-hi text-slate-600 leading-relaxed max-w-md text-xs">
+          डियर रिजल्ट लाइव (<strong>dearresultlive.in</strong>) एक तेज़, विश्वसनीय और स्वतंत्र परिणाम पोर्टल है। हम नागालैंड और सिक्किम स्टेट लॉटरी के प्रतिदिन दोपहर 1:00 (सुबह), शाम 6:00 (दिन) और रात 8:00 (रात) के आधिकारिक प्रमाणित परिणाम प्रकाशित करते हैं।
         </p>
       </div>
 
+      {/* Daily Draws Column */}
       <div>
         <h4 class="font-bold text-slate-900 uppercase tracking-wider mb-3 text-xs flex items-center gap-1.5">
           <span>📅</span>
-          <span>দৈনিক লটারি ড্র (Daily Draws)</span>
+          <span class="lang-en">Daily Lottery Draws</span>
+          <span class="lang-bn">দৈনিক লটারি ড্র</span>
+          <span class="lang-hi">दैनिक लॉटरी ड्रा</span>
         </h4>
         <ul class="space-y-2">
-          <li><a href="/results/2026-10-14/1pm" class="hover:text-blue-700 transition-colors">1:00 PM দুপুর ১টা (Morning)</a></li>
-          <li><a href="/results/2026-10-14/6pm" class="hover:text-blue-700 transition-colors">6:00 PM সন্ধ্যা ৬টা (Day)</a></li>
-          <li><a href="/results/2026-10-14/8pm" class="hover:text-blue-700 transition-colors">8:00 PM রাত ৮টা (Night)</a></li>
-          <li><a href="/checker" class="hover:text-blue-700 transition-colors">টিকিট মেলান (Ticket Checker)</a></li>
-          <li><a href="/analytics" class="hover:text-blue-700 transition-colors">হট ও কোল্ড নম্বর (নম্বর বিশ্লেষণ)</a></li>
+          <li>
+            <a href="/" class="hover:text-blue-700 transition-colors">
+              <span class="lang-en">1:00 PM Morning Draw</span>
+              <span class="lang-bn">1:00 PM দুপুর ১টা (Morning)</span>
+              <span class="lang-hi">1:00 PM दोपहर 1 बजे (Morning)</span>
+            </a>
+          </li>
+          <li>
+            <a href="/" class="hover:text-blue-700 transition-colors">
+              <span class="lang-en">6:00 PM Day Draw</span>
+              <span class="lang-bn">6:00 PM সন্ধ্যা ৬টা (Day)</span>
+              <span class="lang-hi">6:00 PM शाम 6 बजे (Day)</span>
+            </a>
+          </li>
+          <li>
+            <a href="/" class="hover:text-blue-700 transition-colors">
+              <span class="lang-en">8:00 PM Night Draw</span>
+              <span class="lang-bn">8:00 PM রাত ৮টা (Night)</span>
+              <span class="lang-hi">8:00 PM रात 8 बजे (Night)</span>
+            </a>
+          </li>
+          <li>
+            <a href="/checker" class="hover:text-blue-700 transition-colors">
+              <span class="lang-en">Online Ticket Checker</span>
+              <span class="lang-bn">টিকিট মেলান (Ticket Checker)</span>
+              <span class="lang-hi">टिकट चेक करें (Ticket Checker)</span>
+            </a>
+          </li>
+          <li>
+            <a href="/analytics" class="hover:text-blue-700 transition-colors">
+              <span class="lang-en">Hot &amp; Cold Numbers</span>
+              <span class="lang-bn">হট ও কোল্ড নম্বর</span>
+              <span class="lang-hi">हॉट और कोल्ड नंबर्स</span>
+            </a>
+          </li>
         </ul>
       </div>
 
+      {/* Policy & Information Column */}
       <div>
         <h4 class="font-bold text-slate-900 uppercase tracking-wider mb-3 text-xs flex items-center gap-1.5">
           <span>⚖️</span>
-          <span>জরুরি নিয়মাবলী ও যোগাযোগ</span>
+          <span class="lang-en">Information &amp; Rules</span>
+          <span class="lang-bn">নিয়মাবলী ও যোগাযোগ</span>
+          <span class="lang-hi">नियम और संपर्क</span>
         </h4>
         <ul class="space-y-2">
-          <li><a href="/about" class="hover:text-blue-700 transition-colors">আমাদের সম্পর্কে</a></li>
-          <li><a href="/contact" class="hover:text-blue-700 transition-colors">যোগাযোগ করুন</a></li>
-          <li><a href="/privacy-policy" class="hover:text-blue-700 transition-colors">গোপনীয়তা নীতি</a></li>
-          <li><a href="/terms" class="hover:text-blue-700 transition-colors">ব্যবহারের শর্তাবলী</a></li>
-          <li><a href="/disclaimer" class="hover:text-blue-700 transition-colors">অফিসিয়াল ডিসক্লেইমার</a></li>
+          <li>
+            <a href="/about" class="hover:text-blue-700 transition-colors">
+              <span class="lang-en">About Us</span>
+              <span class="lang-bn">আমাদের সম্পর্কে</span>
+              <span class="lang-hi">हमारे बारे में</span>
+            </a>
+          </li>
+          <li>
+            <a href="/contact" class="hover:text-blue-700 transition-colors">
+              <span class="lang-en">Contact Us</span>
+              <span class="lang-bn">যোগাযোগ করুন</span>
+              <span class="lang-hi">संपर्क करें</span>
+            </a>
+          </li>
+          <li>
+            <a href="/privacy-policy" class="hover:text-blue-700 transition-colors">
+              <span class="lang-en">Privacy Policy</span>
+              <span class="lang-bn">গোপনীয়তা নীতি</span>
+              <span class="lang-hi">गोपनीयता नीति</span>
+            </a>
+          </li>
+          <li>
+            <a href="/terms" class="hover:text-blue-700 transition-colors">
+              <span class="lang-en">Terms of Service</span>
+              <span class="lang-bn">ব্যবহারের শর্তাবলী</span>
+              <span class="lang-hi">उपयोग की शर्तें</span>
+            </a>
+          </li>
+          <li>
+            <a href="/disclaimer" class="hover:text-blue-700 transition-colors">
+              <span class="lang-en">Official Disclaimer</span>
+              <span class="lang-bn">অফিসিয়াল ডিসক্লেইমার</span>
+              <span class="lang-hi">आधिकारिक अस्वीकरण</span>
+            </a>
+          </li>
         </ul>
       </div>
 
     </div>
 
-    {/* Legal & Regulatory Disclaimer */}
+    {/* Legal & Regulatory Notice (Trilingual) */}
     <div class="bg-white border border-slate-200 rounded-xl p-4 mb-6 leading-relaxed text-[11px] text-slate-600 space-y-2 shadow-2xs">
       <div class="flex items-center gap-2 text-slate-900 font-bold uppercase tracking-wider text-xs">
         <span>🛡️</span>
-        <span>স্বতন্ত্র তথ্যসেবা ও সরকারি আইনি বিজ্ঞপ্তি (Legal Notice)</span>
+        <span class="lang-en">Public Utility Notice &amp; Legal Disclaimer</span>
+        <span class="lang-bn">স্বতন্ত্র তথ্যসেবা ও সরকারি আইনি বিজ্ঞপ্তি (Legal Notice)</span>
+        <span class="lang-hi">सार्वजनिक सूचना एवं कानूनी अस्वीकरण (Legal Notice)</span>
       </div>
-      <p>
-        <strong>১. স্বাধীন পাবলিক তথ্যসেবা:</strong> ডিয়ার রেজাল্ট লাইভ (dearresultlive.in) একটি স্বাধীন, নিরপেক্ষ লটারি ফলাফল প্রকাশ ও আর্কাইভ পোর্টাল। আমরা নাগাল্যান্ড বা সিকিম রাজ্য সরকারের লটারি ডিরেক্টরেট বা পশ্চিমবঙ্গ সরকারের কোনো সরকারি দপ্তরের সাথে কোনোভাবেই ব্যবসায়িক বা প্রাতিষ্ঠানিক চুক্তিতে আবদ্ধ নই।
-      </p>
-      <p>
-        <strong>২. টিকিট বিক্রি বা বাজি নিষিদ্ধ:</strong> আমরা কোনো লটারি টিকিট বিক্রি করি না এবং কোনো ধরণের অনলাইন বা অফলাইন জুয়া বা আর্থিক লেনদেন করি না। টিকিট সবসময় সরকার অনুমোদিত লোকাল লটারি কাউন্টার থেকে ক্রয় করুন।
-      </p>
-      <p>
-        <strong>৩. সরকারি গেজেট মেলানো বাধ্যতামূলক:</strong> আমরা অত্যন্ত দ্রুত ও নির্ভুলভাবে ফলাফল পরিবেশন করলেও, পুরস্কার দাবির পূর্বে সংশ্লিষ্ট রাজ্য সরকারের মূল প্রিন্টেড গেজেট শিটের সাথে মিলিয়ে নেওয়া আবশ্যক।
-      </p>
-      <p>
-        <strong>৪. বয়স সীমা (১৮+):</strong> লটারি খেলা শুধুমাত্র ১৮ বছরের ঊর্ধ্বে প্রাপ্তবয়স্কদের জন্য। দায়িত্বশীলভাবে খেলুন।
-      </p>
+
+      {/* English Notice (Default) */}
+      <div class="lang-en space-y-1.5">
+        <p><strong>1. Independent Information Portal:</strong> Dear Result Live (dearresultlive.in) is an independent public information platform. We are not officially affiliated with or endorsed by the Directorate of Nagaland State Lotteries or Sikkim State Lotteries.</p>
+        <p><strong>2. No Ticket Sales or Gambling:</strong> We do not sell lottery tickets, accept bets, or operate any gambling services. Tickets should always be purchased from government-authorized offline counters.</p>
+        <p><strong>3. Verification Required:</strong> While we strive for 100% precision, all winning numbers must be cross-checked with the official printed Government Gazette before prize claims.</p>
+        <p><strong>4. Age Restriction (18+):</strong> Participation in lotteries is strictly limited to individuals 18 years of age or older. Play responsibly.</p>
+      </div>
+
+      {/* Bengali Notice */}
+      <div class="lang-bn space-y-1.5">
+        <p><strong>১. স্বাধীন পাবলিক তথ্যসেবা:</strong> ডিয়ার রেজাল্ট লাইভ (dearresultlive.in) একটি স্বাধীন, নিরপেক্ষ লটারি ফলাফল প্রকাশ ও আর্কাইভ পোর্টাল। আমরা নাগাল্যান্ড বা সিকিম রাজ্য সরকারের লটারি ডিরেক্টরেট বা পশ্চিমবঙ্গ সরকারের কোনো সরকারি দপ্তরের সাথে কোনোভাবেই ব্যবসায়িক বা প্রাতিষ্ঠানিক চুক্তিতে আবদ্ধ নই।</p>
+        <p><strong>২. টিকিট বিক্রি বা বাজি নিষিদ্ধ:</strong> আমরা কোনো লটারি টিকিট বিক্রি করি না এবং কোনো ধরণের অনলাইন বা অফলাইন জুয়া বা আর্থিক লেনদেন করি না। টিকিট সবসময় সরকার অনুমোদিত লোকাল লটারি কাউন্টার থেকে ক্রয় করুন।</p>
+        <p><strong>৩. সরকারি গেজেট মেলানো বাধ্যতামূলক:</strong> আমরা অত্যন্ত দ্রুত ও নির্ভুলভাবে ফলাফল পরিবেশন করলেও, পুরস্কার দাবির পূর্বে সংশ্লিষ্ট রাজ্য সরকারের মূল প্রিন্টেড গেজেট শিটের সাথে মিলিয়ে নেওয়া আবশ্যক।</p>
+        <p><strong>৪. বয়স সীমা (১৮+):</strong> লটারি খেলা শুধুমাত্র ১৮ বছরের ঊর্ধ্বে প্রাপ্তবয়স্কদের জন্য। দায়িত্বশীলভাবে খেলুন।</p>
+      </div>
+
+      {/* Hindi Notice */}
+      <div class="lang-hi space-y-1.5">
+        <p><strong>1. स्वतंत्र सूचना सेवा:</strong> डियर रिजल्ट लाइव (dearresultlive.in) एक स्वतंत्र सूचना और परिणाम पोर्टल है। हमारा नागालैंड या सिक्किम राज्य सरकार के लॉटरी निदेशालय से कोई प्रत्यक्ष व्यावसायिक संबंध नहीं है।</p>
+        <p><strong>2. टिकट बिक्री या सट्टेबाजी निषेध:</strong> हम कोई लॉटरी टिकट नहीं बेचते हैं और किसी भी प्रकार की ऑनलाइन या ऑफलाइन सट्टेबाजी का संचालन नहीं करते हैं। टिकट हमेशा अधिकृत सरकारी काउंटरों से ही खरीदें।</p>
+        <p><strong>3. आधिकारिक गजट से मिलान अनिवार्य:</strong> यद्यपि हम अत्यधिक सटीकता के साथ परिणाम प्रकाशित करते हैं, फिर भी पुरस्कार दावा करने से पहले मूल मुद्रित सरकारी गजट शीट से मिलान करना आवश्यक है।</p>
+        <p><strong>4. आयु सीमा (18+):</strong> लॉटरी में भाग लेना केवल 18 वर्ष से अधिक आयु के वयस्कों के लिए है। जिम्मेदारी से खेलें।</p>
+      </div>
     </div>
 
-    {/* Bottom Bar: Copyright & Attribution */}
+    {/* Bottom Bar: Copyright */}
     <div class="flex flex-col sm:flex-row items-center justify-between gap-4 text-slate-500 text-[11px]">
       <div>
         © {currentYear} <strong>DEAR RESULT LIVE (dearresultlive.in)</strong>. All rights reserved.
       </div>
       <div class="flex items-center gap-4">
-        <span>Nagaland & Sikkim State Lotteries Unofficial Archive</span>
+        <span class="lang-en">Official Government Gazette Verification Archive</span>
+        <span class="lang-bn">নাগাল্যান্ড ও সিকিম সরকারি গেজেট আর্কাইভ</span>
+        <span class="lang-hi">नागालैंड और सिक्किम सरकारी गजट संग्रह</span>
         <span>•</span>
-        <span>Fast Edge SSR</span>
+        <span>Sub-300ms Edge Delivery</span>
       </div>
     </div>
 

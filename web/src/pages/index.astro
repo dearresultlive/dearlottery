@@ -20,7 +20,7 @@ const analytics = await fetchFrequencyAnalytics();
 ---
 
 <Layout
-  title={`Dear Lottery Result Today ${todayDateStr} Live (1PM, 6PM, 8PM) | Lottery Sambad (লটারি সংবাদ)`}
+  title={`Dear Lottery Result Today ${todayDateStr} Live (1PM, 6PM, 8PM) | Lottery Sambad`}
   description={`Official Dear Lottery Result Today (${todayDateStr}) for 1:00 PM Morning, 6:00 PM Day, and 8:00 PM Night. 1st Prize ₹1 Crore winning ticket number, official gazette sheet JPG/PDF, and all prize tables.`}
   drawDate={todayDateStr}
 >
@@ -34,10 +34,16 @@ const analytics = await fetchFrequencyAnalytics();
           <span id="status-live-badge">LIVE</span>
         </span>
         <h1 class="text-xs sm:text-sm font-black text-slate-900 truncate" id="status-title">
-          Dear Lottery Result Today • {todayDateStr}
+          <span class="lang-en">Dear Lottery Result Today • {todayDateStr}</span>
+          <span class="lang-bn">আজকের ডিয়ার লটারি রেজাল্ট • {todayDateStr}</span>
+          <span class="lang-hi">आज का डियर लॉटरी रिजल्ट • {todayDateStr}</span>
         </h1>
         <span class="text-xs text-slate-300 hidden md:inline">|</span>
-        <span class="text-xs text-slate-500 hidden md:inline font-medium" id="status-sub">Nagaland &amp; Sikkim Official Gazette</span>
+        <span class="text-xs text-slate-500 hidden md:inline font-medium" id="status-sub">
+          <span class="lang-en">Nagaland &amp; Sikkim Official Gazette</span>
+          <span class="lang-bn">নাগাল্যান্ড ও সিকিম অফিসিয়াল গেজেট</span>
+          <span class="lang-hi">नागालैंड और सिक्किम ऑफिशियल गजट</span>
+        </span>
       </div>
       <div class="flex items-center gap-2 ml-auto">
         <DrawCountdown client:load compact={true} />
@@ -54,44 +60,127 @@ const analytics = await fetchFrequencyAnalytics();
       <TicketChecker client:load initialDraws={checkerDraws} variant="slim" />
     </section>
 
-    {/* 4. Comprehensive SEO FAQ Schema Content */}
+    {/* 4. Comprehensive SEO FAQ Schema Content (Trilingual: English, Bengali, Hindi) */}
     <section class="bg-white border border-slate-200 rounded-2xl p-5 sm:p-7 text-slate-700 space-y-5 shadow-sm">
-      <h3 class="text-lg sm:text-xl font-black text-slate-900">ডিয়ার লটারি সংক্রান্ত প্রয়োজনীয় প্রশ্নোত্তর (FAQ)</h3>
-      
-      <div class="grid md:grid-cols-2 gap-5 text-sm">
-        <div class="space-y-1">
-          <h4 class="font-bold text-slate-900">ডিয়ার লটারিতে ১ম পুরস্কার কত টাকা?</h4>
-          <p class="text-slate-600 text-xs leading-relaxed">
-            ডিয়ার লটারির ১ম পুরস্কার হলো সুপার প্রাইজ সহ ১ কোটি টাকা (₹১,০০,০০,০০০)। আপনার টিকিটের ৫টি সংখ্যা এবং সিরিজ (যেমন: 95E) প্রথম পুরস্কারের সাথে হুবহু মিললে এই পুরস্কার পাওয়া যায়।
-          </p>
+      {/* English FAQ (Default) */}
+      <div class="lang-en space-y-5">
+        <h3 class="text-lg sm:text-xl font-black text-slate-900">Frequently Asked Questions (FAQ) • Dear Lottery</h3>
+        <div class="grid md:grid-cols-2 gap-5 text-sm">
+          <div class="space-y-1">
+            <h4 class="font-bold text-slate-900">What is the 1st Prize amount in Dear Lottery?</h4>
+            <p class="text-slate-600 text-xs leading-relaxed">
+              The 1st prize is ₹1 Crore (₹1,00,00,000) including super prize amount. It is awarded when your ticket matches both the series (e.g. 95E) and the 5-digit number of the official 1st prize winner.
+            </p>
+          </div>
+          <div class="space-y-1">
+            <h4 class="font-bold text-slate-900">What is the Consolation Prize?</h4>
+            <p class="text-slate-600 text-xs leading-relaxed">
+              A consolation prize of ₹1,000 is awarded to all tickets with matching 5 digits in all other series across the same draw.
+            </p>
+          </div>
+          <div class="space-y-1">
+            <h4 class="font-bold text-slate-900">What times are the daily draws held?</h4>
+            <p class="text-slate-600 text-xs leading-relaxed">
+              Official draws occur 3 times every day: 1:00 PM Morning, 6:00 PM Day, and 8:00 PM Night across Nagaland and Sikkim State Lotteries.
+            </p>
+          </div>
+          <div class="space-y-1">
+            <h4 class="font-bold text-slate-900">How do winners claim prize money?</h4>
+            <p class="text-slate-600 text-xs leading-relaxed">
+              Prizes up to ₹10,000 can be collected in cash directly from authorized lottery retail counters. For prizes exceeding ₹10,000 and the 1st prize (₹1 Crore), intact tickets along with PAN & Aadhaar must be submitted to the Directorate office.
+            </p>
+          </div>
         </div>
+      </div>
 
-        <div class="space-y-1">
-          <h4 class="font-bold text-slate-900">সান্ত্বনা পুরস্কার (Consolation Prize) কী?</h4>
-          <p class="text-slate-600 text-xs leading-relaxed">
-            ১ম পুরস্কারের বিজয়ী ৫টি সংখ্যার সাথে আপনার টিকিটের ৫টি সংখ্যা মিলে গেলে এবং সিরিজ আলাদা হলে, অন্য সমস্ত সিরিজের টিকিটের জন্য ₹১,০০০ টাকা করে সান্ত্বনা পুরস্কার দেওয়া হয়।
-          </p>
+      {/* Bengali FAQ */}
+      <div class="lang-bn space-y-5">
+        <h3 class="text-lg sm:text-xl font-black text-slate-900">ডিয়ার লটারি সংক্রান্ত প্রয়োজনীয় প্রশ্নোত্তর (FAQ)</h3>
+        <div class="grid md:grid-cols-2 gap-5 text-sm">
+          <div class="space-y-1">
+            <h4 class="font-bold text-slate-900">ডিয়ার লটারিতে ১ম পুরস্কার কত টাকা?</h4>
+            <p class="text-slate-600 text-xs leading-relaxed">
+              ডিয়ার লটারির ১ম পুরস্কার হলো সুপার প্রাইজ সহ ১ কোটি টাকা (₹১,০০,০০,০০০)। আপনার টিকিটের ৫টি সংখ্যা এবং সিরিজ (যেমন: 95E) প্রথম পুরস্কারের সাথে হুবহু মিললে এই পুরস্কার পাওয়া যায়।
+            </p>
+          </div>
+          <div class="space-y-1">
+            <h4 class="font-bold text-slate-900">সান্ত্বনা পুরস্কার (Consolation Prize) কী?</h4>
+            <p class="text-slate-600 text-xs leading-relaxed">
+              ১ম পুরস্কারের বিজয়ী ৫টি সংখ্যার সাথে আপনার টিকিটের ৫টি সংখ্যা মিলে গেলে এবং সিরিজ আলাদা হলে, অন্য সমস্ত সিরিজের টিকিটের জন্য ₹১,০০০ টাকা করে সান্ত্বনা পুরস্কার দেওয়া হয়।
+            </p>
+          </div>
+          <div class="space-y-1">
+            <h4 class="font-bold text-slate-900">প্রতিদিন কোন কোন সময়ে খেলা হয়?</h4>
+            <p class="text-slate-600 text-xs leading-relaxed">
+              প্রতিদিন সরকারিভাবে তিনবার ড্র ও রেজাল্ট প্রকাশ হয়: দুপুর ১:০০ টা (Morning Draw), সন্ধ্যা ৬:০০ টা (Day Draw) এবং রাত ৮:০০ টা (Night Draw)।
+            </p>
+          </div>
+          <div class="space-y-1">
+            <h4 class="font-bold text-slate-900">পুরস্কারের টাকা কীভাবে তুলতে হয়?</h4>
+            <p class="text-slate-600 text-xs leading-relaxed">
+              ১০,০০০ টাকা পর্যন্ত পুরস্কার যেকোনো অনুমোদিত লটারির দোকানে টিকিট দেখালেই নগদ পাওয়া যায়। ১০,০০০ টাকার উপরের পুরস্কার বা ১ কোটি টাকার ১ম পুরস্কারের জন্য অক্ষত মূল টিকিট, প্যান কার্ড ও আধার কার্ড সহ ডিরেক্টরেট অফিসে জমা দিতে হয়।
+            </p>
+          </div>
         </div>
+      </div>
 
-        <div class="space-y-1">
-          <h4 class="font-bold text-slate-900">প্রতিদিন কোন কোন সময়ে খেলা হয়?</h4>
-          <p class="text-slate-600 text-xs leading-relaxed">
-            প্রতিদিন সরকারিভাবে তিনবার ড্র ও রেজাল্ট প্রকাশ হয়: দুপুর ১:০০ টা (Morning Draw), সন্ধ্যা ৬:০০ টা (Day Draw) এবং রাত ৮:০০ টা (Night Draw)।
-          </p>
-        </div>
-
-        <div class="space-y-1">
-          <h4 class="font-bold text-slate-900">পুরস্কারের টাকা কীভাবে তুলতে হয়?</h4>
-          <p class="text-slate-600 text-xs leading-relaxed">
-            ১০,০০০ টাকা পর্যন্ত পুরস্কার যেকোনো অনুমোদিত লটারির দোকানে টিকিট দেখালেই নগদ পাওয়া যায়। ১০,০০০ টাকার উপরের পুরস্কার বা ১ কোটি টাকার ১ম পুরস্কারের জন্য অক্ষত মূল টিকিট, প্যান কার্ড ও আধার কার্ড সহ ডিরেক্টরেট অফিসে জমা দিতে হয়।
-          </p>
+      {/* Hindi FAQ */}
+      <div class="lang-hi space-y-5">
+        <h3 class="text-lg sm:text-xl font-black text-slate-900">डियर लॉटरी से जुड़े सामान्य सवाल और जवाब (FAQ)</h3>
+        <div class="grid md:grid-cols-2 gap-5 text-sm">
+          <div class="space-y-1">
+            <h4 class="font-bold text-slate-900">डियर लॉटरी में प्रथम पुरस्कार कितना मिलता है?</h4>
+            <p class="text-slate-600 text-xs leading-relaxed">
+              डियर लॉटरी का पहला पुरस्कार ₹1 करोड़ (₹1,00,00,000) है। यह पुरस्कार तब मिलता है जब आपके टिकट के 5 अंक और सीरीज अक्षर दोनों पहले पुरस्कार के नंबर से मेल खाते हैं।
+            </p>
+          </div>
+          <div class="space-y-1">
+            <h4 class="font-bold text-slate-900">सांत्वना पुरस्कार (Consolation Prize) क्या है?</h4>
+            <p class="text-slate-600 text-xs leading-relaxed">
+              पहले पुरस्कार के 5 अंकों से मिलने वाले अन्य सभी सीरीज के टिकट धारकों को ₹1,000 प्रति टिकट का सांत्वना पुरस्कार दिया जाता है।
+            </p>
+          </div>
+          <div class="space-y-1">
+            <h4 class="font-bold text-slate-900">डियर लॉटरी के ड्रॉ का समय क्या है?</h4>
+            <p class="text-slate-600 text-xs leading-relaxed">
+              डियर लॉटरी के ड्रॉ दिन में तीन बार आयोजित किए जाते हैं: दोपहर 1:00 बजे (Morning Draw), शाम 6:00 बजे (Day Draw) और रात 8:00 बजे (Night Draw)।
+            </p>
+          </div>
+          <div class="space-y-1">
+            <h4 class="font-bold text-slate-900">इनाम की राशि कैसे प्राप्त करें?</h4>
+            <p class="text-slate-600 text-xs leading-relaxed">
+              ₹10,000 तक की पुरस्कार राशि किसी भी अधिकृत लॉटरी काउंटर से तुरंत नकद प्राप्त की जा सकती है। ₹10,000 से अधिक और प्रथम पुरस्कार (₹1 करोड़) के लिए मूल टिकट, पैन कार्ड और आधार कार्ड के साथ राज्य निदेशालय में दावा जमा करना होता है।
+            </p>
+          </div>
         </div>
       </div>
     </section>
 
-    {/* 5. Historical Statistics (বিগত ড্র-এর সাধারণ পরিসংখ্যান) */}
+    {/* 5. Historical Statistics (Trilingual: English, Bengali, Hindi) */}
     <section class="bg-white border border-slate-200 rounded-2xl p-4 sm:p-6 shadow-sm">
-      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4 border-b border-slate-100 pb-3">
+      {/* English Stats Header (Default) */}
+      <div class="lang-en flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4 border-b border-slate-100 pb-3">
+        <div>
+          <span class="text-[10px] font-bold text-slate-500 uppercase tracking-wider">
+            Past 30-Day Draw Statistics (Historical Data)
+          </span>
+          <h3 class="text-base sm:text-lg font-black text-slate-900">
+            Most Frequently Drawn 4-Digit Endings (5th Prize Stats)
+          </h3>
+          <p class="text-slate-500 text-xs">
+            * This is mathematical historical data from past official draws, strictly for informational reference and not a prediction.
+          </p>
+        </div>
+        <a
+          href="/analytics"
+          class="bg-slate-50 border border-slate-200 hover:border-blue-400 text-blue-700 text-xs font-bold px-3 py-1.5 rounded-lg transition-all self-start sm:self-auto"
+        >
+          View Analytics →
+        </a>
+      </div>
+
+      {/* Bengali Stats Header */}
+      <div class="lang-bn flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4 border-b border-slate-100 pb-3">
         <div>
           <span class="text-[10px] font-bold text-slate-500 uppercase tracking-wider">
             বিগত দিনের সাধারণ পরিসংখ্যান (ঐতিহাসিক ডেটা)
@@ -111,13 +200,43 @@ const analytics = await fetchFrequencyAnalytics();
         </a>
       </div>
 
+      {/* Hindi Stats Header */}
+      <div class="lang-hi flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4 border-b border-slate-100 pb-3">
+        <div>
+          <span class="text-[10px] font-bold text-slate-500 uppercase tracking-wider">
+            पिछले 30 दिनों के सांख्यिकीय आंकड़े
+          </span>
+          <h3 class="text-base sm:text-lg font-black text-slate-900">
+            हाल के ड्रा में सबसे अधिक आने वाले नंबर (5वां प्राइज आंकड़े)
+          </h3>
+          <p class="text-slate-500 text-xs">
+            * यह कोई भविष्यवाणी नहीं है, केवल पिछले ड्रा के ऐतिहासिक गणितीय आंकड़े हैं।
+          </p>
+        </div>
+        <a
+          href="/analytics"
+          class="bg-slate-50 border border-slate-200 hover:border-blue-400 text-blue-700 text-xs font-bold px-3 py-1.5 rounded-lg transition-all self-start sm:self-auto"
+        >
+          पूरा विश्लेषण देखें →
+        </a>
+      </div>
+
+      {/* Stat Cards */}
       <div class="grid grid-cols-2 sm:grid-cols-5 gap-2">
         {analytics.hotNumbers.map((item, idx) => (
           <div class="bg-slate-50 border border-slate-200 rounded-xl p-2.5 text-center">
-            <span class="text-[10px] text-slate-400 block font-mono">নম্বর #{idx + 1}</span>
+            <span class="lang-en text-[10px] text-slate-400 block font-mono">Rank #{idx + 1}</span>
+            <span class="lang-bn text-[10px] text-slate-400 block font-mono">নম্বর #{idx + 1}</span>
+            <span class="lang-hi text-[10px] text-slate-400 block font-mono">नंबर #{idx + 1}</span>
             <span class="text-lg sm:text-xl font-mono font-black text-slate-950 block my-0.5">{item.ticket_number}</span>
-            <span class="text-[10px] text-slate-600 bg-slate-200/70 px-2 py-0.5 rounded-full font-medium">
+            <span class="lang-en text-[10px] text-slate-600 bg-slate-200/70 px-2 py-0.5 rounded-full font-medium">
+              Drawn {item.occurrences} times
+            </span>
+            <span class="lang-bn text-[10px] text-slate-600 bg-slate-200/70 px-2 py-0.5 rounded-full font-medium">
               বিগত ড্র-তে {item.occurrences} বার
+            </span>
+            <span class="lang-hi text-[10px] text-slate-600 bg-slate-200/70 px-2 py-0.5 rounded-full font-medium">
+              {item.occurrences} बार आया
             </span>
           </div>
         ))}

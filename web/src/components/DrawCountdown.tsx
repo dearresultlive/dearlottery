@@ -186,7 +186,7 @@ export default function DrawCountdown({ onResultDetected, compact = false }: Dra
           ) : (
             <div className="flex items-center gap-1.5 bg-slate-50 border border-slate-200 px-3 py-1 rounded-xl">
               <span className="text-[10px] text-slate-500 font-bold uppercase tracking-wider mr-1">
-                {lang === 'bn' ? 'বাকি:' : 'Left:'}
+                {lang === 'bn' ? 'বাকি:' : lang === 'hi' ? 'शेष:' : 'Left:'}
               </span>
               
               {/* Hours */}
