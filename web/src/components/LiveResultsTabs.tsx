@@ -130,8 +130,8 @@ export default function LiveResultsTabs({
   const todayPrizes: PrizeData = currentDrawForToday?.parsed_data?.prizes || currentDrawForToday?.prizes || {};
   const todayHasPrizes = Boolean(
     todayPrizes.first_prize?.number &&
-    currentDrawForToday?.status !== 'UPCOMING' &&
-    currentDrawForToday?.parsed_data?.status !== 'UPCOMING'
+    currentDrawForToday?.status === 'DECLARED' &&
+    currentDrawForToday?.parsed_data?.status === 'DECLARED'
   );
 
   const activeStatus = getSlotStatus(todayStr, activeSlot, todayHasPrizes);
@@ -147,16 +147,10 @@ export default function LiveResultsTabs({
     return getISTDateString(y);
   })();
 
-  const slotFallbackFirstPrize = activeSlot === '1PM' 
-    ? { series: '95E', number: '75331' } 
-    : activeSlot === '6PM' 
-    ? { series: '86G', number: '45286' } 
-    : { series: '75C', number: '25455' };
-
   // If results are out today, use today's declared data
   const currentDraw = currentDrawForToday || drawsList[0] || yesterdayDraw;
-  const declaredPrizes: PrizeData = currentDraw?.parsed_data?.prizes || currentDraw?.prizes || {};
-  const firstPrize = declaredPrizes.first_prize || slotFallbackFirstPrize;
+  const declaredPrizes: PrizeData = todayHasPrizes ? (currentDraw?.parsed_data?.prizes || currentDraw?.prizes || {}) : {};
+  const firstPrize = declaredPrizes.first_prize || { series: '', number: '' };
   const secondPrizes = declaredPrizes.second_prize || [];
   const thirdPrizes = declaredPrizes.third_prize || [];
   const fourthPrizes = declaredPrizes.fourth_prize || [];
@@ -394,107 +388,109 @@ export default function LiveResultsTabs({
         </div>
       </div>
 
-      {/* 5. WhatsApp Share Button */}
-      <a
-        href={whatsappUrl}
-        target="_blank"
-        rel="noopener noreferrer"
-        className="w-full bg-[#25d366] hover:bg-[#20bd5a] text-white font-black text-xs sm:text-sm py-2.5 px-4 rounded-xl flex items-center justify-center gap-2 shadow-sm transition-all active:scale-95"
-      >
-        <span>💬</span>
-        <span>{lang === 'bn' ? 'হোয়াটসঅ্যাপে রেজাল্ট শেয়ার করুন (Share on WhatsApp)' : lang === 'hi' ? 'व्हाट्सएप पर रिजल्ट शेयर करें (Share on WhatsApp)' : 'Share Result on WhatsApp'}</span>
-      </a>
+      {/* 5. WhatsApp Share Button & 6. Clean Structured Text Prize Tables (Declared Results Only) */}
+      {activeStatus === 'RESULT_OUT' && (
+        <>
+          <a
+            href={whatsappUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="w-full bg-[#25d366] hover:bg-[#20bd5a] text-white font-black text-xs sm:text-sm py-2.5 px-4 rounded-xl flex items-center justify-center gap-2 shadow-sm transition-all active:scale-95"
+          >
+            <span>💬</span>
+            <span>{lang === 'bn' ? 'হোয়াটসঅ্যাপে রেজাল্ট শেয়ার করুন (Share on WhatsApp)' : lang === 'hi' ? 'व्हाट्सएप पर रिजल्ट शेयर करें (Share on WhatsApp)' : 'Share Result on WhatsApp'}</span>
+          </a>
 
-      {/* 6. Clean Structured Text Prize Tables (Toggleable/Expandable) */}
-      <div className="space-y-3 pt-1">
-        
-        {/* Toggle Bar */}
-        <button
-          type="button"
-          onClick={() => setShowTextTables(prev => !prev)}
-          className="w-full bg-slate-50 hover:bg-slate-100 border border-slate-200 rounded-xl py-2 px-3 flex items-center justify-between text-xs font-black text-slate-800 transition-colors"
-        >
-          <span>{lang === 'bn' ? '📋 ২য় থেকে ৫ম পুরস্কারের বিস্তারিত নম্বর তালিকা' : lang === 'hi' ? '📋 2nd से 5th पुरस्कार की पूरी सूची' : '📋 2nd to 5th Prize Full Winning Numbers List'}</span>
-          <span>{showTextTables ? (lang === 'bn' ? '▲ বন্ধ করুন' : lang === 'hi' ? '▲ बंद करें' : '▲ Hide') : (lang === 'bn' ? '▼ দেখুন' : lang === 'hi' ? '▼ देखें' : '▼ View')}</span>
-        </button>
+          <div className="space-y-3 pt-1">
+            {/* Toggle Bar */}
+            <button
+              type="button"
+              onClick={() => setShowTextTables(prev => !prev)}
+              className="w-full bg-slate-50 hover:bg-slate-100 border border-slate-200 rounded-xl py-2 px-3 flex items-center justify-between text-xs font-black text-slate-800 transition-colors"
+            >
+              <span>{lang === 'bn' ? '📋 ২য় থেকে ৫ম পুরস্কারের বিস্তারিত নম্বর তালিকা' : lang === 'hi' ? '📋 2nd থেকে 5th পুরস্কারের সম্পূর্ণ তালিকা' : '📋 2nd to 5th Prize Full Winning Numbers List'}</span>
+              <span>{showTextTables ? (lang === 'bn' ? '▲ বন্ধ করুন' : lang === 'hi' ? '▲ बंद करें' : '▲ Hide') : (lang === 'bn' ? '▼ দেখুন' : lang === 'hi' ? '▼ देखें' : '▼ View')}</span>
+            </button>
 
-        {showTextTables && (
-          <div className="space-y-3 animate-in fade-in duration-200">
-            {/* 2nd Prize */}
-            <div className="bg-white border border-slate-200 rounded-xl p-3.5 shadow-xs space-y-2">
-              <div className="flex items-center justify-between border-b border-slate-100 pb-1.5">
-                <h4 className="text-xs sm:text-sm font-black text-slate-900 flex items-center gap-1.5">
-                  <span className="w-2.5 h-2.5 rounded-full bg-emerald-600"></span>
-                  <span>{lang === 'bn' ? '২য় পুরস্কার: ₹১০,০০০ (১০ জন বিজয়ী)' : lang === 'hi' ? 'द्वितीय पुरस्कार: ₹10,000 (10 विजेता)' : '2nd Prize: ₹10,000 (10 Winners)'}</span>
-                </h4>
-                <span className="text-[11px] text-emerald-700 font-mono font-bold">5 Digits</span>
-              </div>
-              <div className="grid grid-cols-2 sm:grid-cols-5 gap-2">
-                {secondPrizes.map((num: string, idx: number) => (
-                  <div
-                    key={idx}
-                    className="bg-emerald-50/70 border border-emerald-200 rounded-lg py-2 text-center font-mono text-base font-black text-emerald-950 select-all"
-                  >
-                    {num}
+            {showTextTables && (
+              <div className="space-y-3 animate-in fade-in duration-200">
+                {/* 2nd Prize */}
+                <div className="bg-white border border-slate-200 rounded-xl p-3.5 shadow-xs space-y-2">
+                  <div className="flex items-center justify-between border-b border-slate-100 pb-1.5">
+                    <h4 className="text-xs sm:text-sm font-black text-slate-900 flex items-center gap-1.5">
+                      <span className="w-2.5 h-2.5 rounded-full bg-emerald-600"></span>
+                      <span>{lang === 'bn' ? '২য় পুরস্কার: ₹১০,০০০ (১০ জন বিজয়ী)' : lang === 'hi' ? 'द्वितीय पुरस्कार: ₹10,000 (10 विजेता)' : '2nd Prize: ₹10,000 (10 Winners)'}</span>
+                    </h4>
+                    <span className="text-[11px] text-emerald-700 font-mono font-bold">5 Digits</span>
                   </div>
-                ))}
-              </div>
-            </div>
-
-            {/* 3rd & 4th Prize */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
-              <div className="bg-white border border-slate-200 rounded-xl p-3 shadow-xs space-y-2">
-                <div className="flex items-center justify-between border-b border-slate-100 pb-1.5">
-                  <h5 className="text-xs font-black text-slate-900">{lang === 'bn' ? '৩য় পুরস্কার: ₹৫০০' : lang === 'hi' ? 'तृतीय पुरस्कार: ₹500' : '3rd Prize: ₹500'}</h5>
-                  <span className="text-[10px] text-slate-500 font-mono">Last 4 Digits</span>
-                </div>
-                <div className="grid grid-cols-5 gap-1.5">
-                  {thirdPrizes.map((num: string, idx: number) => (
-                    <div key={idx} className="bg-slate-50 border border-slate-200 rounded py-1.5 text-center font-mono text-xs font-bold text-slate-900 select-all">
-                      {num}
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              <div className="bg-white border border-slate-200 rounded-xl p-3 shadow-xs space-y-2">
-                <div className="flex items-center justify-between border-b border-slate-100 pb-1.5">
-                  <h5 className="text-xs font-black text-slate-900">{lang === 'bn' ? '৪র্থ পুরস্কার: ₹২৫০' : lang === 'hi' ? 'चतुर्थ पुरस्कार: ₹250' : '4th Prize: ₹250'}</h5>
-                  <span className="text-[10px] text-slate-500 font-mono">Last 4 Digits</span>
-                </div>
-                <div className="grid grid-cols-5 gap-1.5">
-                  {fourthPrizes.map((num: string, idx: number) => (
-                    <div key={idx} className="bg-slate-50 border border-slate-200 rounded py-1.5 text-center font-mono text-xs font-bold text-slate-900 select-all">
-                      {num}
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </div>
-
-            {/* 5th Prize */}
-            <div className="bg-white border border-slate-200 rounded-xl p-3.5 shadow-xs space-y-2">
-              <div className="flex items-center justify-between border-b border-slate-100 pb-1.5">
-                <h4 className="text-xs sm:text-sm font-black text-slate-900 flex items-center gap-1.5">
-                  <span className="w-2.5 h-2.5 rounded-full bg-amber-500"></span>
-                  <span>{lang === 'bn' ? '৫ম পুরস্কার: ₹১২০ (১০০ জন বিজয়ী)' : lang === 'hi' ? '5वां पुरस्कार: ₹120 (100 विजेता)' : '5th Prize: ₹120 (100 Winners)'}</span>
-                </h4>
-                <span className="text-[11px] text-blue-700 font-mono font-bold">Last 4 Digits</span>
-              </div>
-              <div className="grid grid-cols-5 sm:grid-cols-10 gap-1.5">
-                {fifthPrizes.map((num: string, idx: number) => (
-                  <div
-                    key={idx}
-                    className="bg-slate-50 hover:bg-amber-50 border border-slate-200 rounded py-1.5 text-center font-mono text-xs font-bold text-slate-900 select-all transition-colors"
-                  >
-                    {num}
+                  <div className="grid grid-cols-2 sm:grid-cols-5 gap-2">
+                    {secondPrizes.map((num: string, idx: number) => (
+                      <div
+                        key={idx}
+                        className="bg-emerald-50/70 border border-emerald-200 rounded-lg py-2 text-center font-mono text-base font-black text-emerald-950 select-all"
+                      >
+                        {num}
+                      </div>
+                    ))}
                   </div>
-                ))}
+                </div>
+
+                {/* 3rd & 4th Prize */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                  <div className="bg-white border border-slate-200 rounded-xl p-3 shadow-xs space-y-2">
+                    <div className="flex items-center justify-between border-b border-slate-100 pb-1.5">
+                      <h5 className="text-xs font-black text-slate-900">{lang === 'bn' ? '৩য় পুরস্কার: ₹৫০০' : lang === 'hi' ? 'तृतीय पुरस्कार: ₹500' : '3rd Prize: ₹500'}</h5>
+                      <span className="text-[10px] text-slate-500 font-mono">Last 4 Digits</span>
+                    </div>
+                    <div className="grid grid-cols-5 gap-1.5">
+                      {thirdPrizes.map((num: string, idx: number) => (
+                        <div key={idx} className="bg-slate-50 border border-slate-200 rounded py-1.5 text-center font-mono text-xs font-bold text-slate-900 select-all">
+                          {num}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div className="bg-white border border-slate-200 rounded-xl p-3 shadow-xs space-y-2">
+                    <div className="flex items-center justify-between border-b border-slate-100 pb-1.5">
+                      <h5 className="text-xs font-black text-slate-900">{lang === 'bn' ? '৪র্থ পুরস্কার: ₹২৫০' : lang === 'hi' ? 'चतुर्थ पुरस्कार: ₹250' : '4th Prize: ₹250'}</h5>
+                      <span className="text-[10px] text-slate-500 font-mono">Last 4 Digits</span>
+                    </div>
+                    <div className="grid grid-cols-5 gap-1.5">
+                      {fourthPrizes.map((num: string, idx: number) => (
+                        <div key={idx} className="bg-slate-50 border border-slate-200 rounded py-1.5 text-center font-mono text-xs font-bold text-slate-900 select-all">
+                          {num}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+
+                {/* 5th Prize */}
+                <div className="bg-white border border-slate-200 rounded-xl p-3.5 shadow-xs space-y-2">
+                  <div className="flex items-center justify-between border-b border-slate-100 pb-1.5">
+                    <h4 className="text-xs sm:text-sm font-black text-slate-900 flex items-center gap-1.5">
+                      <span className="w-2.5 h-2.5 rounded-full bg-amber-500"></span>
+                      <span>{lang === 'bn' ? '৫ম পুরস্কার: ₹১২০ (১০০ জন বিজয়ী)' : lang === 'hi' ? '5वां पुरस्कार: ₹120 (100 विजेता)' : '5th Prize: ₹120 (100 Winners)'}</span>
+                    </h4>
+                    <span className="text-[11px] text-blue-700 font-mono font-bold">Last 4 Digits</span>
+                  </div>
+                  <div className="grid grid-cols-5 sm:grid-cols-10 gap-1.5">
+                    {fifthPrizes.map((num: string, idx: number) => (
+                      <div
+                        key={idx}
+                        className="bg-slate-50 hover:bg-amber-50 border border-slate-200 rounded py-1.5 text-center font-mono text-xs font-bold text-slate-900 select-all transition-colors"
+                      >
+                        {num}
+                      </div>
+                    ))}
+                  </div>
+                </div>
               </div>
-            </div>
+            )}
           </div>
-        )}
-      </div>
+        </>
+      )}
 
       {/* 7. Lightbox Zoom Modal (Like Lottery Sambad imodal) */}
       {showImageModal && (

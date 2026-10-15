@@ -193,9 +193,8 @@ export function generateGazetteSvg(data: GazetteSvgData): string {
   <!-- 1st Prize Number Stadium Capsule -->
   <g transform="translate(190, 146)">
     <rect x="0" y="0" width="244" height="36" rx="18" fill="#ffffff" stroke="#d946ef" stroke-width="3" />
-    <rect x="2" y="2" width="240" height="32" rx="16" fill="none" stroke="#0284c7" stroke-width="1.2" />
-    <text x="122" y="26" fill="#0c2461" font-size="24" text-anchor="middle" class="t-impact" letter-spacing="2">
-      ${firstPrize.series} ${firstPrize.number}
+    <text x="122" y="${isPending ? '24' : '26'}" fill="${isPending ? '#e01a1a' : '#0c2461'}" font-size="${isPending ? '15' : '24'}" text-anchor="middle" class="t-impact" letter-spacing="${isPending ? '1' : '2'}">
+      ${isPending ? 'DRAW IN PROGRESS' : `${firstPrize.series} ${firstPrize.number}`}
     </text>
   </g>
 

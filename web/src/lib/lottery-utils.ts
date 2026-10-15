@@ -134,18 +134,17 @@ export function getSlotStatus(
   const todayStr = getISTDateString(istNow);
 
   if (dateStr > todayStr) return 'UPCOMING';
-  if (dateStr < todayStr) return 'RESULT_OUT';
+  if (dateStr < todayStr) return hasDeclaredPrizes ? 'RESULT_OUT' : 'UPCOMING';
 
+  // For today's date:
   const targetHour = slot === '1PM' ? 13 : slot === '6PM' ? 18 : 20;
   const currentHour = istNow.getHours();
-  const currentMinute = istNow.getMinutes();
 
   if (currentHour < targetHour) {
     return 'UPCOMING';
-  } else if (currentHour === targetHour && currentMinute < 15) {
-    return 'DRAWING';
   } else {
-    return 'RESULT_OUT';
+    // Current hour is at or past draw time, but prizes have not yet been declared
+    return 'DRAWING';
   }
 }
 

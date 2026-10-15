@@ -49,7 +49,7 @@ const istNow = getISTNow();
 const todayStr = getISTDateString(istNow);
 
 let isUpcoming = false;
-if (draw?.status === 'UPCOMING' || !firstPrize || !firstPrize.number) {
+if (draw?.status === 'UPCOMING' || draw?.status === 'DRAWING' || !firstPrize || !firstPrize.number) {
   isUpcoming = true;
 } else if (targetDate === todayStr) {
   const targetHour = slotHour === '6 PM' ? 18 : slotHour === '8 PM' ? 20 : 13;

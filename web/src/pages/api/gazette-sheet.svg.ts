@@ -30,7 +30,7 @@ export const GET: APIRoute = async ({ request }) => {
   const slotPrizes = dateData ? dateData[slotKey] : null;
 
   const hasPrizes = Boolean(slotPrizes?.first_prize?.number);
-  const isPending = isFuture || (isToday && isBeforeHour && !hasPrizes);
+  const isPending = isFuture || (isToday && !hasPrizes) || !hasPrizes;
 
   const svgContent = generateGazetteSvg({
     drawDate: dateParam,

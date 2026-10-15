@@ -39,9 +39,9 @@ export const GET: APIRoute = async ({ params }) => {
     targetDraw?.prizes?.first_prize?.number
   );
 
-  const isPending = isFuture || (isToday && isBeforeDrawHour && !hasDeclaredPrizes) || targetDraw?.status === 'UPCOMING';
+  const isPending = isFuture || (isToday && !hasDeclaredPrizes) || targetDraw?.status === 'UPCOMING' || targetDraw?.status === 'DRAWING';
 
-  if (!isPending && !hasDeclaredPrizes) {
+  if (!isPending && !hasDeclaredPrizes && dateStr < todayStr) {
     targetDraw = generateWebMockDraw(dateStr, validSlot);
   }
 
