@@ -52,14 +52,14 @@ PRIZE_STRUCTURE = {
     },
     "2nd": {
         "title": "2nd Prize",
-        "amount": 9000,                 # ₹9,000
+        "amount": 10000,                # ₹10,000 (Updated from ₹9,000 for ₹7 scheme)
         "count": 10,
         "format": "5DIGIT",             # 10 five-digit numbers
         "digits": 5
     },
     "3rd": {
         "title": "3rd Prize",
-        "amount": 450,                  # ₹450
+        "amount": 500,                  # ₹500 (Updated from ₹450 for ₹7 scheme)
         "count": 10,
         "format": "4DIGIT",             # 10 four-digit numbers
         "digits": 4

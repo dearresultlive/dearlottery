@@ -135,13 +135,13 @@ export default function DynamicSlotView({
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-center">
               <div className="bg-slate-50 border border-slate-200 rounded-xl p-3.5">
                 <span className="text-[11px] text-slate-500 block font-semibold">2nd Prize</span>
-                <span className="text-lg sm:text-xl font-mono font-black text-emerald-800 block my-1">₹9,000</span>
+                <span className="text-lg sm:text-xl font-mono font-black text-emerald-800 block my-1">₹10,000</span>
                 <span className="text-[10px] text-slate-400 font-medium">10 Winners</span>
               </div>
 
               <div className="bg-slate-50 border border-slate-200 rounded-xl p-3.5">
                 <span className="text-[11px] text-slate-500 block font-semibold">3rd Prize</span>
-                <span className="text-lg sm:text-xl font-mono font-black text-blue-700 block my-1">₹450</span>
+                <span className="text-lg sm:text-xl font-mono font-black text-blue-700 block my-1">₹500</span>
                 <span className="text-[10px] text-slate-400 font-medium">10 Winners</span>
               </div>
 

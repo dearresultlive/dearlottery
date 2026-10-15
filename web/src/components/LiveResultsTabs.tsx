@@ -407,7 +407,7 @@ export default function LiveResultsTabs({
               <div className="flex items-center justify-between border-b border-slate-100 pb-1.5">
                 <h4 className="text-xs sm:text-sm font-black text-slate-900 flex items-center gap-1.5">
                   <span className="w-2.5 h-2.5 rounded-full bg-emerald-600"></span>
-                  <span>২য় পুরস্কার: ₹৯,০০০ (১০ জন বিজয়ী)</span>
+                  <span>২য় পুরস্কার: ₹১০,০০০ (১০ জন বিজয়ী)</span>
                 </h4>
                 <span className="text-[11px] text-emerald-700 font-mono font-bold">5 Digits</span>
               </div>
@@ -427,7 +427,7 @@ export default function LiveResultsTabs({
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
               <div className="bg-white border border-slate-200 rounded-xl p-3 shadow-xs space-y-2">
                 <div className="flex items-center justify-between border-b border-slate-100 pb-1.5">
-                  <h5 className="text-xs font-black text-slate-900">৩য় পুরস্কার: ₹৪৫০</h5>
+                  <h5 className="text-xs font-black text-slate-900">৩য় পুরস্কার: ₹৫০০</h5>
                   <span className="text-[10px] text-slate-500 font-mono">Last 4 Digits</span>
                 </div>
                 <div className="grid grid-cols-5 gap-1.5">

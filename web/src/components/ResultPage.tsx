@@ -249,12 +249,12 @@ export default function ResultPage({ date, slot = '1pm', initialDraws = [] }: Re
 
           {/* 4. Tabular Prize Breakdown (Large Monospaced Typography) */}
           
-          {/* 2nd Prize Table (10 Tickets of ₹9,000 Each) */}
+          {/* 2nd Prize Table (10 Tickets of ₹10,000 Each) */}
           <section className="bg-slate-950/90 border border-slate-800 rounded-2xl p-4 sm:p-5 space-y-3">
             <div className="flex items-center justify-between border-b border-slate-800 pb-2.5">
               <h3 className="text-sm sm:text-base font-extrabold text-white flex items-center gap-2">
                 <span className="w-2.5 h-2.5 rounded-full bg-emerald-400"></span>
-                <span>2nd Prize: ₹9,000 (২য় পুরস্কার - ১০ জন বিজয়ী)</span>
+                <span>2nd Prize: ₹10,000 (২য় পুরস্কার - ১০ জন বিজয়ী)</span>
               </h3>
               <span className="text-xs text-emerald-400 font-bold font-mono">5 Digits / ৫ সংখ্যা</span>
             </div>
@@ -273,12 +273,12 @@ export default function ResultPage({ date, slot = '1pm', initialDraws = [] }: Re
 
           {/* 3rd & 4th Prize 2-Column Split */}
           <section className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {/* 3rd Prize (₹450 Each) */}
+            {/* 3rd Prize (₹500 Each) */}
             <div className="bg-slate-950/90 border border-slate-800 rounded-2xl p-4 space-y-3">
               <div className="flex items-center justify-between border-b border-slate-800 pb-2">
                 <h4 className="text-xs sm:text-sm font-bold text-slate-200 flex items-center gap-2">
                   <span className="w-2 h-2 rounded-full bg-teal-400"></span>
-                  <span>3rd Prize: ₹450 (৩য় পুরস্কার)</span>
+                  <span>3rd Prize: ₹500 (৩য় পুরস্কার)</span>
                 </h4>
                 <span className="text-[11px] text-slate-400 font-mono">Last 4 Digits</span>
               </div>

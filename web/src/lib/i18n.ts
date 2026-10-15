@@ -52,12 +52,12 @@ export const translations = {
     en: '1st Prize: ₹1,00,00,000 (1 Crore)'
   },
   second_prize_title: {
-    bn: '২য় পুরস্কার: ₹৯,০০০ (১০ জন বিজয়ী)',
-    en: '2nd Prize: ₹9,000 (10 Winners)'
+    bn: '২য় পুরস্কার: ₹১০,০০০ (১০ জন বিজয়ী)',
+    en: '2nd Prize: ₹10,000 (10 Winners)'
   },
   third_prize_title: {
-    bn: '৩য় পুরস্কার: ₹৪৫০ (১০ জন বিজয়ী)',
-    en: '3rd Prize: ₹450 (10 Winners)'
+    bn: '৩য় পুরস্কার: ₹৫০০ (১০ জন বিজয়ী)',
+    en: '3rd Prize: ₹500 (10 Winners)'
   },
   fourth_prize_title: {
     bn: '৪র্থ পুরস্কার: ₹২৫০ (১০ জন বিজয়ী)',

@@ -86,7 +86,7 @@ export default function TicketChecker({ initialDraws = [], variant = 'slim' }: T
               drawTime,
               drawDate,
               prizeRank: '২য় পুরস্কার',
-              prizeAmount: 9000,
+              prizeAmount: 10000,
               ticketNumber: num,
               seriesMatched: true
             });
@@ -102,7 +102,7 @@ export default function TicketChecker({ initialDraws = [], variant = 'slim' }: T
               drawTime,
               drawDate,
               prizeRank: '৩য় পুরস্কার',
-              prizeAmount: 450,
+              prizeAmount: 500,
               ticketNumber: num,
               seriesMatched: true
             });

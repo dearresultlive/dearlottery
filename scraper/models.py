@@ -176,7 +176,7 @@ class LotteryDrawResult(BaseModel):
             records.append({
                 "draw_id": self.draw_id,
                 "prize_rank": "2nd",
-                "prize_amount": 9000,
+                "prize_amount": 10000,
                 "ticket_number": num,
                 "last_digits": num[-4:],
                 "series": None
@@ -187,7 +187,7 @@ class LotteryDrawResult(BaseModel):
             records.append({
                 "draw_id": self.draw_id,
                 "prize_rank": "3rd",
-                "prize_amount": 450,
+                "prize_amount": 500,
                 "ticket_number": num,
                 "last_digits": num,
                 "series": None

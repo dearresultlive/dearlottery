@@ -100,7 +100,7 @@ export function generateMockDraw(dateStr, timeSlot) {
     ...secondPrize.map(num => ({
       draw_id: drawId,
       prize_rank: "2nd",
-      prize_amount: 9000,
+      prize_amount: 10000,
       ticket_number: num,
       last_digits: num.slice(-4),
       series: null
@@ -108,7 +108,7 @@ export function generateMockDraw(dateStr, timeSlot) {
     ...thirdPrize.map(num => ({
       draw_id: drawId,
       prize_rank: "3rd",
-      prize_amount: 450,
+      prize_amount: 500,
       ticket_number: num,
       last_digits: num,
       series: null

@@ -36,16 +36,9 @@ export const GET: APIRoute = async ({ request }) => {
     drawDate: dateParam,
     drawTime: timeLabel,
     drawName: schemeName,
-    drawNumber: '74',
+    drawNumber: slotKey === '1PM' ? '50' : '74',
     isPending: isPending,
-    prizes: isPending ? undefined : (slotPrizes || {
-      first_prize: { series: '95E', number: '75331' },
-      consolation_prize_amount: 1000,
-      second_prize: ['01529', '29896', '38484', '43129', '54211', '60045', '72274', '75818', '88393', '89547'],
-      third_prize: ['0436', '2227', '3288', '3379', '3795', '3864', '6740', '7369', '8636', '9765'],
-      fourth_prize: ['1837', '2759', '3589', '5745', '6149', '6514', '6836', '8013', '8466', '9777'],
-      fifth_prize: ['0033', '0140', '0256', '0381', '0492', '0514', '0628', '0743', '0855', '0967']
-    })
+    prizes: isPending ? undefined : (slotPrizes || undefined)
   });
 
   return new Response(svgContent, {
