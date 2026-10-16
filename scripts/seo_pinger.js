@@ -47,6 +47,7 @@ export async function pingSearchEngines(dateStr, slot = '') {
     ];
 
     for (const endpoint of endpoints) {
+      try {
         const res = await fetch(endpoint, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json; charset=utf-8' },
@@ -63,6 +64,25 @@ export async function pingSearchEngines(dateStr, slot = '') {
     }
   } catch (err) {
     console.error('[SEO-Pinger] Error in IndexNow ping:', err.message);
+  }
+
+  // 2. Google Instant Indexing API (if Google Service Account Credentials configured)
+  try {
+    const hasGoogleCreds = process.env.GOOGLE_SERVICE_ACCOUNT_JSON || 
+      (process.env.GOOGLE_CLIENT_EMAIL && process.env.GOOGLE_PRIVATE_KEY) ||
+      process.env.GOOGLE_APPLICATION_CREDENTIALS;
+
+    if (hasGoogleCreds) {
+      console.log(`[SEO-Pinger] 🚀 Submitting to Google Indexing API...`);
+      const { createRequire } = await import('module');
+      const req = createRequire(import.meta.url);
+      const { publishToGoogleIndexing } = req('./google-instant-index.js');
+      await publishToGoogleIndexing({ urls: targetUrls, type: 'URL_UPDATED' });
+    } else {
+      console.log(`[SEO-Pinger] ℹ️ Google Service Account credentials not detected. (Skipping Google Indexing API)`);
+    }
+  } catch (gErr) {
+    console.warn('[SEO-Pinger] Google Indexing API skipped/failed:', gErr.message);
   }
 }
 
