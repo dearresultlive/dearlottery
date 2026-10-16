@@ -24,40 +24,155 @@ const analytics = await fetchFrequencyAnalytics();
   description={`Official Dear Lottery Result Today (${todayDateStr}) for 1:00 PM Morning, 6:00 PM Day, and 8:00 PM Night. 1st Prize ₹1 Crore winning ticket number, official gazette sheet JPG/PDF, and all prize tables.`}
   drawDate={todayDateStr}
 >
-  <div class="max-w-[580px] mx-auto px-3 sm:px-4 py-3 sm:py-5 space-y-4">
+  <div class="max-w-[580px] mx-auto px-2 sm:px-4 py-2 sm:py-4 space-y-3 sm:space-y-4">
     
-    {/* 1. Slim Single-Line Status Bar (Time + Date + Compact Countdown) */}
-    <div class="bg-white border border-slate-200 rounded-xl px-3 sm:px-4 py-2 sm:py-2.5 flex flex-wrap items-center justify-between gap-2 shadow-2xs">
-      <div class="flex items-center gap-2 min-w-0">
-        <span class="inline-flex items-center gap-1.5 bg-red-100 text-red-800 text-[10px] sm:text-xs font-black px-2 py-0.5 rounded-full uppercase tracking-wider flex-shrink-0">
-          <span class="w-2 h-2 rounded-full bg-red-600 animate-ping"></span>
-          <span id="status-live-badge">LIVE</span>
-        </span>
-        <h1 class="text-xs sm:text-sm font-black text-slate-900 truncate" id="status-title">
-          <span class="lang-en">Dear Lottery Result Today • {todayDateStr}</span>
-          <span class="lang-bn">আজকের ডিয়ার লটারি রেজাল্ট • {todayDateStr}</span>
-          <span class="lang-hi">आज का डियर लॉटरी रिजल्ट • {todayDateStr}</span>
-        </h1>
-        <span class="text-xs text-slate-300 hidden md:inline">|</span>
-        <span class="text-xs text-slate-500 hidden md:inline font-medium" id="status-sub">
-          <span class="lang-en">Nagaland &amp; Sikkim Official Gazette</span>
-          <span class="lang-bn">নাগাল্যান্ড ও সিকিম অফিসিয়াল গেজেট</span>
-          <span class="lang-hi">नागालैंड और सिक्किम ऑफिशियल गजट</span>
-        </span>
-      </div>
-      <div class="flex items-center gap-2 ml-auto">
-        <DrawCountdown client:load compact={true} />
-      </div>
-    </div>
-
-    {/* 2. HERO: Instant Live Result Tabs & Official Gazette Sheet */}
+    {/* 1. TOP VIEWPORT: Instant Live Result Tabs & 1st Prize Number (Zero clutter above fold for mobile users) */}
     <section id="results">
       <LiveResultsTabs client:load draws={draws} yesterdayDraws={yesterdayDraws} todayDateStr={todayDateStr} />
     </section>
 
-    {/* 3. 1-Second Instant Slim Ticket Checker */}
+    {/* 2. Instant Slim Ticket Checker */}
     <section id="checker">
       <TicketChecker client:load initialDraws={checkerDraws} variant="slim" />
+    </section>
+
+    {/* Background Zero-Refresh Listener & Compact Draw Status */}
+    <div class="flex items-center justify-between text-xs px-2 text-slate-500">
+      <span class="inline-flex items-center gap-1.5 text-[11px] font-bold text-slate-600">
+        <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+        <span class="lang-en">Official Gazette Verified • 100% Authentic</span>
+        <span class="lang-bn">সরকারি গেজেট যাচাইকৃত • ১০০% নির্ভুল</span>
+        <span class="lang-hi">आधिकारिक गजट सत्यापित • 100% सही</span>
+      </span>
+      <DrawCountdown client:load compact={true} />
+    </div>
+
+    {/* 3. Comprehensive SEO & Gazette Information Section (Placed Below Fold to protect against thin content while keeping mobile top 100% clean) */}
+    <section class="bg-white border border-slate-200 rounded-2xl p-4 sm:p-7 text-slate-700 space-y-6 shadow-sm">
+      
+      {/* Semantic H1 & Overview */}
+      <header class="border-b border-slate-200 pb-4 space-y-2">
+        <div class="inline-flex items-center gap-1.5 bg-red-100 text-red-800 text-[10px] sm:text-xs font-black px-2.5 py-0.5 rounded-full uppercase tracking-wider">
+          <span class="w-2 h-2 rounded-full bg-red-600 animate-ping"></span>
+          <span class="lang-en">Official Gazette Live Results</span>
+          <span class="lang-bn">সরকারি গেজেট লাইভ রেজাল্ট</span>
+          <span class="lang-hi">आधिकारिक गजट लाइव रिजल्ट</span>
+        </div>
+        
+        <h1 class="text-base sm:text-xl font-black text-slate-900 leading-snug" id="status-title">
+          <span class="lang-en">Dear Lottery Result Today • {todayDateStr} Live (1PM, 6PM, 8PM) | Lottery Sambad</span>
+          <span class="lang-bn">আজকের ডিয়ার লটারি রেজাল্ট • {todayDateStr} লাইভ (দুপুর ১টা, সন্ধ্যা ৬টা, রাত ৮টা) | লটারি সংবাদ</span>
+          <span class="lang-hi">आज का डियर लॉटरी रिजल्ट • {todayDateStr} लाइव (1:00 PM, 6:00 PM, 8:00 PM) | लॉटरी संबाद</span>
+        </h1>
+
+        <p class="text-xs sm:text-sm text-slate-600 leading-relaxed">
+          <span class="lang-en">Welcome to Dear Result Live, India's fastest authentic portal for Nagaland State Lotteries and Sikkim State Lotteries results. Daily official draws are conducted three times every day: 1:00 PM Morning, 6:00 PM Day, and 8:00 PM Night. All 1st prize ₹1 Crore winning tickets and complete prize tier numbers are extracted and verified directly from official Directorate gazette sheets under public domain government publication rules.</span>
+          <span class="lang-bn">ডিয়ার রেজাল্ট লাইভ-এ আপনাকে স্বাগতম। নাগাল্যান্ড ও সিকিম রাজ্য লটারির (লটারি সংবাদ) সঠিক ও অফিশিয়াল রেজাল্ট সবার আগে দেখতে এখানে প্রতিদিন ভিজিট করুন। প্রতিদিন সরকারিভাবে দুপুর ১:০০, সন্ধ্যা ৬:০০ ও রাত ৮:০০ টায় ড্র অনুষ্ঠিত হয়। ১ম পুরস্কার ১ কোটি টাকার বিজয়ী টিকিট নম্বর ও সম্পূর্ণ গেজেট শিট সরাসরি ডিরেক্টরেট থেকে যাচাই করে প্রকাশ করা হয়।</span>
+          <span class="lang-hi">डियर रिजल्ट लाइव पर आपका स्वागत है। नागालैंड और सिक्किम राज्य लॉटरी (लॉटरी संबाद) के सबसे सटीक व आधिकारिक परिणाम प्रतिदिन दोपहर 1:00 बजे, शाम 6:00 बजे और रात 8:00 बजे यहां लाइव प्रकाशित किए जाते हैं। प्रथम पुरस्कार ₹1 करोड़ का विजयी टिकट और संपूर्ण गजट शीट आधिकारिक सरकारी रिकॉर्ड से सत्यापित करके उपलब्ध कराई जाती है।</span>
+        </p>
+      </header>
+
+      {/* Official Prize Structure Table */}
+      <div class="space-y-3">
+        <h2 class="text-sm sm:text-base font-black text-slate-900 flex items-center gap-1.5">
+          <span>🏆</span>
+          <span class="lang-en">Dear Lottery Official Prize Structure & Payouts</span>
+          <span class="lang-bn">ডিয়ার লটারির অফিশিয়াল পুরস্কার ও টাকার পরিমাণ</span>
+          <span class="lang-hi">डियर लॉटरी आधिकारिक पुरस्कार संरचना एवं राशि</span>
+        </h2>
+        <div class="overflow-x-auto">
+          <table class="w-full text-left text-xs border border-slate-200 rounded-xl overflow-hidden">
+            <thead class="bg-slate-100 text-slate-900 font-bold text-[11px] uppercase tracking-wider">
+              <tr>
+                <th class="p-2.5 sm:p-3 border-b border-slate-200">Prize Rank</th>
+                <th class="p-2.5 sm:p-3 border-b border-slate-200">Prize Amount</th>
+                <th class="p-2.5 sm:p-3 border-b border-slate-200">Winning Criteria</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-200 text-slate-700">
+              <tr class="bg-emerald-50/50 font-bold text-slate-950">
+                <td class="p-2.5 sm:p-3">1st Prize</td>
+                <td class="p-2.5 sm:p-3 text-emerald-700 font-black">₹1,00,00,000 (₹1 Crore)</td>
+                <td class="p-2.5 sm:p-3">Series + 5 Digits exact match</td>
+              </tr>
+              <tr>
+                <td class="p-2.5 sm:p-3 font-semibold">Consolation Prize</td>
+                <td class="p-2.5 sm:p-3 font-bold text-slate-900">₹1,000</td>
+                <td class="p-2.5 sm:p-3">Same 5 digits in all remaining series</td>
+              </tr>
+              <tr>
+                <td class="p-2.5 sm:p-3 font-semibold">2nd Prize</td>
+                <td class="p-2.5 sm:p-3 font-bold text-slate-900">₹9,000</td>
+                <td class="p-2.5 sm:p-3">10 Winning Numbers (5 Digits)</td>
+              </tr>
+              <tr>
+                <td class="p-2.5 sm:p-3 font-semibold">3rd Prize</td>
+                <td class="p-2.5 sm:p-3 font-bold text-slate-900">₹450</td>
+                <td class="p-2.5 sm:p-3">10 Winning Numbers (4 Digits)</td>
+              </tr>
+              <tr>
+                <td class="p-2.5 sm:p-3 font-semibold">4th Prize</td>
+                <td class="p-2.5 sm:p-3 font-bold text-slate-900">₹250</td>
+                <td class="p-2.5 sm:p-3">10 Winning Numbers (4 Digits)</td>
+              </tr>
+              <tr>
+                <td class="p-2.5 sm:p-3 font-semibold">5th Prize</td>
+                <td class="p-2.5 sm:p-3 font-bold text-slate-900">₹120</td>
+                <td class="p-2.5 sm:p-3">100 Winning Numbers (4 Digits)</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      {/* Daily Draw Timetable Schedule */}
+      <div class="space-y-3">
+        <h2 class="text-sm sm:text-base font-black text-slate-900 flex items-center gap-1.5">
+          <span>📅</span>
+          <span class="lang-en">Daily Weekly Draw Schedule (Nagaland &amp; Sikkim State)</span>
+          <span class="lang-bn">সাপ্তাহিক খেলার নাম ও সময়সূচী (নাগাল্যান্ড ও সিকিম রাজ্য)</span>
+          <span class="lang-hi">दैनिक साप्ताहिक ड्रॉ समय सारणी (नागालैंड एवं सिक्किम)</span>
+        </h2>
+        <div class="grid sm:grid-cols-3 gap-3 text-xs">
+          <div class="bg-slate-50 border border-slate-200 rounded-xl p-3 space-y-1">
+            <span class="font-black text-emerald-700 block">☀️ 1:00 PM Morning Draw</span>
+            <span class="text-slate-600 block text-[11px]">Sikkim State / Nagaland State</span>
+            <p class="text-slate-500 text-[11px] leading-relaxed">
+              Dear Meghna (Mon), Mountain (Tue), Desert (Wed), Hill (Thu), River (Fri), Valley (Sat), Sea (Sun).
+            </p>
+          </div>
+          <div class="bg-slate-50 border border-slate-200 rounded-xl p-3 space-y-1">
+            <span class="font-black text-blue-700 block">🌅 6:00 PM Day Draw</span>
+            <span class="text-slate-600 block text-[11px]">Nagaland State Lotteries</span>
+            <p class="text-slate-500 text-[11px] leading-relaxed">
+              Dear Desert (Mon), Wave (Tue), Hill (Wed), Warm (Thu), Falcon (Fri), Moon (Sat), Day (Sun).
+            </p>
+          </div>
+          <div class="bg-slate-50 border border-slate-200 rounded-xl p-3 space-y-1">
+            <span class="font-black text-indigo-700 block">🌙 8:00 PM Night Draw</span>
+            <span class="text-slate-600 block text-[11px]">Nagaland State Lotteries</span>
+            <p class="text-slate-500 text-[11px] leading-relaxed">
+              Dear Pelican (Mon), Sandpiper (Tue), Falcon (Wed), Finch (Thu), Seagull (Fri), Ostrich (Sat), Hawk (Sun).
+            </p>
+          </div>
+        </div>
+      </div>
+
+      {/* Prize Claiming Guidelines */}
+      <div class="space-y-2 border-t border-slate-200 pt-4 text-xs">
+        <h2 class="text-sm font-black text-slate-900 flex items-center gap-1.5">
+          <span>📜</span>
+          <span class="lang-en">Prize Claim Verification &amp; Legal Guidelines</span>
+          <span class="lang-bn">পুরস্কার দাবির নিয়ম ও সরকারি নির্দেশিকা</span>
+          <span class="lang-hi">पुरस्कार दावा एवं आधिकारिक दिशानिर्देश</span>
+        </h2>
+        <p class="text-slate-600 leading-relaxed">
+          <span class="lang-en">All winning tickets must be intact without any tear, tampering, or mutilation. Claims up to ₹10,000 can be collected in cash directly through authorized retailers. Prizes over ₹10,000 and the 1st prize ₹1 Crore must be submitted to the Directorate of State Lotteries along with the claim form, original ticket, government ID (Aadhaar/PAN), and four passport-sized photographs within 30 days of the draw declaration date. 30% TDS is deducted under Section 194B of the Indian Income Tax Act on winnings exceeding ₹10,000.</span>
+          <span class="lang-bn">যেকোনো পুরস্কার পাওয়ার জন্য আসল টিকিট অক্ষত থাকা আবশ্যক। কাটা বা ছেঁড়া টিকিট গ্রহণযোগ্য নয়। ১০,০০০ টাকা পর্যন্ত পুরস্কার যেকোনো অনুমোদিত লটারির দোকান থেকেই সংগ্রহ করা যায়। ১০,০০০ টাকার বেশি পুরস্কার ও ১ কোটি টাকার প্রথম পুরস্কারের জন্য মূল টিকিট, আধার ও প্যান কার্ড, পাসপোর্ট সাইজ ছবি এবং ক্লেইম ফর্ম সহ রেজাল্ট প্রকাশের ৩০ দিনের মধ্যে সরকারি ডিরেক্টরেটে জমা দিতে হবে। ১০,০০০ টাকার বেশি পুরস্কারে আয়কর আইনের ১৯৪বি ধারা মোতাবেক ৩০% টিডিএস (TDS) প্রযোজ্য।</span>
+          <span class="lang-hi">इनाम का दावा करने के लिए मूल टिकट का सुरक्षित और अखंड होना अनिवार्य है। ₹10,000 तक की राशि किसी भी अधिकृत काउंटर से नकद ली जा सकती है। ₹10,000 से अधिक एवं प्रथम पुरस्कार (₹1 करोड़) के लिए दावा फॉर्म, मूल टिकट, आधार कार्ड, पैन कार्ड एवं फोटो के साथ 30 दिनों के भीतर राज्य निदेशालय में प्रस्तुत करना होता है। ₹10,000 से अधिक की राशि पर 194B के तहत 30% टीडीएस देय होगा।</span>
+        </p>
+      </div>
+
     </section>
 
     {/* 4. Comprehensive SEO FAQ Schema Content (Trilingual: English, Bengali, Hindi) */}
@@ -244,37 +359,4 @@ const analytics = await fetchFrequencyAnalytics();
     </section>
 
   </div>
-
-  <script is:inline define:vars={{ todayDateStr }}>
-    function updateIndexLanguage(lang) {
-      var badge = document.getElementById('status-live-badge');
-      var title = document.getElementById('status-title');
-      var sub = document.getElementById('status-sub');
-
-      if (lang === 'bn') {
-        if (badge) badge.textContent = 'লাইভ';
-        if (title) title.textContent = 'আজকের ডিয়ার লটারি রেজাল্ট • ' + todayDateStr;
-        if (sub) sub.textContent = 'নাগাল্যান্ড ও সিকিম সরকারি গেজেট';
-      } else if (lang === 'hi') {
-        if (badge) badge.textContent = 'लाइव';
-        if (title) title.textContent = 'आज का डियर लॉटरी रिजल्ट • ' + todayDateStr;
-        if (sub) sub.textContent = 'नागालैंड और सिक्किम सरकारी गजट';
-      } else {
-        if (badge) badge.textContent = 'LIVE';
-        if (title) title.textContent = 'Dear Lottery Result Today • ' + todayDateStr;
-        if (sub) sub.textContent = 'Nagaland & Sikkim Official Gazette';
-      }
-    }
-
-    try {
-      var currentLang = localStorage.getItem('dearlottery_lang') || 'en';
-      updateIndexLanguage(currentLang);
-    } catch(e) {}
-
-    window.addEventListener('dearlottery:lang_change', function(e) {
-      if (e.detail) {
-        updateIndexLanguage(e.detail);
-      }
-    });
-  </script>
 </Layout>

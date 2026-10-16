@@ -4,16 +4,18 @@ export const GET: APIRoute = async ({ request }) => {
   const host = new URL(request.url).origin;
 
   const robots = `User-agent: *
-Disallow: /
+Allow: /
+Disallow: /api/
 
 User-agent: Googlebot-Image
-Disallow: /
+Disallow: /results/
+Disallow: /pdf/
 
 User-agent: msnbot-media
-Disallow: /
+Disallow: /results/
+Disallow: /pdf/
 
-User-agent: Bingbot
-Disallow: /
+Sitemap: ${host}/sitemap.xml
 `;
 
   return new Response(robots, {
