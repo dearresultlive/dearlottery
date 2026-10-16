@@ -15,6 +15,8 @@ build/
 .env
 .env.*
 !.env.example
+*service_account*.json
+google-credentials.json
 
 # Python
 __pycache__/

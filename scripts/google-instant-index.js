@@ -9,14 +9,18 @@
  * and pings Google Indexing API whenever new Dear Lottery draws are published.
  */
 
-const fs = require('fs');
-const path = require('path');
-const crypto = require('crypto');
+import fs from 'fs';
+import path from 'path';
+import crypto from 'crypto';
+import { fileURLToPath } from 'url';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 /**
  * Generates an RS256 signed JWT for Google OAuth2
  */
-function createGoogleJwtAssertion(clientEmail, privateKeyPem) {
+export function createGoogleJwtAssertion(clientEmail, privateKeyPem) {
   const now = Math.floor(Date.now() / 1000);
   const header = { alg: 'RS256', typ: 'JWT' };
   const payload = {
@@ -41,7 +45,7 @@ function createGoogleJwtAssertion(clientEmail, privateKeyPem) {
 /**
  * Exchanges signed JWT assertion for an ephemeral Google Bearer access token
  */
-async function getGoogleAccessToken(clientEmail, privateKeyPem) {
+export async function getGoogleAccessToken(clientEmail, privateKeyPem) {
   const jwt = createGoogleJwtAssertion(clientEmail, privateKeyPem);
   
   const res = await fetch('https://oauth2.googleapis.com/token', {
@@ -65,7 +69,7 @@ async function getGoogleAccessToken(clientEmail, privateKeyPem) {
 /**
  * Submits a single URL notification to Google Indexing API
  */
-async function notifyGoogleIndexing(url, accessToken, type = 'URL_UPDATED') {
+export async function notifyGoogleIndexing(url, accessToken, type = 'URL_UPDATED') {
   const endpoint = 'https://indexing.googleapis.com/v3/urlNotifications:publish';
   
   const res = await fetch(endpoint, {
@@ -98,12 +102,8 @@ async function notifyGoogleIndexing(url, accessToken, type = 'URL_UPDATED') {
 
 /**
  * Core Hook / Helper function: publishToGoogleIndexing
- * 
- * Can be imported directly into workers, cron scripts, or API routes:
- * const { publishToGoogleIndexing } = require('./scripts/google-instant-index');
- * await publishToGoogleIndexing({ urls: ['https://dearresultlive.in/results/2026-10-14/1pm'] });
  */
-async function publishToGoogleIndexing(options = {}) {
+export async function publishToGoogleIndexing(options = {}) {
   const {
     urls = [],
     credentialsPath = process.env.GOOGLE_APPLICATION_CREDENTIALS,
@@ -121,10 +121,13 @@ async function publishToGoogleIndexing(options = {}) {
   let finalEmail = clientEmail;
   let finalKey = privateKey;
 
+  const localDefaultPath = path.join(__dirname, '..', 'google-credentials.json');
+  const targetCredPath = credentialsPath || (fs.existsSync(localDefaultPath) ? localDefaultPath : null);
+
   // Attempt to parse service account JSON file or env
-  if (credentialsPath && fs.existsSync(credentialsPath)) {
+  if (targetCredPath && fs.existsSync(targetCredPath)) {
     try {
-      const sa = JSON.parse(fs.readFileSync(credentialsPath, 'utf8'));
+      const sa = JSON.parse(fs.readFileSync(targetCredPath, 'utf8'));
       finalEmail = sa.client_email;
       finalKey = sa.private_key;
     } catch (e) {
@@ -178,7 +181,7 @@ async function publishToGoogleIndexing(options = {}) {
 }
 
 // CLI Execution Handler
-if (require.main === module) {
+if (process.argv[1] && process.argv[1].endsWith('google-instant-index.js')) {
   const args = process.argv.slice(2);
   const baseUrl = process.env.FRONTEND_URL || 'https://dearresultlive.in';
   
@@ -233,9 +236,3 @@ if (require.main === module) {
       process.exit(1);
     });
 }
-
-module.exports = {
-  publishToGoogleIndexing,
-  getGoogleAccessToken,
-  notifyGoogleIndexing
-};

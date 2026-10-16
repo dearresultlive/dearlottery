@@ -5,6 +5,15 @@
  * the moment a new Dear Lottery draw result is published.
  */
 
+import fs from 'fs';
+import path from 'path';
+import { fileURLToPath } from 'url';
+import { publishToGoogleIndexing } from './google-instant-index.js';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+const LOCAL_GOOGLE_CREDS = path.join(__dirname, '..', 'google-credentials.json');
+
 const HOST = 'dearresultlive.in';
 const INDEXNOW_KEY = 'dearlotteryindexnowkey2026';
 const KEY_LOCATION = `https://${HOST}/${INDEXNOW_KEY}.txt`;
@@ -68,16 +77,18 @@ export async function pingSearchEngines(dateStr, slot = '') {
 
   // 2. Google Instant Indexing API (if Google Service Account Credentials configured)
   try {
-    const hasGoogleCreds = process.env.GOOGLE_SERVICE_ACCOUNT_JSON || 
+    const hasGoogleCreds = fs.existsSync(LOCAL_GOOGLE_CREDS) ||
+      process.env.GOOGLE_SERVICE_ACCOUNT_JSON || 
       (process.env.GOOGLE_CLIENT_EMAIL && process.env.GOOGLE_PRIVATE_KEY) ||
       process.env.GOOGLE_APPLICATION_CREDENTIALS;
 
     if (hasGoogleCreds) {
       console.log(`[SEO-Pinger] 🚀 Submitting to Google Indexing API...`);
-      const { createRequire } = await import('module');
-      const req = createRequire(import.meta.url);
-      const { publishToGoogleIndexing } = req('./google-instant-index.js');
-      await publishToGoogleIndexing({ urls: targetUrls, type: 'URL_UPDATED' });
+      await publishToGoogleIndexing({
+        urls: targetUrls,
+        credentialsPath: fs.existsSync(LOCAL_GOOGLE_CREDS) ? LOCAL_GOOGLE_CREDS : undefined,
+        type: 'URL_UPDATED'
+      });
     } else {
       console.log(`[SEO-Pinger] ℹ️ Google Service Account credentials not detected. (Skipping Google Indexing API)`);
     }
