@@ -11,7 +11,7 @@ API_KEY = "dear_lottery_secret_key_prod_2026"
 ENVIRONMENT = "production"
 FRONTEND_URL = "https://dearresultlive.in"
 INDEXNOW_KEY = "dearlotteryindexnowkey2026"
-ONESIGNAL_APP_ID = "YOUR_ONESIGNAL_APP_ID"
+ONESIGNAL_APP_ID = "7ede11f8-0188-4e67-88b0-d3947320982a"
 ONESIGNAL_REST_KEY = "YOUR_ONESIGNAL_REST_API_KEY"
 
 [[d1_databases]]
