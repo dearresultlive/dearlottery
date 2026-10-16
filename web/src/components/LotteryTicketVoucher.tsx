@@ -15,8 +15,8 @@ interface LotteryTicketVoucherProps {
 }
 
 export default function LotteryTicketVoucher({
-  series = '95E',
-  number = '75331',
+  series = '',
+  number = '',
   drawName,
   drawTime,
   drawDate,
@@ -27,7 +27,7 @@ export default function LotteryTicketVoucher({
   countdownText,
   isYesterday = false
 }: LotteryTicketVoucherProps) {
-  const isPending = status === 'PENDING';
+  const isPending = status === 'PENDING' || !number || number.trim().length === 0;
 
   return (
     <div className="relative rounded-2xl bg-white border border-slate-200 shadow-sm overflow-hidden select-none">

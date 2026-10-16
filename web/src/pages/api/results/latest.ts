@@ -53,6 +53,21 @@ export const GET: APIRoute = async ({ request, locals }) => {
     } catch (e) {}
   }
 
+  // Filter by slot if requested
+  if (slot && draws.length > 0) {
+    const norm = slot.toLowerCase().replace(/[^0-9apm]/g, '');
+    const filtered = draws.filter(d => 
+      d.draw_time?.toLowerCase().includes(norm) ||
+      d.id?.toLowerCase().includes(norm) ||
+      (norm.includes('1') && d.draw_time?.includes('1:00')) ||
+      (norm.includes('6') && d.draw_time?.includes('6:00')) ||
+      (norm.includes('8') && d.draw_time?.includes('8:00'))
+    );
+    if (filtered.length > 0) {
+      draws = filtered;
+    }
+  }
+
   return new Response(JSON.stringify({
     success: true,
     slot: slot || 'ALL',
@@ -64,7 +79,8 @@ export const GET: APIRoute = async ({ request, locals }) => {
     headers: {
       'Content-Type': 'application/json',
       'Access-Control-Allow-Origin': '*',
-      'Cache-Control': 'public, max-age=5, s-maxage=10, stale-while-revalidate=30'
+      'Cache-Control': 'public, max-age=5, s-maxage=10, stale-while-revalidate=30',
+      'X-Robots-Tag': 'noindex, nofollow'
     }
   });
 };

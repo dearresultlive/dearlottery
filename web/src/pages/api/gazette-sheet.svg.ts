@@ -1,6 +1,6 @@
 import type { APIRoute } from 'astro';
 import { generateGazetteSvg } from '../../lib/gazette-svg';
-import { VERIFIED_DRAWS_DB, WEEKLY_SCHEMES } from '../../lib/verified-draws';
+import { getVerifiedDraw } from '../../lib/verified-draws';
 import { getISTDateString, getISTNow } from '../../lib/lottery-utils';
 
 export const prerender = false;
@@ -14,38 +14,25 @@ export const GET: APIRoute = async ({ request }) => {
   const slotParam = (url.searchParams.get('slot') || '1pm').toUpperCase().replace(/[^0-9A-Z]/g, '');
   const slotKey = (slotParam.includes('6') ? '6PM' : slotParam.includes('8') ? '8PM' : '1PM') as '1PM' | '6PM' | '8PM';
 
-  const timeLabel = slotKey === '1PM' ? '1:00 PM' : slotKey === '6PM' ? '6:00 PM' : '8:00 PM';
-
-  // Check verified database
-  const dayOfWeek = new Date(dateParam + 'T12:00:00Z').getDay();
-  const schemes = WEEKLY_SCHEMES[dayOfWeek] || { '1PM': 'DEAR MORNING', '6PM': 'DEAR DAY', '8PM': 'DEAR NIGHT' };
-  const schemeName = schemes[slotKey];
-
-  const targetHour = slotKey === '1PM' ? 13 : slotKey === '6PM' ? 18 : 20;
-  const isToday = dateParam === todayStr;
-  const isFuture = dateParam > todayStr;
-  const isBeforeHour = isToday && istNow.getHours() < targetHour;
-
-  const dateData = VERIFIED_DRAWS_DB[dateParam];
-  const slotPrizes = dateData ? dateData[slotKey] : null;
-
-  const hasPrizes = Boolean(slotPrizes?.first_prize?.number);
-  const isPending = isFuture || (isToday && !hasPrizes) || !hasPrizes;
+  const draw = getVerifiedDraw(dateParam, slotKey, istNow);
+  const hasRealPrizes = Boolean(draw.status === 'DECLARED' && draw.prizes?.first_prize?.number);
+  const isPending = !hasRealPrizes;
 
   const svgContent = generateGazetteSvg({
     drawDate: dateParam,
-    drawTime: timeLabel,
-    drawName: schemeName,
-    drawNumber: slotKey === '1PM' ? '50' : '74',
+    drawTime: draw.draw_time,
+    drawName: draw.draw_name,
+    drawNumber: draw.draw_number || (slotKey === '1PM' ? '50' : '74'),
     isPending: isPending,
-    prizes: isPending ? undefined : (slotPrizes || undefined)
+    prizes: isPending ? undefined : (draw.prizes || undefined)
   });
 
   return new Response(svgContent, {
     status: 200,
     headers: {
       'Content-Type': 'image/svg+xml; charset=utf-8',
-      'Cache-Control': isPending ? 'no-cache, no-store' : 'public, max-age=3600, s-maxage=86400'
+      'Cache-Control': isPending ? 'no-cache, no-store' : 'public, max-age=3600, s-maxage=86400',
+      'X-Robots-Tag': 'noindex, nofollow'
     }
   });
 };

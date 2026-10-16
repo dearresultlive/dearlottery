@@ -4,11 +4,7 @@ export const GET: APIRoute = async ({ request }) => {
   const host = new URL(request.url).origin;
 
   const robots = `User-agent: *
-Allow: /
-Allow: /_astro/
-Disallow: /api/
-
-Sitemap: ${host}/sitemap.xml
+Disallow: /
 `;
 
   return new Response(robots, {

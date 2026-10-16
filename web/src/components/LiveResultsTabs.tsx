@@ -130,8 +130,8 @@ export default function LiveResultsTabs({
   const todayPrizes: PrizeData = currentDrawForToday?.parsed_data?.prizes || currentDrawForToday?.prizes || {};
   const todayHasPrizes = Boolean(
     todayPrizes.first_prize?.number &&
-    currentDrawForToday?.status === 'DECLARED' &&
-    currentDrawForToday?.parsed_data?.status === 'DECLARED'
+    currentDrawForToday?.status !== 'UPCOMING' &&
+    currentDrawForToday?.status !== 'DRAWING'
   );
 
   const activeStatus = getSlotStatus(todayStr, activeSlot, todayHasPrizes);
@@ -140,6 +140,8 @@ export default function LiveResultsTabs({
   const yesterdayDraw = (yesterdayDraws || []).find(d => 
     d.draw_time?.includes(activeSlot.replace('PM', '')) || d.id?.includes(activeSlot)
   ) || (yesterdayDraws || [])[0] || drawsList.find(d => d.draw_date < todayStr);
+
+  const yesterdayFirstPrize = yesterdayDraw?.parsed_data?.prizes?.first_prize || yesterdayDraw?.prizes?.first_prize;
 
   const yesterdayDateStr = yesterdayDraw?.draw_date || (() => {
     const y = new Date(getISTNow());
@@ -158,7 +160,9 @@ export default function LiveResultsTabs({
 
   const pdfUrl = `/pdf/${todayStr}/${activeSlot.toLowerCase()}.pdf`;
   const sheetSvgUrl = `/api/gazette-sheet.svg?date=${todayStr}&slot=${activeSlot.toLowerCase()}`;
-  const activeSheetUrl = currentDrawForToday?.image_r2_url || `/results/${todayStr}/${activeSlot.toLowerCase()}.jpg` || sheetSvgUrl;
+  const activeSheetUrl = todayHasPrizes
+    ? (currentDrawForToday?.image_r2_url || `/results/${todayStr}/${activeSlot.toLowerCase()}.jpg`)
+    : sheetSvgUrl;
 
   const whatsappShareText = `🎯 *Dear Lottery Result Today (${currentDraw?.draw_time || activeSlot})*\n📅 তারিখ: ${todayStr}\n\n🏆 *১ম পুরস্কার (₹1 Crore Winner)*: *${firstPrize.series} ${firstPrize.number}*\n\n👉 সম্পূর্ণ অফিসিয়াল রেজাল্ট শিট ও সব প্রাইজ নম্বর দেখুন:\nhttps://dearresultlive.in/results/${todayStr}/${activeSlot.toLowerCase()}`;
   const whatsappUrl = `https://api.whatsapp.com/send?text=${encodeURIComponent(whatsappShareText)}`;
@@ -309,6 +313,16 @@ export default function LiveResultsTabs({
               ? `आज के ${currentSlotInfo.time} ड्रा पूरा होने के बाद आधिकारिक गजट रिजल्ट घोषित होगा।`
               : `Official gazette result will be declared immediately following today's ${currentSlotInfo.time} draw.`}
           </p>
+          {yesterdayFirstPrize?.number && (
+            <div className="mt-2 pt-2 border-t border-slate-200 flex items-center justify-between text-xs bg-white px-3 py-2 rounded-xl">
+              <span className="font-medium text-slate-600">
+                {lang === 'bn' ? 'গতকালকের বিজয়ী নম্বর:' : lang === 'hi' ? 'कल का विजयी नंबर:' : "Yesterday's Winning No:"}
+              </span>
+              <span className="font-mono font-black text-slate-900 text-sm">
+                {yesterdayFirstPrize.series} {yesterdayFirstPrize.number}
+              </span>
+            </div>
+          )}
         </div>
       )}
 
@@ -380,6 +394,9 @@ export default function LiveResultsTabs({
               alt={`Official Gazette Result Sheet ${currentDraw.draw_name} ${currentSlotInfo.time}`}
               className="w-full h-auto object-contain transition-transform group-hover:scale-[1.01]"
               loading="eager"
+              onError={(e) => {
+                (e.target as HTMLImageElement).src = sheetSvgUrl;
+              }}
             />
             <div className="absolute inset-0 bg-slate-900/5 group-hover:bg-transparent transition-colors flex items-center justify-center pointer-events-none">
               <span className="bg-white/95 text-slate-900 text-xs font-black px-3 py-1.5 rounded-full shadow border border-slate-200 opacity-90 group-hover:opacity-100">
@@ -528,6 +545,9 @@ export default function LiveResultsTabs({
             <img
               src={selectedImageUrl}
               alt="Official Dear Lottery Gazette Sheet"
+              onError={(e) => {
+                (e.target as HTMLImageElement).src = sheetSvgUrl;
+              }}
               style={{
                 transform: `scale(${zoomScale})`,
                 transformOrigin: 'top center',

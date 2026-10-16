@@ -165,12 +165,10 @@ const tableDatasetSchema = {
   <title>{title}</title>
   <meta name="description" content={description} />
   <meta name="keywords" content="lottery sambad, লটারি সংবাদ, dear lottery result, dear lottery result today, nagaland state lottery, sikkim state lottery, dear lottery 1pm, dear lottery 6pm, dear lottery 8pm, dhankesari, dear lottery ticket checker, dear lottery live, dear lottery 1 crore winner" />
-  <link rel="canonical" href={canonicalUrl} />
-  <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1" />
-
-  <!-- Prevent Irritating Google Translate Popups on Mobile & Desktop -->
-  <meta name="google" content="notranslate" />
-  <meta name="googlebot" content="notranslate" />
+  <!-- Strict Noindex / Nofollow for All Search Engines -->
+  <meta name="robots" content="noindex, nofollow, noarchive, nosnippet" />
+  <meta name="googlebot" content="noindex, nofollow, noarchive, nosnippet" />
+  <meta name="bingbot" content="noindex, nofollow, noarchive, nosnippet" />
 
   <!-- Google Search Console Site Verification -->
   <meta name="google-site-verification" content="GOOGLE_SEARCH_CONSOLE_VERIFICATION_TOKEN" />

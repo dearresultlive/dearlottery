@@ -51,39 +51,26 @@ export function generateGazetteSvg(data: GazetteSvgData): string {
     .replace(/\s+WEEKLY\s+LOTTERY$/i, '')
     .trim() || 'STAR THURSDAY';
 
-  // Prizes fallback
-  const firstPrize = prizes?.first_prize || { series: '95E', number: '75331' };
-  const firstDigitsOnly = firstPrize.number || '75331';
+  // Determine if result is actually pending or has authentic declared numbers
+  const hasRealFirstPrize = Boolean(prizes?.first_prize?.number && prizes.first_prize.number.trim().length > 0);
+  const actuallyPending = isPending || !hasRealFirstPrize;
 
-  const defaultSecond = ['01529', '29896', '38484', '43129', '54211', '60045', '72274', '75818', '88393', '89547'];
-  const secondPrizes = prizes?.second_prize && prizes.second_prize.length >= 10 ? prizes.second_prize : defaultSecond;
+  const firstPrize = actuallyPending ? { series: '', number: '' } : prizes!.first_prize;
+  const firstDigitsOnly = firstPrize.number;
 
-  const defaultThird = ['0436', '2227', '3288', '3379', '3795', '3864', '6740', '7369', '8636', '9765'];
-  const thirdPrizes = prizes?.third_prize && prizes.third_prize.length >= 10 ? prizes.third_prize : defaultThird;
-
-  const defaultFourth = ['1837', '2759', '3589', '5745', '6149', '6514', '6836', '8013', '8466', '9777'];
-  const fourthPrizes = prizes?.fourth_prize && prizes.fourth_prize.length >= 10 ? prizes.fourth_prize : defaultFourth;
-
-  const defaultFifth = [
-    '0033', '0140', '0166', '0262', '0298', '0353', '0526', '0564', '0746', '0943',
-    '1064', '1082', '1195', '1263', '1306', '1409', '1438', '1618', '1660', '1739',
-    '1750', '1776', '1804', '1834', '1913', '1938', '2094', '2115', '2181', '2231',
-    '2245', '2303', '2638', '2843', '2868', '3006', '3404', '3541', '3660', '3712',
-    '3938', '4040', '4052', '4212', '4228', '4306', '4428', '4535', '4609', '4719',
-    '4782', '4810', '4836', '4941', '5050', '5132', '5354', '5419', '5473', '5554',
-    '5699', '5739', '5867', '5985', '6265', '6277', '6289', '6401', '6460', '6606',
-    '6617', '6661', '6845', '6866', '7172', '7255', '7373', '7544', '7575', '7649',
-    '7660', '7811', '7945', '7987', '8053', '8078', '8080', '8217', '8486', '8494',
-    '8942', '9231', '9262', '9294', '9404', '9415', '9470', '9631', '9701', '9715'
-  ];
-  const fifthPrizes = prizes?.fifth_prize && prizes.fifth_prize.length >= 100 ? prizes.fifth_prize : defaultFifth;
+  const secondPrizes = !actuallyPending && prizes?.second_prize ? prizes.second_prize : [];
+  const thirdPrizes = !actuallyPending && prizes?.third_prize ? prizes.third_prize : [];
+  const fourthPrizes = !actuallyPending && prizes?.fourth_prize ? prizes.fourth_prize : [];
+  const fifthPrizes = !actuallyPending && prizes?.fifth_prize ? prizes.fifth_prize : [];
 
   // Split 5th prizes into 10 columns of 10 items (column-major sorting like authentic paper)
   const columns: string[][] = Array.from({ length: 10 }, () => []);
-  for (let i = 0; i < 100; i++) {
-    const colIdx = Math.floor(i / 10);
-    if (fifthPrizes[i]) {
-      columns[colIdx].push(fifthPrizes[i]);
+  if (!actuallyPending && fifthPrizes.length >= 100) {
+    for (let i = 0; i < 100; i++) {
+      const colIdx = Math.floor(i / 10);
+      if (fifthPrizes[i]) {
+        columns[colIdx].push(fifthPrizes[i]);
+      }
     }
   }
 
@@ -193,12 +180,12 @@ export function generateGazetteSvg(data: GazetteSvgData): string {
   <!-- 1st Prize Number Stadium Capsule -->
   <g transform="translate(190, 146)">
     <rect x="0" y="0" width="244" height="36" rx="18" fill="#ffffff" stroke="#d946ef" stroke-width="3" />
-    <text x="122" y="${isPending ? '24' : '26'}" fill="${isPending ? '#e01a1a' : '#0c2461'}" font-size="${isPending ? '15' : '24'}" text-anchor="middle" class="t-impact" letter-spacing="${isPending ? '1' : '2'}">
-      ${isPending ? 'DRAW IN PROGRESS' : `${firstPrize.series} ${firstPrize.number}`}
+    <text x="122" y="${actuallyPending ? '24' : '26'}" fill="${actuallyPending ? '#e01a1a' : '#0c2461'}" font-size="${actuallyPending ? '15' : '24'}" text-anchor="middle" class="t-impact" letter-spacing="${actuallyPending ? '1' : '2'}">
+      ${actuallyPending ? 'DRAW IN PROGRESS' : `${firstPrize.series} ${firstPrize.number}`}
     </text>
   </g>
 
-  ${!isPending ? `
+  ${!actuallyPending ? `
   <!-- ================= 4. CONSOLATION PRIZE BAR ================= -->
   <rect x="2" y="186" width="536" height="17" fill="#e0f4ff" />
   <text x="270" y="198" fill="#003366" font-size="8.5" font-weight="900" text-anchor="middle">
