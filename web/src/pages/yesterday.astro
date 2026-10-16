@@ -50,7 +50,7 @@ const checkerDraws = [...yesterdayDraws, ...olderDraws];
 
     {/* Results Viewport */}
     <section id="results">
-      <LiveResultsTabs client:load draws={yesterdayDraws} yesterdayDraws={olderDraws} todayDateStr={yesterdayDateStr} />
+      <LiveResultsTabs client:load draws={yesterdayDraws} yesterdayDraws={olderDraws} todayDateStr={yesterdayDateStr} isYesterdayPage={true} />
     </section>
 
     {/* Fast Ticket Checker Scoped to Yesterday */}

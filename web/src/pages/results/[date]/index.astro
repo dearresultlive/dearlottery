@@ -1,12 +1,18 @@
 ---
 import Layout from '../../../layouts/Layout.astro';
-import ResultCard from '../../../components/ResultCard.astro';
+import LiveResultsTabs from '../../../components/LiveResultsTabs';
 import TicketChecker from '../../../components/TicketChecker';
 import { fetchDrawsByDate } from '../../../lib/api';
+import { getISTDateString } from '../../../lib/lottery-utils';
 
 const { date } = Astro.params;
 const targetDate = date || new Date().toISOString().slice(0, 10);
 const draws = await fetchDrawsByDate(targetDate);
+
+const prevDate = new Date(targetDate);
+prevDate.setDate(prevDate.getDate() - 1);
+const prevDateStr = getISTDateString(prevDate);
+const prevDraws = await fetchDrawsByDate(prevDateStr);
 ---
 
 <Layout
@@ -14,44 +20,49 @@ const draws = await fetchDrawsByDate(targetDate);
   description={`Official results archive for Dear Lottery draws on ${targetDate}. 1:00 PM Morning, 6:00 PM Day, and 8:00 PM Night 1st prize ₹1 Crore winning tickets.`}
   drawDate={targetDate}
 >
-  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-10">
-    <div class="border-b border-slate-800 pb-4">
-      <div class="flex items-center gap-2 mb-2">
-        <a href="/" class="text-xs text-emerald-400 hover:underline">← Back to Today's Results</a>
-      </div>
-      <h1 class="text-3xl font-black text-white">
+  <div class="max-w-[580px] mx-auto px-2 sm:px-4 py-2 sm:py-4 space-y-3 sm:space-y-4">
+    
+    {/* Breadcrumbs Navigation */}
+    <nav aria-label="Breadcrumb" class="flex items-center gap-2 text-xs text-slate-500 border-b border-slate-200 pb-2">
+      <a href="/" class="hover:text-blue-700 font-medium">Home (হোম)</a>
+      <span>/</span>
+      <span class="text-slate-900 font-bold">Results ({targetDate})</span>
+    </nav>
+
+    {/* Header Info */}
+    <div class="bg-gradient-to-r from-blue-50 via-white to-blue-50 border border-blue-200 rounded-2xl p-3.5 text-center shadow-xs">
+      <span class="inline-flex items-center gap-1.5 bg-blue-700 text-white text-[10px] sm:text-xs font-black px-2.5 py-0.5 rounded-full uppercase tracking-wider">
+        <span>📅</span>
+        <span>Official Gazette Archive • {targetDate}</span>
+      </span>
+      <h1 class="text-base sm:text-xl font-black text-slate-900 mt-1">
         Dear Lottery Results for {targetDate}
       </h1>
-      <p class="text-slate-400 text-sm mt-1">
-        Official archived results for Nagaland & Sikkim State Lotteries (1:00 PM, 6:00 PM, 8:00 PM).
+      <p class="text-[11px] sm:text-xs text-slate-600 mt-0.5">
+        Nagaland &amp; Sikkim State Lotteries — 1:00 PM, 6:00 PM, and 8:00 PM draws.
       </p>
-
-      {/* Quick Links to Specific Draws on this date */}
-      <div class="flex flex-wrap items-center gap-2 mt-4">
-        <span class="text-xs text-slate-400">Direct Draw Pages:</span>
-        {draws.map((d) => {
-          const slotTag = d.draw_time?.toLowerCase().includes('1') ? '1pm' : (d.draw_time?.toLowerCase().includes('6') ? '6pm' : '8pm');
-          const slug = `${slotTag}-${d.draw_name?.toLowerCase().replace(/[^a-z0-9]+/g, '-')}`;
-          return (
-            <a
-              href={`/results/${targetDate}/${slug}`}
-              class="text-xs bg-slate-900 hover:bg-slate-800 border border-slate-800 text-emerald-400 font-bold px-3 py-1.5 rounded-xl transition-colors"
-            >
-              {d.draw_time} {d.draw_name} →
-            </a>
-          );
-        })}
-      </div>
     </div>
 
-    {/* Ticket Checker for this date */}
-    <TicketChecker client:load initialDraws={draws} />
+    {/* Live Results Viewport */}
+    <section id="results">
+      <LiveResultsTabs client:load draws={draws} yesterdayDraws={prevDraws} todayDateStr={targetDate} />
+    </section>
 
-    {/* All Draws for this date */}
-    <div class="grid grid-cols-1 gap-8">
-      {draws.map((d) => (
-        <ResultCard draw={d} />
-      ))}
+    {/* Scoped Ticket Checker */}
+    <section id="checker">
+      <TicketChecker client:load initialDraws={draws} variant="slim" />
+    </section>
+
+    {/* Quick Return to Today */}
+    <div class="text-center pt-2">
+      <a
+        href="/"
+        class="inline-flex items-center justify-center gap-2 bg-blue-700 hover:bg-blue-800 text-white font-bold text-xs px-5 py-2.5 rounded-xl shadow-sm transition-all"
+      >
+        <span>👈</span>
+        <span>Go to Today's Live Results (আজকের লাইভ রেজাল্ট)</span>
+      </a>
     </div>
+
   </div>
 </Layout>

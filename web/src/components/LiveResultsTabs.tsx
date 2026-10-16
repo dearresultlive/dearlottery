@@ -41,12 +41,14 @@ interface LiveResultsTabsProps {
   draws?: DrawRecord[];
   yesterdayDraws?: DrawRecord[];
   todayDateStr?: string;
+  isYesterdayPage?: boolean;
 }
 
 export default function LiveResultsTabs({
   draws = [],
   yesterdayDraws = [],
-  todayDateStr
+  todayDateStr,
+  isYesterdayPage = false
 }: LiveResultsTabsProps) {
   const slots = [
     { key: '1PM' as const, time: '1:00 PM', labelEn: 'Morning', labelBn: 'দুপুর ১:০০', labelHi: 'दोपहर 1:00', icon: '☀️' },
@@ -57,7 +59,7 @@ export default function LiveResultsTabs({
   const todayStr = todayDateStr || getISTDateString();
   const { lang, t } = useLanguage();
   const [dateMode, setDateMode] = useState<'TODAY' | 'YESTERDAY'>('TODAY');
-  const [activeSlot, setActiveSlot] = useState<'1PM' | '6PM' | '8PM'>('1PM');
+  const [activeSlot, setActiveSlot] = useState<'1PM' | '6PM' | '8PM'>(isYesterdayPage ? '8PM' : '1PM');
   const [drawsList, setDrawsList] = useState<DrawRecord[]>(draws);
   const [showImageModal, setShowImageModal] = useState<boolean>(false);
   const [selectedImageUrl, setSelectedImageUrl] = useState<string>('');
@@ -113,6 +115,11 @@ export default function LiveResultsTabs({
 
   // Auto-detect Morning mode: before 1PM, if today has no results yet, default to Last Night 8PM!
   useEffect(() => {
+    if (isYesterdayPage) {
+      setDateMode('TODAY');
+      setActiveSlot('8PM');
+      return;
+    }
     const istNow = getISTNow();
     const hour = istNow.getHours();
     if (!hasTodayResults && hour < 13) {
@@ -128,7 +135,7 @@ export default function LiveResultsTabs({
       setDateMode('TODAY');
       setActiveSlot('1PM');
     }
-  }, [hasTodayResults]);
+  }, [hasTodayResults, isYesterdayPage]);
 
   // Listen for auto-polling zero-refresh event from DrawCountdown
   useEffect(() => {
@@ -284,8 +291,12 @@ export default function LiveResultsTabs({
               : 'text-slate-700 hover:text-slate-900 hover:bg-slate-300/60'
           }`}
         >
-          <span>☀️</span>
-          <span>{lang === 'bn' ? 'আজকের ড্র' : lang === 'hi' ? 'আজ का ড্র' : "Today's Draws"}</span>
+          <span>{isYesterdayPage ? '🌙' : '☀️'}</span>
+          <span>
+            {isYesterdayPage 
+              ? (lang === 'bn' ? 'গতকালকের ড্র' : lang === 'hi' ? 'कल का ड्रॉ' : "Yesterday's Draws")
+              : (lang === 'bn' ? 'আজকের ড্র' : lang === 'hi' ? 'आज का ड्रॉ' : "Today's Draws")}
+          </span>
           <span className={`text-[10px] px-1.5 py-0.2 rounded-full font-bold ${
             dateMode === 'TODAY' ? 'bg-blue-800 text-blue-100' : 'bg-slate-300 text-slate-700'
           }`}>
@@ -301,8 +312,12 @@ export default function LiveResultsTabs({
               : 'text-slate-700 hover:text-slate-900 hover:bg-slate-300/60'
           }`}
         >
-          <span>🌙</span>
-          <span>{lang === 'bn' ? 'গতরাতের ৮টা / গতকাল' : lang === 'hi' ? 'कल रात 8 बजे / कल' : "Last Night 8PM"}</span>
+          <span>{isYesterdayPage ? '📜' : '🌙'}</span>
+          <span>
+            {isYesterdayPage
+              ? (lang === 'bn' ? 'আগের দিন (৮টা)' : lang === 'hi' ? 'पिछला दिन (8 बजे)' : 'Previous Day 8PM')
+              : (lang === 'bn' ? 'গতরাতের ৮টা / গতকাল' : lang === 'hi' ? 'कल रात 8 बजे / कल' : 'Last Night 8PM')}
+          </span>
           <span className={`text-[10px] px-1.5 py-0.2 rounded-full font-bold ${
             dateMode === 'YESTERDAY' ? 'bg-blue-800 text-blue-100' : 'bg-slate-300 text-slate-700'
           }`}>
@@ -398,11 +413,24 @@ export default function LiveResultsTabs({
 
           <div className="pr-8 sm:pr-10">
             {/* Top Date Header */}
-            <div className="flex items-center justify-between mb-1.5">
-              <span className="bg-[#e93323] text-white font-extrabold text-xs px-2.5 py-0.5 rounded-md shadow-2xs">
-                {activeDateStr.split('-').reverse().join('/')}
-              </span>
-              <span className="text-xs text-slate-600 font-bold">
+            <div className="flex items-center justify-between mb-1.5 gap-2">
+              <div className="flex items-center gap-1.5 flex-wrap">
+                <span className="bg-[#e93323] text-white font-extrabold text-xs px-2.5 py-0.5 rounded-md shadow-2xs">
+                  {activeDateStr.split('-').reverse().join('/')}
+                </span>
+                <span className={`text-[10px] font-black uppercase px-2 py-0.5 rounded-md ${
+                  dateMode === 'YESTERDAY' || isYesterdayPage
+                    ? 'bg-amber-100 text-amber-900 border border-amber-300' 
+                    : 'bg-emerald-100 text-emerald-900 border border-emerald-300'
+                }`}>
+                  {dateMode === 'YESTERDAY' || isYesterdayPage
+                    ? (activeSlot === '8PM'
+                        ? (lang === 'bn' ? 'গতরাতের ৮টা' : lang === 'hi' ? 'कल रात 8 बजे' : 'LAST NIGHT 8PM')
+                        : (lang === 'bn' ? 'গতকাল' : lang === 'hi' ? 'कल' : 'YESTERDAY'))
+                    : (lang === 'bn' ? 'আজকের' : lang === 'hi' ? 'आज' : 'TODAY')}
+                </span>
+              </div>
+              <span className="text-xs text-slate-600 font-bold truncate">
                 {currentDraw.draw_name} • #{currentDraw.draw_number || '74'}
               </span>
             </div>
