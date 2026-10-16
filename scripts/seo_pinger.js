@@ -25,6 +25,7 @@ export async function pingSearchEngines(dateStr, slot = '') {
     `https://${HOST}/sitemap.xml`,
     `https://${HOST}/rss.xml`,
     `https://${HOST}/yesterday`,
+    `https://${HOST}/target-numbers`,
     `https://${HOST}/lottery-sambad`,
     `https://${HOST}/checker`,
     `https://${HOST}/analytics`,

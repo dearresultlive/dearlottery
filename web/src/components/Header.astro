@@ -68,6 +68,16 @@ const { currentPath = '/' } = Astro.props;
           <span id="nav-sambad">Lottery Sambad</span>
         </a>
         <a
+          href="/target-numbers"
+          class={`px-3 py-2 rounded-xl text-xs sm:text-sm font-black transition-colors ${
+            currentPath === '/target-numbers'
+              ? 'text-blue-700 bg-blue-50 border border-blue-200'
+              : 'text-slate-700 hover:text-blue-700 hover:bg-slate-100'
+          }`}
+        >
+          <span id="nav-target">Target Numbers</span>
+        </a>
+        <a
           href="/old-results"
           class={`px-3 py-2 rounded-xl text-xs sm:text-sm font-black transition-colors ${
             currentPath === '/old-results'
@@ -125,6 +135,7 @@ const { currentPath = '/' } = Astro.props;
     var navToday = document.getElementById('nav-today');
     var navYesterday = document.getElementById('nav-yesterday');
     var navSambad = document.getElementById('nav-sambad');
+    var navTarget = document.getElementById('nav-target');
     var navOld = document.getElementById('nav-old');
     var navChecker = document.getElementById('nav-checker');
     var navAnalytics = document.getElementById('nav-analytics');
@@ -136,6 +147,7 @@ const { currentPath = '/' } = Astro.props;
       if (navToday) navToday.textContent = 'আজকের রেজাল্ট';
       if (navYesterday) navYesterday.textContent = 'গতকালকের রেজাল্ট';
       if (navSambad) navSambad.textContent = 'লটারি সংবাদ';
+      if (navTarget) navTarget.textContent = 'টার্গেট নম্বর';
       if (navOld) navOld.textContent = 'পুরনো রেজাল্ট';
       if (navChecker) navChecker.textContent = 'টিকিট মেলান';
       if (navAnalytics) navAnalytics.textContent = 'হট নম্বর';
@@ -146,6 +158,7 @@ const { currentPath = '/' } = Astro.props;
       if (navToday) navToday.textContent = 'आज का रिजल्ट';
       if (navYesterday) navYesterday.textContent = 'कल का रिजल्ट';
       if (navSambad) navSambad.textContent = 'लॉटरी संबाद';
+      if (navTarget) navTarget.textContent = 'टारगेट नंबर';
       if (navOld) navOld.textContent = 'पुराने रिजल्ट';
       if (navChecker) navChecker.textContent = 'टिकट चेक';
       if (navAnalytics) navAnalytics.textContent = 'हॉट नंबर्स';
@@ -156,6 +169,7 @@ const { currentPath = '/' } = Astro.props;
       if (navToday) navToday.textContent = "Today";
       if (navYesterday) navYesterday.textContent = "Yesterday";
       if (navSambad) navSambad.textContent = "Lottery Sambad";
+      if (navTarget) navTarget.textContent = "Target Numbers";
       if (navOld) navOld.textContent = 'Old Results';
       if (navChecker) navChecker.textContent = 'Check Ticket';
       if (navAnalytics) navAnalytics.textContent = 'Hot Numbers';

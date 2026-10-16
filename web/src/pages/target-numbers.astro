@@ -1,0 +1,86 @@
+---
+import Layout from '../layouts/Layout.astro';
+import TargetNumbersTool from '../components/TargetNumbersTool';
+import TicketChecker from '../components/TicketChecker';
+import { fetchFrequencyAnalytics, fetchLatestDraws, fetchDrawsByDate } from '../lib/api';
+import { getISTDateString, getISTNow } from '../lib/lottery-utils';
+
+const istNow = getISTNow();
+const todayDateStr = getISTDateString(istNow);
+
+const yesterday = new Date(istNow);
+yesterday.setDate(yesterday.getDate() - 1);
+const yesterdayDateStr = getISTDateString(yesterday);
+
+const analytics = await fetchFrequencyAnalytics();
+const draws = await fetchLatestDraws();
+const yesterdayDraws = await fetchDrawsByDate(yesterdayDateStr);
+const checkerDraws = [...draws, ...yesterdayDraws];
+---
+
+<Layout
+  title={`Dear Lottery Target Number Today (${todayDateStr}) • Common Numbers | Lottery Sambad`}
+  description={`Dear Lottery target numbers today (${todayDateStr}) for 1:00 PM, 6:00 PM, and 8:00 PM draws. Statistical hot middle pairs, high-frequency 2-digit endings, and 4-digit common numbers for Nagaland & Sikkim state lotteries.`}
+  drawDate={todayDateStr}
+>
+  <div class="max-w-[580px] mx-auto px-2 sm:px-4 py-2 sm:py-4 space-y-4">
+    
+    {/* Breadcrumbs Navigation */}
+    <nav aria-label="Breadcrumb" class="flex items-center gap-2 text-xs text-slate-500 border-b border-slate-200 pb-2">
+      <a href="/" class="hover:text-blue-700 font-medium">Home (হোম)</a>
+      <span>/</span>
+      <span class="text-slate-900 font-bold">Target Numbers (টার্গেট নম্বর)</span>
+    </nav>
+
+    {/* Primary Target Numbers Module */}
+    <section id="target-tool">
+      <TargetNumbersTool
+        client:load
+        initialMatrix={analytics.matrix}
+        initialHot={analytics.hotNumbers}
+      />
+    </section>
+
+    {/* Quick Ticket Checker */}
+    <section id="checker">
+      <TicketChecker client:load initialDraws={checkerDraws} variant="slim" />
+    </section>
+
+    {/* Comprehensive Guide on Lottery Target Numbers */}
+    <section class="bg-white border border-slate-200 rounded-2xl p-4 sm:p-6 text-slate-700 space-y-4 shadow-sm text-xs leading-relaxed">
+      <h1 class="text-base sm:text-xl font-black text-slate-900">
+        About Dear Lottery Target & Common Numbers (কমন ও টার্গেট নম্বর)
+      </h1>
+      <p>
+        In Indian state lotteries like Nagaland State Lotteries and Sikkim State Lotteries, lottery ticket buyers analyze past draw frequency patterns before purchasing tickets at authorized retail counters.
+      </p>
+
+      <div class="space-y-2 border-t border-slate-100 pt-3">
+        <h2 class="font-bold text-slate-900 text-xs sm:text-sm">What is a "Middle Number" (মিডিল নম্বর)?</h2>
+        <p class="text-slate-600">
+          Dear Lottery tickets feature a series code and a 5-digit number (e.g., <strong>84D 29813</strong>). The 2nd and 3rd digits (e.g. <strong>98</strong>) are commonly referred to as the <em>Middle Number (মিডিল)</em> by local retailers and players. Retail tickets are bundled and traded by middle sets (e.g. 50-middle, 80-middle).
+        </p>
+      </div>
+
+      <div class="space-y-2 border-t border-slate-100 pt-3">
+        <h2 class="font-bold text-slate-900 text-xs sm:text-sm">How to Choose Tickets Strategically:</h2>
+        <ul class="list-disc list-inside space-y-1 text-slate-600">
+          <li><strong>Study Repeating Endings:</strong> 5th prize winners (₹120) contain 100 winning 4-digit numbers every draw. Certain last 2-digit patterns appear in consecutive cycles.</li>
+          <li><strong>Match Hot Series Trends:</strong> Review our <a href="/analytics" class="text-blue-700 underline font-bold">Hot &amp; Cold Numbers</a> chart to see which positional digits have the highest occurrence counts.</li>
+          <li><strong>Play Responsibly:</strong> Each lottery draw machine uses independent air-mix balls. No algorithm or person can predict results with 100% certainty. Only spend what you can afford for entertainment.</li>
+        </ul>
+      </div>
+
+      <div class="border-t border-slate-100 pt-3 text-center">
+        <a
+          href="/"
+          class="inline-flex items-center gap-2 bg-blue-700 hover:bg-blue-800 text-white font-bold text-xs px-5 py-2.5 rounded-xl shadow-xs transition-all"
+        >
+          <span>👈</span>
+          <span>View Today's Live Draw Results (আজকের লাইভ রেজাল্ট)</span>
+        </a>
+      </div>
+    </section>
+
+  </div>
+</Layout>

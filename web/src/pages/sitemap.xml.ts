@@ -12,6 +12,7 @@ export const GET: APIRoute = async ({ request }) => {
   const urls: Array<{ loc: string; priority: string; changefreq: string; lastmod: string }> = [
     { loc: `${host}/`, priority: '1.0', changefreq: 'hourly', lastmod: today },
     { loc: `${host}/yesterday`, priority: '0.9', changefreq: 'daily', lastmod: today },
+    { loc: `${host}/target-numbers`, priority: '0.9', changefreq: 'daily', lastmod: today },
     { loc: `${host}/lottery-sambad`, priority: '0.9', changefreq: 'daily', lastmod: today },
     { loc: `${host}/checker`, priority: '0.9', changefreq: 'daily', lastmod: today },
     { loc: `${host}/analytics`, priority: '0.9', changefreq: 'daily', lastmod: today },
