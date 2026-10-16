@@ -79,9 +79,68 @@ const currentPath = Astro.url.pathname;
   </style>
   <body class="notranslate min-h-screen flex flex-col font-sans bg-slate-100 text-slate-900 selection:bg-amber-400 selection:text-slate-950" translate="no">
     <Header currentPath={currentPath} />
-    <main class="flex-1 notranslate" translate="no">
+    <main class="flex-1 notranslate pb-16 md:pb-0" translate="no">
       <slot />
     </main>
     <Footer />
+
+    {/* Mobile Sticky Bottom Navigation Dock (1-Thumb Mobile Ergonomics) */}
+    <nav aria-label="Mobile Quick Dock" class="md:hidden fixed bottom-0 inset-x-0 z-40 bg-white/95 backdrop-blur-md border-t border-slate-200/90 shadow-[0_-4px_16px_rgba(0,0,0,0.06)] px-2 py-1 flex items-center justify-around text-center select-none notranslate" translate="no">
+      <a
+        href="/"
+        class={`flex flex-col items-center justify-center flex-1 py-1 transition-all active:scale-95 ${
+          currentPath === '/' ? 'text-blue-700 font-black' : 'text-slate-600 font-semibold hover:text-slate-900'
+        }`}
+      >
+        <span class="text-lg">☀️</span>
+        <span class="text-[10px] mt-0.5">
+          <span class="lang-en">Today</span>
+          <span class="lang-bn">আজকের ড্র</span>
+          <span class="lang-hi">आज का ड्रॉ</span>
+        </span>
+      </a>
+
+      <a
+        href="/yesterday"
+        class={`flex flex-col items-center justify-center flex-1 py-1 transition-all active:scale-95 ${
+          currentPath === '/yesterday' ? 'text-blue-700 font-black' : 'text-slate-600 font-semibold hover:text-slate-900'
+        }`}
+      >
+        <span class="text-lg">🌙</span>
+        <span class="text-[10px] mt-0.5">
+          <span class="lang-en">Yesterday</span>
+          <span class="lang-bn">গতকাল ৮টা</span>
+          <span class="lang-hi">कल 8 बजे</span>
+        </span>
+      </a>
+
+      <a
+        href="/target-numbers"
+        class={`flex flex-col items-center justify-center flex-1 py-1 transition-all active:scale-95 ${
+          currentPath === '/target-numbers' ? 'text-blue-700 font-black' : 'text-slate-600 font-semibold hover:text-slate-900'
+        }`}
+      >
+        <span class="text-lg">🎯</span>
+        <span class="text-[10px] mt-0.5">
+          <span class="lang-en">Targets</span>
+          <span class="lang-bn">টার্গেট</span>
+          <span class="lang-hi">टारगेट</span>
+        </span>
+      </a>
+
+      <a
+        href="/checker"
+        class={`flex flex-col items-center justify-center flex-1 py-1 transition-all active:scale-95 ${
+          currentPath === '/checker' ? 'text-blue-700 font-black' : 'text-slate-600 font-semibold hover:text-slate-900'
+        }`}
+      >
+        <span class="text-lg">🔍</span>
+        <span class="text-[10px] mt-0.5">
+          <span class="lang-en">Check Ticket</span>
+          <span class="lang-bn">টিকিট মেলান</span>
+          <span class="lang-hi">टिकट चेक</span>
+        </span>
+      </a>
+    </nav>
   </body>
 </html>

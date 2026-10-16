@@ -197,6 +197,23 @@ export default function LiveResultsTabs({
   const whatsappUrl = `https://api.whatsapp.com/send?text=${encodeURIComponent(whatsappShareText)}`;
   const telegramUrl = `https://t.me/share/url?url=${encodeURIComponent(shareTargetUrl)}&text=${encodeURIComponent(`🎯 Dear Lottery Result (${dateMode === 'TODAY' ? 'Today' : 'Yesterday'} ${currentDraw?.draw_time || activeSlot}) | 1st Prize ₹1 Crore: ${firstPrize.series} ${firstPrize.number}`)}`;
 
+  const handleNativeShare = async () => {
+    if (typeof navigator !== 'undefined' && navigator.share) {
+      try {
+        await navigator.share({
+          title: `Dear Lottery Result (${activeSlot})`,
+          text: whatsappShareText,
+          url: shareTargetUrl,
+        });
+        return;
+      } catch (err) {
+        // User cancelled share
+        return;
+      }
+    }
+    window.open(whatsappUrl, '_blank');
+  };
+
   const openImageLightbox = (url: string) => {
     setSelectedImageUrl(url);
     setZoomScale(1);
@@ -252,23 +269,32 @@ export default function LiveResultsTabs({
 
       {/* Yesterday Mode Notice Banner */}
       {dateMode === 'YESTERDAY' && (
-        <div className="bg-emerald-50 border border-emerald-300 rounded-xl px-3 py-2 text-xs flex items-center justify-between text-emerald-950 shadow-2xs">
-          <div className="flex items-center gap-1.5">
-            <span className="text-sm">🏆</span>
-            <span className="font-bold">
-              {lang === 'bn' 
-                ? `গতকালকের (${yesterdayDateStr}) অফিসিয়াল রেজাল্ট শিট ও বিজয়ী নম্বর`
-                : lang === 'hi'
-                ? `कल (${yesterdayDateStr}) की आधिकारिक रिजल्ट शीट और विजयी नंबर`
-                : `Official Gazette Records for Yesterday (${yesterdayDateStr})`}
-            </span>
+        <div className="bg-emerald-50 border border-emerald-300 rounded-xl p-2.5 text-xs flex items-center justify-between text-emerald-950 shadow-2xs">
+          <div className="flex items-center gap-2">
+            <span className="text-base flex-shrink-0">🌙</span>
+            <div>
+              <span className="font-black text-slate-900 block leading-tight">
+                {lang === 'bn' 
+                  ? `গতরাতের (${yesterdayDateStr}) ৮:০০ নাইট ড্র রেজাল্ট শিট`
+                  : lang === 'hi'
+                  ? `कल रात (${yesterdayDateStr}) 8:00 नाइट ड्रॉ रिजल्ट शीट`
+                  : `Last Night's 8:00 PM Official Gazette Result (${yesterdayDateStr})`}
+              </span>
+              <span className="text-[10px] text-emerald-800 font-medium block">
+                {lang === 'bn'
+                  ? `আজকের ১:০০ দুপুর ড্র শুরু হতে বাকি: ${slotCountdown.hours}ঘণ্টা ${slotCountdown.minutes}মিনিট`
+                  : lang === 'hi'
+                  ? `आज का दोपहर 1:00 बजे का ड्रॉ शुरू होने में शेष: ${slotCountdown.hours}घंटे ${slotCountdown.minutes}मिनट`
+                  : `Next draw today at 1:00 PM (starts in ${slotCountdown.hours}h ${slotCountdown.minutes}m)`}
+              </span>
+            </div>
           </div>
           <button
             type="button"
             onClick={() => setDateMode('TODAY')}
-            className="text-blue-700 hover:text-blue-800 font-black text-[11px] underline ml-2 flex-shrink-0"
+            className="bg-emerald-700 hover:bg-emerald-800 text-white font-black text-[11px] px-2.5 py-1.5 rounded-lg shadow-2xs ml-2 flex-shrink-0 active:scale-95 transition-all"
           >
-            {lang === 'bn' ? 'আজকের লাইভ ড্র ➔' : lang === 'hi' ? 'आज का लाइव ड्रॉ ➔' : "Today's Live Draw ➔"}
+            {lang === 'bn' ? 'আজকের ড্র ➔' : lang === 'hi' ? 'आज का ड्रॉ ➔' : "Today's Draw ➔"}
           </button>
         </div>
       )}
@@ -342,11 +368,14 @@ export default function LiveResultsTabs({
               <span className="text-[11px] font-black uppercase tracking-wider text-slate-600 block mb-0.5">
                 {lang === 'bn' ? '১ম পুরস্কার • 1st Prize ₹1 Crore Winner' : lang === 'hi' ? 'प्रथम पुरस्कार • 1st Prize ₹1 Crore Winner' : '1st Prize • ₹1 Crore Winner'}
               </span>
-              <div className={`font-mono font-black text-4xl sm:text-6xl tracking-widest ${
+              <div className={`first-prize-num font-mono font-black text-4xl sm:text-6xl tracking-widest ${
                 activeSlot === '1PM' ? 'text-[#2c65c5]' : activeSlot === '6PM' ? 'text-[#dc2626]' : 'text-[#32733b]'
               }`}>
                 {firstPrize.series} {firstPrize.number}
               </div>
+              <span className="sr-only speakable-summary">
+                Dear Lottery {activeSlot} 1st prize 1 crore winning ticket number is {firstPrize.series} {firstPrize.number} for draw date {activeDateStr}.
+              </span>
             </div>
 
             {/* Consolation info */}
@@ -431,29 +460,39 @@ export default function LiveResultsTabs({
         </div>
       )}
 
-      {/* 3. Control Row (PDF Download + Slot Selector + Date Selector) */}
-      <div className="grid grid-cols-3 gap-2 text-xs sm:text-sm font-bold">
+      {/* 3. Control Row (PDF Download + Save Sheet Image + Slot Selector + Date Selector) */}
+      <div className="grid grid-cols-4 gap-1.5 sm:gap-2 text-xs font-bold">
         <a
           href={pdfUrl}
           target="_blank"
           rel="noopener noreferrer"
           download={`Dear_Lottery_${activeDateStr}_${activeSlot}.pdf`}
-          className="bg-slate-100 hover:bg-slate-200 border border-slate-300 text-slate-800 rounded-xl py-2 px-3 flex items-center justify-center gap-1 font-black uppercase shadow-2xs"
+          className="bg-slate-100 hover:bg-slate-200 border border-slate-300 text-slate-800 rounded-xl py-2 px-1 sm:px-2 flex items-center justify-center gap-1 font-black uppercase shadow-2xs text-center"
         >
           <span>📥 PDF</span>
+        </a>
+
+        <a
+          href={activeSheetUrl}
+          target="_blank"
+          rel="noopener noreferrer"
+          download={`Dear_Lottery_${activeDateStr}_${activeSlot}.jpg`}
+          className="bg-slate-100 hover:bg-slate-200 border border-slate-300 text-slate-800 rounded-xl py-2 px-1 sm:px-2 flex items-center justify-center gap-1 font-black uppercase shadow-2xs text-center"
+        >
+          <span>🖼️ JPG</span>
         </a>
 
         <div className="relative">
           <select
             value={activeSlot}
             onChange={(e) => setActiveSlot(e.target.value as any)}
-            className="w-full bg-slate-100 hover:bg-slate-200 border border-slate-300 text-slate-800 rounded-xl py-2 px-2.5 font-bold appearance-none text-center cursor-pointer shadow-2xs"
+            className="w-full bg-slate-100 hover:bg-slate-200 border border-slate-300 text-slate-800 rounded-xl py-2 px-1.5 sm:px-2.5 font-bold appearance-none text-center cursor-pointer shadow-2xs"
           >
             <option value="1PM">1:00 PM</option>
             <option value="6PM">6:00 PM</option>
             <option value="8PM">8:00 PM</option>
           </select>
-          <span className="pointer-events-none absolute right-2 top-1/2 -translate-y-1/2 text-slate-400 text-xs">▾</span>
+          <span className="pointer-events-none absolute right-1.5 sm:right-2 top-1/2 -translate-y-1/2 text-slate-400 text-xs">▾</span>
         </div>
 
         <div className="relative">
@@ -462,12 +501,12 @@ export default function LiveResultsTabs({
             onChange={(e) => {
               window.location.href = `/results/${e.target.value}/${activeSlot.toLowerCase()}`;
             }}
-            className="w-full bg-slate-100 hover:bg-slate-200 border border-slate-300 text-slate-800 rounded-xl py-2 px-2.5 font-bold appearance-none text-center cursor-pointer shadow-2xs"
+            className="w-full bg-slate-100 hover:bg-slate-200 border border-slate-300 text-slate-800 rounded-xl py-2 px-1.5 sm:px-2.5 font-bold appearance-none text-center cursor-pointer shadow-2xs"
           >
             <option value={todayStr}>{todayStr.split('-').reverse().join('.')}</option>
             <option value={yesterdayDateStr}>{yesterdayDateStr.split('-').reverse().join('.')}</option>
           </select>
-          <span className="pointer-events-none absolute right-2 top-1/2 -translate-y-1/2 text-slate-400 text-xs">▾</span>
+          <span className="pointer-events-none absolute right-1.5 sm:right-2 top-1/2 -translate-y-1/2 text-slate-400 text-xs">▾</span>
         </div>
       </div>
 
@@ -526,15 +565,14 @@ export default function LiveResultsTabs({
               <span>WhatsApp</span>
             </a>
 
-            <a
-              href={telegramUrl}
-              target="_blank"
-              rel="noopener noreferrer"
+            <button
+              type="button"
+              onClick={handleNativeShare}
               className="bg-[#0088cc] hover:bg-[#0077b5] text-white font-black text-xs py-2.5 px-2 rounded-xl flex items-center justify-center gap-1.5 shadow-2xs transition-all active:scale-95 text-center"
             >
-              <span>✈️</span>
-              <span>Telegram</span>
-            </a>
+              <span>📲</span>
+              <span>{lang === 'bn' ? 'শেয়ার' : lang === 'hi' ? 'शेयर' : 'Share'}</span>
+            </button>
 
             <button
               type="button"
@@ -724,10 +762,20 @@ export default function LiveResultsTabs({
               href={pdfUrl}
               target="_blank"
               rel="noopener noreferrer"
-              download={`Dear_Lottery_${todayStr}_${activeSlot}.pdf`}
-              className="bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs px-4 py-2 rounded-full shadow-lg flex items-center gap-1.5"
+              download={`Dear_Lottery_${activeDateStr}_${activeSlot}.pdf`}
+              className="bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs px-3.5 py-2 rounded-full shadow-lg flex items-center gap-1.5"
             >
               <span>📥 PDF</span>
+            </a>
+
+            <a
+              href={activeSheetUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              download={`Dear_Lottery_${activeDateStr}_${activeSlot}.jpg`}
+              className="bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs px-3.5 py-2 rounded-full shadow-lg flex items-center gap-1.5"
+            >
+              <span>🖼️ Save Image</span>
             </a>
           </div>
         </div>

@@ -153,6 +153,22 @@ const tableDatasetSchema = {
       : "Complete verified winning ticket distribution table."
   }
 };
+
+// 6. JSON-LD Speakable Specification Schema (Google Assistant & Voice Search Rich Answers)
+const speakableSchema = {
+  "@context": "https://schema.org",
+  "@type": "WebPage",
+  "name": title,
+  "speakable": {
+    "@type": "SpeakableSpecification",
+    "cssSelector": [
+      "#status-title",
+      ".first-prize-num",
+      ".speakable-summary"
+    ]
+  },
+  "url": canonicalUrl
+};
 ---
 
 <head>
@@ -225,4 +241,5 @@ const tableDatasetSchema = {
   <script type="application/ld+json" set:html={JSON.stringify(lotterySchema)} />
   <script type="application/ld+json" set:html={JSON.stringify(faqSchema)} />
   <script type="application/ld+json" set:html={JSON.stringify(tableDatasetSchema)} />
+  <script type="application/ld+json" set:html={JSON.stringify(speakableSchema)} />
 </head>
