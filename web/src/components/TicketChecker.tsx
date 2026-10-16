@@ -190,6 +190,20 @@ export default function TicketChecker({ initialDraws = [], variant = 'slim' }: T
     }
   };
 
+  const handlePaste = async () => {
+    try {
+      if (typeof navigator !== 'undefined' && navigator.clipboard?.readText) {
+        const text = await navigator.clipboard.readText();
+        if (text) {
+          handleInputChange(text);
+          if (typeof navigator !== 'undefined' && (navigator as any).vibrate) {
+            (navigator as any).vibrate(15);
+          }
+        }
+      }
+    } catch (e) {}
+  };
+
   const handleInputChange = (val: string) => {
     const formatted = val.toUpperCase();
     setTicketInput(formatted);
@@ -210,6 +224,9 @@ export default function TicketChecker({ initialDraws = [], variant = 'slim' }: T
     e.preventDefault();
     if (debounceRef.current) clearTimeout(debounceRef.current);
     performCheck(ticketInput);
+    if (typeof navigator !== 'undefined' && (navigator as any).vibrate) {
+      (navigator as any).vibrate(12);
+    }
   };
 
   return (
@@ -231,9 +248,12 @@ export default function TicketChecker({ initialDraws = [], variant = 'slim' }: T
                 ? 'अपना टिकट नंबर दर्ज करें (जैसे: 75331 या अंतिम 4 अंक)...'
                 : 'Enter ticket number (e.g. 75331 or last 4 digits)...'
             }
-            className="w-full bg-slate-50 border border-slate-300 focus:border-blue-600 focus:bg-white text-slate-900 rounded-xl pl-9 pr-9 py-2.5 sm:py-3 text-sm sm:text-base font-mono font-bold tracking-wider placeholder:text-slate-400 placeholder:font-sans placeholder:font-normal placeholder:tracking-normal outline-none transition-all uppercase"
+            autoComplete="off"
+            autoCorrect="off"
+            spellCheck={false}
+            className="w-full bg-slate-50 border border-slate-300 focus:border-blue-600 focus:bg-white text-slate-900 rounded-xl pl-9 pr-14 py-2.5 sm:py-3 text-base font-mono font-bold tracking-wider placeholder:text-slate-400 placeholder:font-sans placeholder:font-normal placeholder:tracking-normal placeholder:text-xs sm:placeholder:text-sm outline-none transition-all uppercase"
           />
-          {ticketInput && (
+          {ticketInput ? (
             <button
               type="button"
               onClick={() => {
@@ -242,8 +262,19 @@ export default function TicketChecker({ initialDraws = [], variant = 'slim' }: T
                 setMatches([]);
               }}
               className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-700 font-bold p-1 text-xs"
+              aria-label="Clear input"
             >
               ✕
+            </button>
+          ) : (
+            <button
+              type="button"
+              onClick={handlePaste}
+              className="absolute right-2 top-1/2 -translate-y-1/2 bg-slate-200/80 hover:bg-slate-300 text-slate-700 font-bold px-2 py-1 rounded-lg text-[10px] tracking-normal font-sans active:scale-95 transition-all flex items-center gap-1"
+              title="Paste from clipboard"
+            >
+              <span>📋</span>
+              <span className="hidden sm:inline">Paste</span>
             </button>
           )}
         </div>

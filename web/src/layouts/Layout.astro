@@ -16,6 +16,10 @@ interface Props {
 
 const { title, description, drawDate, drawTime, winningNumbers } = Astro.props;
 const currentPath = Astro.url.pathname;
+const isHomeActive = currentPath === '/' || currentPath === '/lottery-sambad' || currentPath.startsWith('/results');
+const isYesterdayActive = currentPath === '/yesterday';
+const isTargetsActive = currentPath === '/target-numbers' || currentPath === '/analytics';
+const isCheckerActive = currentPath === '/checker';
 ---
 
 <!doctype html>
@@ -79,17 +83,17 @@ const currentPath = Astro.url.pathname;
   </style>
   <body class="notranslate min-h-screen flex flex-col font-sans bg-slate-100 text-slate-900 selection:bg-amber-400 selection:text-slate-950" translate="no">
     <Header currentPath={currentPath} />
-    <main class="flex-1 notranslate pb-16 md:pb-0" translate="no">
+    <main class="flex-1 notranslate pb-24 md:pb-0" translate="no">
       <slot />
     </main>
     <Footer />
 
     {/* Mobile Sticky Bottom Navigation Dock (1-Thumb Mobile Ergonomics) */}
-    <nav aria-label="Mobile Quick Dock" class="md:hidden fixed bottom-0 inset-x-0 z-40 bg-white/95 backdrop-blur-md border-t border-slate-200/90 shadow-[0_-4px_16px_rgba(0,0,0,0.06)] px-2 py-1 flex items-center justify-around text-center select-none notranslate" translate="no">
+    <nav aria-label="Mobile Quick Dock" style="padding-bottom: max(0.4rem, env(safe-area-inset-bottom));" class="md:hidden fixed bottom-0 inset-x-0 z-40 bg-white/95 backdrop-blur-md border-t border-slate-200/90 shadow-[0_-4px_16px_rgba(0,0,0,0.06)] px-2 pt-1.5 flex items-center justify-around text-center select-none notranslate" translate="no">
       <a
         href="/"
         class={`flex flex-col items-center justify-center flex-1 py-1 transition-all active:scale-95 ${
-          currentPath === '/' ? 'text-blue-700 font-black' : 'text-slate-600 font-semibold hover:text-slate-900'
+          isHomeActive ? 'text-blue-700 font-black' : 'text-slate-600 font-semibold hover:text-slate-900'
         }`}
       >
         <span class="text-lg">☀️</span>
@@ -103,7 +107,7 @@ const currentPath = Astro.url.pathname;
       <a
         href="/yesterday"
         class={`flex flex-col items-center justify-center flex-1 py-1 transition-all active:scale-95 ${
-          currentPath === '/yesterday' ? 'text-blue-700 font-black' : 'text-slate-600 font-semibold hover:text-slate-900'
+          isYesterdayActive ? 'text-blue-700 font-black' : 'text-slate-600 font-semibold hover:text-slate-900'
         }`}
       >
         <span class="text-lg">🌙</span>
@@ -117,7 +121,7 @@ const currentPath = Astro.url.pathname;
       <a
         href="/target-numbers"
         class={`flex flex-col items-center justify-center flex-1 py-1 transition-all active:scale-95 ${
-          currentPath === '/target-numbers' ? 'text-blue-700 font-black' : 'text-slate-600 font-semibold hover:text-slate-900'
+          isTargetsActive ? 'text-blue-700 font-black' : 'text-slate-600 font-semibold hover:text-slate-900'
         }`}
       >
         <span class="text-lg">🎯</span>
@@ -131,7 +135,7 @@ const currentPath = Astro.url.pathname;
       <a
         href="/checker"
         class={`flex flex-col items-center justify-center flex-1 py-1 transition-all active:scale-95 ${
-          currentPath === '/checker' ? 'text-blue-700 font-black' : 'text-slate-600 font-semibold hover:text-slate-900'
+          isCheckerActive ? 'text-blue-700 font-black' : 'text-slate-600 font-semibold hover:text-slate-900'
         }`}
       >
         <span class="text-lg">🔍</span>

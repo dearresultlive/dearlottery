@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
+import { useLanguage } from '../lib/i18n';
 
 export default function NotificationBell() {
+  const { lang } = useLanguage();
   const [isSubscribed, setIsSubscribed] = useState(false);
   const [showToast, setShowToast] = useState(false);
   const [toastMsg, setToastMsg] = useState('');
@@ -28,26 +30,54 @@ export default function NotificationBell() {
 
       if (Notification.permission === 'granted') {
         setIsSubscribed(true);
-        setToastMsg('ড্র হওয়ার সাথে সাথে ফলাফল নোটিফিকেশন চালু হয়েছে! ✓');
+        setToastMsg(
+          lang === 'bn'
+            ? 'ড্র হওয়ার সাথে সাথে ফলাফল নোটিফিকেশন চালু হয়েছে! ✓'
+            : lang === 'hi'
+            ? 'ड्रॉ होते ही परिणाम सूचनाएं सक्रिय हो गई हैं! ✓'
+            : 'Live draw alerts enabled successfully! ✓'
+        );
       } else if (Notification.permission === 'denied') {
-        setToastMsg('নোটিফিকেশন অনুমতি ব্লক করা আছে। ব্রাউজার সেটিংসে গিয়ে অনুমতি দিন।');
+        setToastMsg(
+          lang === 'bn'
+            ? 'নোটিফিকেশন অনুমতি ব্লক করা আছে। ব্রাউজার সেটিংসে গিয়ে অনুমতি দিন।'
+            : lang === 'hi'
+            ? 'सूचना अनुमति ब्लॉक है। कृपया ब्राउज़र सेटिंग्स में अनुमति दें।'
+            : 'Notifications are blocked. Please allow permissions in browser settings.'
+        );
       } else {
-        setToastMsg('নোটিফিকেশন পারমিশন চাওয়া হয়েছে।');
+        setToastMsg(
+          lang === 'bn'
+            ? 'নোটিফিকেশন পারমিশন চাওয়া হয়েছে।'
+            : lang === 'hi'
+            ? 'सूचना अनुमति मांगी गई है।'
+            : 'Notification permission requested.'
+        );
       }
     } catch (e) {
-      setToastMsg('নোটিফিকেশন শুরু করা যায়নি।');
+      setToastMsg(
+        lang === 'bn'
+          ? 'নোটিফিকেশন চালু করা যায়নি।'
+          : lang === 'hi'
+          ? 'सूचनाएं शुरू नहीं की जा सकीं।'
+          : 'Could not enable notifications.'
+      );
     }
 
     setShowToast(true);
     setTimeout(() => setShowToast(false), 3500);
   };
 
+  const bellTitle = isSubscribed
+    ? (lang === 'bn' ? 'নোটিফিকেশন চালু আছে' : lang === 'hi' ? 'सूचनाएं सक्रिय हैं' : 'Notifications are active')
+    : (lang === 'bn' ? 'ফলাফলের নোটিফিকেশন পেতে ক্লিক করুন' : lang === 'hi' ? 'रिजल्ट अलर्ट पाने के लिए क्लिक करें' : 'Click to enable live result alerts');
+
   return (
     <div className="relative">
       <button
         type="button"
         onClick={handleClick}
-        title={isSubscribed ? 'নোটিফিকেশন চালু আছে' : 'ফলাফলের নোটিফিকেশন পেতে ক্লিক করুন'}
+        title={bellTitle}
         aria-label="Result Notification Alert"
         className={`relative w-8 h-8 sm:w-9 sm:h-9 rounded-lg sm:rounded-xl border flex items-center justify-center transition-all ${
           isSubscribed

@@ -65,6 +65,33 @@ export default function LiveResultsTabs({
   const [showTextTables, setShowTextTables] = useState<boolean>(true);
   const [copiedLink, setCopiedLink] = useState<boolean>(false);
   const [slotCountdown, setSlotCountdown] = useState(getSlotCountdown('1PM'));
+  const [isSyncing, setIsSyncing] = useState<boolean>(false);
+
+  const handleManualSync = async () => {
+    setIsSyncing(true);
+    try {
+      const res = await fetch('/api/results/latest');
+      if (res.ok) {
+        const data = await res.json();
+        if (data.draws && data.draws.length > 0) {
+          setDrawsList(data.draws);
+        }
+      }
+      if (typeof navigator !== 'undefined' && (navigator as any).vibrate) {
+        (navigator as any).vibrate(12);
+      }
+    } catch (e) {
+    } finally {
+      setTimeout(() => setIsSyncing(false), 600);
+    }
+  };
+
+  const handleSlotSelect = (slotKey: '1PM' | '6PM' | '8PM') => {
+    setActiveSlot(slotKey);
+    if (typeof navigator !== 'undefined' && (navigator as any).vibrate) {
+      (navigator as any).vibrate(10);
+    }
+  };
 
   useEffect(() => {
     setDrawsList(draws);
@@ -229,6 +256,23 @@ export default function LiveResultsTabs({
   return (
     <div className="space-y-3 sm:space-y-3.5 max-w-[557px] mx-auto">
       
+      {/* Real-time Gazette Sync Indicator */}
+      <div className="flex items-center justify-between px-1 text-[11px] text-slate-500">
+        <span className="flex items-center gap-1.5 font-bold text-slate-600">
+          <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+          <span>{lang === 'bn' ? 'অফিসিয়াল ডিরেক্টরেট লাইভ' : lang === 'hi' ? 'आधिकारिक निदेशालय लाइव' : 'Official Directorate Live'}</span>
+        </span>
+        <button
+          type="button"
+          onClick={handleManualSync}
+          disabled={isSyncing}
+          className="inline-flex items-center gap-1 text-[11px] font-bold text-blue-700 hover:text-blue-800 active:scale-95 transition-all"
+        >
+          <span className={`text-xs ${isSyncing ? 'animate-spin' : ''}`}>🔄</span>
+          <span>{isSyncing ? (lang === 'bn' ? 'চেক হচ্ছে...' : lang === 'hi' ? 'चेक हो रहा...' : 'Syncing...') : (lang === 'bn' ? 'রিফ্রেশ' : lang === 'hi' ? 'रिफ्रेश' : 'Refresh')}</span>
+        </button>
+      </div>
+
       {/* 0. Smart Day Selector (Today vs Last Night / Yesterday) */}
       <div className="flex items-center gap-1.5 bg-slate-200/90 p-1 rounded-2xl text-xs font-black shadow-inner">
         <button
@@ -241,7 +285,7 @@ export default function LiveResultsTabs({
           }`}
         >
           <span>☀️</span>
-          <span>{lang === 'bn' ? 'আজকের ড্র' : lang === 'hi' ? 'आज का ड्रॉ' : "Today's Draws"}</span>
+          <span>{lang === 'bn' ? 'আজকের ড্র' : lang === 'hi' ? 'আজ का ড্র' : "Today's Draws"}</span>
           <span className={`text-[10px] px-1.5 py-0.2 rounded-full font-bold ${
             dateMode === 'TODAY' ? 'bg-blue-800 text-blue-100' : 'bg-slate-300 text-slate-700'
           }`}>
@@ -250,7 +294,7 @@ export default function LiveResultsTabs({
         </button>
         <button
           type="button"
-          onClick={() => { setDateMode('YESTERDAY'); setActiveSlot('8PM'); }}
+          onClick={() => { setDateMode('YESTERDAY'); handleSlotSelect('8PM'); }}
           className={`flex-1 py-2 px-2.5 sm:px-3 rounded-xl flex items-center justify-center gap-1.5 transition-all ${
             dateMode === 'YESTERDAY'
               ? 'bg-blue-700 text-white shadow-sm ring-1 ring-blue-600 scale-[1.01]'
@@ -307,7 +351,7 @@ export default function LiveResultsTabs({
             <button
               key={slot.key}
               type="button"
-              onClick={() => setActiveSlot(slot.key)}
+              onClick={() => handleSlotSelect(slot.key)}
               className={`py-3 px-2 rounded-xl flex flex-col items-center justify-center transition-all ${
                 isActive
                   ? 'bg-[#138808] text-white font-black shadow-md ring-2 ring-[#138808]/40 scale-[1.01]'
@@ -531,12 +575,16 @@ export default function LiveResultsTabs({
 
           <div
             onClick={() => openImageLightbox(activeSheetUrl)}
-            className="cursor-zoom-in relative rounded-xl overflow-hidden border border-slate-200 bg-[#fcfbf7] group shadow-inner"
+            style={{ minHeight: '360px' }}
+            className="cursor-zoom-in relative rounded-xl overflow-hidden border border-slate-200 bg-[#fcfbf7] group shadow-inner aspect-[1/1.414]"
           >
             <img
               src={activeSheetUrl}
               alt={`Official Gazette Result Sheet ${currentDraw.draw_name} ${currentSlotInfo.time}`}
-              className="w-full h-auto object-contain transition-transform group-hover:scale-[1.01]"
+              width={557}
+              height={788}
+              decoding="async"
+              className="w-full h-full object-contain transition-transform group-hover:scale-[1.01]"
               loading="eager"
               onError={(e) => {
                 (e.target as HTMLImageElement).src = sheetSvgUrl;
