@@ -1,0 +1,18 @@
+{
+  "name": "Dear Result Live • Lottery Sambad",
+  "short_name": "Dear Result",
+  "description": "Official Nagaland & Sikkim Dear State Lottery Results Live (1PM, 6PM, 8PM)",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#f8fafc",
+  "theme_color": "#1d4ed8",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "/favicon.svg",
+      "sizes": "192x192 512x512",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
