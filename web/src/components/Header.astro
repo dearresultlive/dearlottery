@@ -39,17 +39,37 @@ const { currentPath = '/' } = Astro.props;
       <nav class="hidden md:flex items-center gap-1">
         <a
           href="/"
-          class={`px-3.5 py-2 rounded-xl text-xs sm:text-sm font-black transition-colors ${
+          class={`px-3 py-2 rounded-xl text-xs sm:text-sm font-black transition-colors ${
             currentPath === '/'
               ? 'text-blue-700 bg-blue-50 border border-blue-200'
               : 'text-slate-700 hover:text-blue-700 hover:bg-slate-100'
           }`}
         >
-          <span id="nav-today">Today's Result</span>
+          <span id="nav-today">Today</span>
+        </a>
+        <a
+          href="/yesterday"
+          class={`px-3 py-2 rounded-xl text-xs sm:text-sm font-black transition-colors ${
+            currentPath === '/yesterday'
+              ? 'text-blue-700 bg-blue-50 border border-blue-200'
+              : 'text-slate-700 hover:text-blue-700 hover:bg-slate-100'
+          }`}
+        >
+          <span id="nav-yesterday">Yesterday</span>
+        </a>
+        <a
+          href="/lottery-sambad"
+          class={`px-3 py-2 rounded-xl text-xs sm:text-sm font-black transition-colors ${
+            currentPath === '/lottery-sambad'
+              ? 'text-blue-700 bg-blue-50 border border-blue-200'
+              : 'text-slate-700 hover:text-blue-700 hover:bg-slate-100'
+          }`}
+        >
+          <span id="nav-sambad">Lottery Sambad</span>
         </a>
         <a
           href="/old-results"
-          class={`px-3.5 py-2 rounded-xl text-xs sm:text-sm font-black transition-colors ${
+          class={`px-3 py-2 rounded-xl text-xs sm:text-sm font-black transition-colors ${
             currentPath === '/old-results'
               ? 'text-blue-700 bg-blue-50 border border-blue-200'
               : 'text-slate-700 hover:text-blue-700 hover:bg-slate-100'
@@ -103,6 +123,8 @@ const { currentPath = '/' } = Astro.props;
   function applyHeaderLanguage(lang) {
     var brand = document.getElementById('header-brand-tagline');
     var navToday = document.getElementById('nav-today');
+    var navYesterday = document.getElementById('nav-yesterday');
+    var navSambad = document.getElementById('nav-sambad');
     var navOld = document.getElementById('nav-old');
     var navChecker = document.getElementById('nav-checker');
     var navAnalytics = document.getElementById('nav-analytics');
@@ -112,6 +134,8 @@ const { currentPath = '/' } = Astro.props;
     if (lang === 'bn') {
       if (brand) brand.textContent = 'লটারি সংবাদ • আজকের তাজা রেজাল্ট';
       if (navToday) navToday.textContent = 'আজকের রেজাল্ট';
+      if (navYesterday) navYesterday.textContent = 'গতকালকের রেজাল্ট';
+      if (navSambad) navSambad.textContent = 'লটারি সংবাদ';
       if (navOld) navOld.textContent = 'পুরনো রেজাল্ট';
       if (navChecker) navChecker.textContent = 'টিকিট মেলান';
       if (navAnalytics) navAnalytics.textContent = 'হট নম্বর';
@@ -120,6 +144,8 @@ const { currentPath = '/' } = Astro.props;
     } else if (lang === 'hi') {
       if (brand) brand.textContent = 'लॉटरी संबाद • आज का ताजा रिजल्ट';
       if (navToday) navToday.textContent = 'आज का रिजल्ट';
+      if (navYesterday) navYesterday.textContent = 'कल का रिजल्ट';
+      if (navSambad) navSambad.textContent = 'लॉटरी संबाद';
       if (navOld) navOld.textContent = 'पुराने रिजल्ट';
       if (navChecker) navChecker.textContent = 'टिकट चेक';
       if (navAnalytics) navAnalytics.textContent = 'हॉट नंबर्स';
@@ -127,7 +153,9 @@ const { currentPath = '/' } = Astro.props;
       if (btnShort) btnShort.textContent = 'चेक';
     } else {
       if (brand) brand.textContent = 'Lottery Sambad • Live Result Portal';
-      if (navToday) navToday.textContent = "Today's Result";
+      if (navToday) navToday.textContent = "Today";
+      if (navYesterday) navYesterday.textContent = "Yesterday";
+      if (navSambad) navSambad.textContent = "Lottery Sambad";
       if (navOld) navOld.textContent = 'Old Results';
       if (navChecker) navChecker.textContent = 'Check Ticket';
       if (navAnalytics) navAnalytics.textContent = 'Hot Numbers';

@@ -1,0 +1,91 @@
+---
+import Layout from '../layouts/Layout.astro';
+import LiveResultsTabs from '../components/LiveResultsTabs';
+import TicketChecker from '../components/TicketChecker';
+import { fetchDrawsByDate } from '../lib/api';
+import { getISTNow, getISTDateString } from '../lib/lottery-utils';
+
+const istNow = getISTNow();
+const yesterday = new Date(istNow);
+yesterday.setDate(yesterday.getDate() - 1);
+const yesterdayDateStr = getISTDateString(yesterday);
+
+const dayBeforeYesterday = new Date(yesterday);
+dayBeforeYesterday.setDate(dayBeforeYesterday.getDate() - 1);
+const dayBeforeDateStr = getISTDateString(dayBeforeYesterday);
+
+// Fetch draws for yesterday
+const yesterdayDraws = await fetchDrawsByDate(yesterdayDateStr);
+const olderDraws = await fetchDrawsByDate(dayBeforeDateStr);
+const checkerDraws = [...yesterdayDraws, ...olderDraws];
+---
+
+<Layout
+  title={`Dear Lottery Result Yesterday (${yesterdayDateStr}) • 1PM, 6PM, 8PM | Lottery Sambad`}
+  description={`Check official Dear Lottery Sambad yesterday's results (${yesterdayDateStr}) for 1:00 PM Morning, 6:00 PM Day, and 8:00 PM Night draws. 1st Prize ₹1 Crore winning numbers and official gazette sheets.`}
+  drawDate={yesterdayDateStr}
+>
+  <div class="max-w-[580px] mx-auto px-2 sm:px-4 py-2 sm:py-4 space-y-3 sm:space-y-4">
+    
+    {/* Breadcrumbs Navigation */}
+    <nav aria-label="Breadcrumb" class="flex items-center gap-2 text-xs text-slate-500 border-b border-slate-200 pb-2">
+      <a href="/" class="hover:text-blue-700 font-medium">Home (হোম)</a>
+      <span>/</span>
+      <span class="text-slate-900 font-bold">Yesterday's Results ({yesterdayDateStr})</span>
+    </nav>
+
+    {/* Yesterday Banner Header */}
+    <div class="bg-gradient-to-r from-amber-50 via-white to-amber-50 border border-amber-300 rounded-2xl p-3.5 text-center shadow-xs">
+      <span class="inline-flex items-center gap-1.5 bg-amber-500 text-white text-[10px] sm:text-xs font-black px-2.5 py-0.5 rounded-full uppercase tracking-wider">
+        <span>📅</span>
+        <span>Yesterday's Official Results • গতকালকের রেজাল্ট</span>
+      </span>
+      <h1 class="text-base sm:text-xl font-black text-slate-900 mt-1">
+        Dear Lottery Result Yesterday ({yesterdayDateStr})
+      </h1>
+      <p class="text-[11px] sm:text-xs text-slate-600 mt-0.5">
+        Official winning numbers for 1:00 PM Morning, 6:00 PM Day, and 8:00 PM Night draws.
+      </p>
+    </div>
+
+    {/* Results Viewport */}
+    <section id="results">
+      <LiveResultsTabs client:load draws={yesterdayDraws} yesterdayDraws={olderDraws} todayDateStr={yesterdayDateStr} />
+    </section>
+
+    {/* Fast Ticket Checker Scoped to Yesterday */}
+    <section id="checker">
+      <TicketChecker client:load initialDraws={checkerDraws} variant="slim" />
+    </section>
+
+    {/* Return to Today CTA */}
+    <div class="text-center pt-2">
+      <a
+        href="/"
+        class="inline-flex items-center justify-center gap-2 bg-blue-700 hover:bg-blue-800 text-white font-bold text-xs px-5 py-2.5 rounded-xl shadow-sm transition-all"
+      >
+        <span>👈</span>
+        <span>Go to Today's Live Results (আজকের লাইভ রেজাল্ট)</span>
+      </a>
+    </div>
+
+    {/* Deep SEO Guide for Yesterday's Draws */}
+    <section class="bg-white border border-slate-200 rounded-2xl p-4 sm:p-6 text-slate-700 space-y-4 shadow-sm text-xs leading-relaxed">
+      <h2 class="text-sm sm:text-base font-black text-slate-900">
+        About Dear Lottery Yesterday's Draw Results ({yesterdayDateStr})
+      </h2>
+      <p>
+        If you missed yesterday's live draws, all winning series numbers for Nagaland State Lotteries and Sikkim State Lotteries are archived here. Yesterday's draws include:
+      </p>
+      <ul class="list-disc list-inside space-y-1 text-slate-600">
+        <li><strong>1:00 PM Morning Draw:</strong> 1st Prize ₹1 Crore winning series and 5-digit number.</li>
+        <li><strong>6:00 PM Day Draw:</strong> 1st Prize ₹1 Crore official winner and 2nd to 5th prize tables.</li>
+        <li><strong>8:00 PM Night Draw:</strong> 1st Prize ₹1 Crore official gazette winning ticket and consolation numbers.</li>
+      </ul>
+      <p class="text-slate-500 text-[11px]">
+        Prize claims for yesterday's draw remain valid for 30 days from the draw declaration date. Keep your original intact ticket safe when claiming through authorized counters.
+      </p>
+    </section>
+
+  </div>
+</Layout>

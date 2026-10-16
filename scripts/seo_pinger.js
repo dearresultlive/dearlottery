@@ -23,6 +23,9 @@ export async function pingSearchEngines(dateStr, slot = '') {
   const targetUrls = [
     `https://${HOST}/`,
     `https://${HOST}/sitemap.xml`,
+    `https://${HOST}/rss.xml`,
+    `https://${HOST}/yesterday`,
+    `https://${HOST}/lottery-sambad`,
     `https://${HOST}/checker`,
     `https://${HOST}/analytics`,
     `https://${HOST}/old-results`

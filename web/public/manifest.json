@@ -7,12 +7,43 @@
   "background_color": "#f8fafc",
   "theme_color": "#1d4ed8",
   "orientation": "portrait",
+  "categories": ["news", "utilities"],
   "icons": [
     {
       "src": "/favicon.svg",
       "sizes": "192x192 512x512",
       "type": "image/svg+xml",
       "purpose": "any maskable"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "1:00 PM Morning Result",
+      "short_name": "1PM Result",
+      "description": "Dear 1:00 PM Morning draw live result",
+      "url": "/#1pm",
+      "icons": [{ "src": "/favicon.svg", "sizes": "192x192" }]
+    },
+    {
+      "name": "6:00 PM Day Result",
+      "short_name": "6PM Result",
+      "description": "Dear 6:00 PM Day draw live result",
+      "url": "/#6pm",
+      "icons": [{ "src": "/favicon.svg", "sizes": "192x192" }]
+    },
+    {
+      "name": "8:00 PM Night Result",
+      "short_name": "8PM Result",
+      "description": "Dear 8:00 PM Night draw live result",
+      "url": "/#8pm",
+      "icons": [{ "src": "/favicon.svg", "sizes": "192x192" }]
+    },
+    {
+      "name": "Instant Ticket Checker",
+      "short_name": "Ticket Checker",
+      "description": "Search ticket number across all prize tiers",
+      "url": "/checker",
+      "icons": [{ "src": "/favicon.svg", "sizes": "192x192" }]
     }
   ]
 }
