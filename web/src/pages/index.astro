@@ -4,6 +4,7 @@ import DrawCountdown from '../components/DrawCountdown';
 import TicketChecker from '../components/TicketChecker';
 import LiveResultsTabs from '../components/LiveResultsTabs';
 import PushNotifyBanner from '../components/PushNotifyBanner';
+import PwaInstallBanner from '../components/PwaInstallBanner';
 import { fetchLatestDraws, fetchDrawsByDate, fetchFrequencyAnalytics } from '../lib/api';
 import { getISTNow, getISTDateString } from '../lib/lottery-utils';
 
@@ -39,6 +40,9 @@ const analytics = await fetchFrequencyAnalytics();
 
     {/* OneSignal Push Notification Opt-in Prompt */}
     <PushNotifyBanner client:load />
+
+    {/* PWA 1-Tap Mobile Install Banner */}
+    <PwaInstallBanner client:load />
 
     {/* Background Zero-Refresh Listener & Compact Draw Status */}
     <div class="flex items-center justify-between text-xs px-2 text-slate-500">

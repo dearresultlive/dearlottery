@@ -68,6 +68,10 @@ jobs:
           git add web/src/data/live_draws.json web/public/results/
           git diff --quiet && git diff --staged --quiet || (git commit -m "chore(auto): update official draw results [skip ci]" && git push)
 
+      - name: Instant IndexNow & Search Engine Ping
+        run: |
+          node scripts/seo_pinger.js
+
       - name: Verify Health & Artifacts
         if: always()
         run: |

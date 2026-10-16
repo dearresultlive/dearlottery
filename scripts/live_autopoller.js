@@ -14,6 +14,7 @@ import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import { createWorker } from 'tesseract.js';
+import { pingSearchEngines } from './seo_pinger.js';
 
 dns.setDefaultResultOrder('ipv4first');
 
@@ -342,6 +343,11 @@ async function processSlot(dateStr, slot) {
   saveLiveDraws(db);
 
   console.log(`[Poller] ✅ AUTOMATED INGESTION COMPLETE for ${dateStr} [${slot}]!`);
+  try {
+    await pingSearchEngines(dateStr, slot);
+  } catch (pingErr) {
+    console.warn('[Poller] SEO Ping warning:', pingErr.message);
+  }
   return true;
 }
 

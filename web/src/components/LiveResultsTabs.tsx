@@ -163,9 +163,10 @@ export default function LiveResultsTabs({
   const activeSheetUrl = todayHasPrizes
     ? (currentDrawForToday?.image_r2_url || `/results/${todayStr}/${activeSlot.toLowerCase()}.jpg`)
     : sheetSvgUrl;
-
-  const whatsappShareText = `🎯 *Dear Lottery Result Today (${currentDraw?.draw_time || activeSlot})*\n📅 তারিখ: ${todayStr}\n\n🏆 *১ম পুরস্কার (₹1 Crore Winner)*: *${firstPrize.series} ${firstPrize.number}*\n\n👉 সম্পূর্ণ অফিসিয়াল রেজাল্ট শিট ও সব প্রাইজ নম্বর দেখুন:\nhttps://dearresultlive.in/results/${todayStr}/${activeSlot.toLowerCase()}`;
+  const shareTargetUrl = `https://dearresultlive.in/results/${todayStr}/${activeSlot.toLowerCase()}`;
+  const whatsappShareText = `🎯 *Dear Lottery Result Today (${currentDraw?.draw_time || activeSlot})*\n📅 তারিখ: ${todayStr}\n\n🏆 *১ম পুরস্কার (₹1 Crore Winner)*: *${firstPrize.series} ${firstPrize.number}*\n\n👉 সম্পূর্ণ অফিসিয়াল রেজাল্ট শিট ও সব প্রাইজ নম্বর দেখুন:\n${shareTargetUrl}`;
   const whatsappUrl = `https://api.whatsapp.com/send?text=${encodeURIComponent(whatsappShareText)}`;
+  const telegramUrl = `https://t.me/share/url?url=${encodeURIComponent(shareTargetUrl)}&text=${encodeURIComponent(`🎯 Dear Lottery Result Today (${currentDraw?.draw_time || activeSlot}) | 1st Prize ₹1 Crore: ${firstPrize.series} ${firstPrize.number}`)}`;
 
   const openImageLightbox = (url: string) => {
     setSelectedImageUrl(url);
@@ -410,15 +411,42 @@ export default function LiveResultsTabs({
       {/* 5. WhatsApp Share Button & 6. Clean Structured Text Prize Tables (Declared Results Only) */}
       {activeStatus === 'RESULT_OUT' && (
         <>
-          <a
-            href={whatsappUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="w-full bg-[#25d366] hover:bg-[#20bd5a] text-white font-black text-xs sm:text-sm py-2.5 px-4 rounded-xl flex items-center justify-center gap-2 shadow-sm transition-all active:scale-95"
-          >
-            <span>💬</span>
-            <span>{lang === 'bn' ? 'হোয়াটসঅ্যাপে রেজাল্ট শেয়ার করুন (Share on WhatsApp)' : lang === 'hi' ? 'व्हाट्सएप पर रिजल्ट शेयर करें (Share on WhatsApp)' : 'Share Result on WhatsApp'}</span>
-          </a>
+          <div className="grid grid-cols-3 gap-2">
+            <a
+              href={whatsappUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="bg-[#25d366] hover:bg-[#20bd5a] text-white font-black text-xs py-2.5 px-2 rounded-xl flex items-center justify-center gap-1.5 shadow-2xs transition-all active:scale-95 text-center"
+            >
+              <span>💬</span>
+              <span>WhatsApp</span>
+            </a>
+
+            <a
+              href={telegramUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="bg-[#0088cc] hover:bg-[#0077b5] text-white font-black text-xs py-2.5 px-2 rounded-xl flex items-center justify-center gap-1.5 shadow-2xs transition-all active:scale-95 text-center"
+            >
+              <span>✈️</span>
+              <span>Telegram</span>
+            </a>
+
+            <button
+              type="button"
+              onClick={() => {
+                if (typeof navigator !== 'undefined' && navigator.clipboard) {
+                  navigator.clipboard.writeText(whatsappShareText);
+                  setCopiedLink(true);
+                  setTimeout(() => setCopiedLink(false), 2500);
+                }
+              }}
+              className="bg-slate-800 hover:bg-slate-900 text-white font-black text-xs py-2.5 px-2 rounded-xl flex items-center justify-center gap-1.5 shadow-2xs transition-all active:scale-95 text-center"
+            >
+              <span>{copiedLink ? '✓' : '📋'}</span>
+              <span>{copiedLink ? (lang === 'bn' ? 'কপি হয়েছে' : lang === 'hi' ? 'कॉपी हुआ' : 'Copied!') : (lang === 'bn' ? 'কপি' : lang === 'hi' ? 'कॉपी' : 'Copy')}</span>
+            </button>
+          </div>
 
           <div className="space-y-3 pt-1">
             {/* Toggle Bar */}
