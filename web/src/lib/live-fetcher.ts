@@ -102,7 +102,7 @@ export async function checkAndFetchLiveSlot(
             slot,
             status: 'RESULT_OUT',
             first_prize: { series, number },
-            imageUrl: `https://lottery.sambad.com/images/mobile/lottery-sambad-${slotKey}-${dateKey}.webp`,
+            imageUrl: `/api/gazette-sheet.svg?date=${dateStr}&slot=${slotKey}`,
             prizes: newlyFoundDraw
           };
         }

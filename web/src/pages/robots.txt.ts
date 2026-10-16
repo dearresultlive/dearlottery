@@ -5,6 +5,15 @@ export const GET: APIRoute = async ({ request }) => {
 
   const robots = `User-agent: *
 Disallow: /
+
+User-agent: Googlebot-Image
+Disallow: /
+
+User-agent: msnbot-media
+Disallow: /
+
+User-agent: Bingbot
+Disallow: /
 `;
 
   return new Response(robots, {
