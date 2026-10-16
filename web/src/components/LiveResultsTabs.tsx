@@ -604,7 +604,7 @@ export default function LiveResultsTabs({
           <div
             onClick={() => openImageLightbox(activeSheetUrl)}
             style={{ minHeight: '360px' }}
-            className="cursor-zoom-in relative rounded-xl overflow-hidden border border-slate-200 bg-[#fcfbf7] group shadow-inner aspect-[1/1.414]"
+            className="cursor-zoom-in relative rounded-xl overflow-hidden border border-slate-200 bg-[#fcfbf7] group shadow-inner aspect-[1/1.414] max-w-[480px] mx-auto"
           >
             <img
               src={activeSheetUrl}

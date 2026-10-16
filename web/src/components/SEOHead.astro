@@ -22,6 +22,7 @@ const {
 
 const currentPath = Astro.url.pathname;
 const host = Astro.url.origin;
+const cleanCanonical = canonicalUrl || `${host}${currentPath === '/' ? '' : currentPath}`;
 
 // Determine exact publication timestamp based on slot in IST (+05:30)
 const pubHour = drawTime?.includes('6') ? '18:00:00+05:30' : drawTime?.includes('8') ? '20:00:00+05:30' : '13:00:00+05:30';
@@ -34,7 +35,7 @@ const lotterySchema = {
   "description": description,
   "datePublished": `${drawDate}T${pubHour}`,
   "dateModified": new Date().toISOString(),
-  "mainEntityOfPage": canonicalUrl,
+  "mainEntityOfPage": cleanCanonical,
   "author": {
     "@type": "Organization",
     "name": "Dear Result Live",
@@ -131,7 +132,7 @@ const tableDatasetSchema = {
   "@type": "Dataset",
   "name": `Dear Lottery Official Winning Numbers & Prize Table - ${drawDate} ${drawTime || ''}`.trim(),
   "description": `Structured prize breakdown table and winning numbers for Dear Lottery draws on ${drawDate}. Lists 1st Prize ₹1 Crore, Consolation Prize ₹1,000, 2nd Prize ₹10,000, 3rd Prize ₹500, 4th Prize ₹250, and 5th Prize ₹120.`,
-  "url": canonicalUrl,
+  "url": cleanCanonical,
   "creator": {
     "@type": "Organization",
     "name": "Dear Result Live",
@@ -139,7 +140,7 @@ const tableDatasetSchema = {
   },
   "variableMeasured": [
     "1st Prize (₹1,00,00,000)",
-    "Consolation Prize (₹1,000)",
+    "Consolation Prize (₹1,00,000)",
     "2nd Prize (₹10,000)",
     "3rd Prize (₹500)",
     "4th Prize (₹250)",
@@ -167,7 +168,7 @@ const speakableSchema = {
       ".speakable-summary"
     ]
   },
-  "url": canonicalUrl
+  "url": cleanCanonical
 };
 ---
 
@@ -188,6 +189,14 @@ const speakableSchema = {
   <title>{title}</title>
   <meta name="description" content={description} />
   <meta name="keywords" content="lottery sambad, লটারি সংবাদ, dear lottery result, dear lottery result today, nagaland state lottery, sikkim state lottery, dear lottery 1pm, dear lottery 6pm, dear lottery 8pm, dhankesari, dear lottery ticket checker, dear lottery live, dear lottery 1 crore winner" />
+  
+  <!-- Canonical & Multi-language Alternate URLs (Google Indexing Core) -->
+  <link rel="canonical" href={cleanCanonical} />
+  <link rel="alternate" hreflang="en-IN" href={cleanCanonical} />
+  <link rel="alternate" hreflang="bn-IN" href={cleanCanonical} />
+  <link rel="alternate" hreflang="hi-IN" href={cleanCanonical} />
+  <link rel="alternate" hreflang="x-default" href={cleanCanonical} />
+
   <!-- Disable Google Chrome / Google Translate Popups -->
   <meta name="google" content="notranslate" />
   <!-- Search Engine Indexing Directives -->
@@ -203,7 +212,7 @@ const speakableSchema = {
 
   <!-- OpenGraph / Facebook -->
   <meta property="og:type" content="website" />
-  <meta property="og:url" content={canonicalUrl} />
+  <meta property="og:url" content={cleanCanonical} />
   <meta property="og:title" content={title} />
   <meta property="og:description" content={description} />
   <meta property="og:image" content="https://dearresultlive.in/og-image.jpg" />

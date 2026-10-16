@@ -7,14 +7,6 @@ export const GET: APIRoute = async ({ request }) => {
 Allow: /
 Disallow: /api/
 
-User-agent: Googlebot-Image
-Disallow: /results/
-Disallow: /pdf/
-
-User-agent: msnbot-media
-Disallow: /results/
-Disallow: /pdf/
-
 Sitemap: ${host}/sitemap.xml
 `;
 
