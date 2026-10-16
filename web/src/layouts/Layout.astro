@@ -31,23 +31,31 @@ const currentPath = Astro.url.pathname;
     try {
       var savedLang = localStorage.getItem('dearlottery_lang');
       if (savedLang === 'bn' || savedLang === 'hi' || savedLang === 'en') {
-        document.documentElement.lang = savedLang;
         document.documentElement.setAttribute('data-lang', savedLang);
       } else {
-        document.documentElement.lang = 'en';
         document.documentElement.setAttribute('data-lang', 'en');
       }
     } catch (e) {}
 
     window.addEventListener('dearlottery:lang_change', function(e) {
       if (e.detail) {
-        document.documentElement.lang = e.detail;
         document.documentElement.setAttribute('data-lang', e.detail);
       }
     });
   </script>
 
   <style is:global>
+    /* Suppress Google Translate Banners & Tooltips */
+    .goog-te-banner-frame,
+    .skiptranslate,
+    #goog-gt-tt,
+    .goog-te-balloon-frame {
+      display: none !important;
+    }
+    body {
+      top: 0px !important;
+    }
+
     /* Instant CSS Multilingual Switching (English default, Bengali, Hindi) */
     html:not([data-lang="bn"]):not([data-lang="hi"]) .lang-bn,
     html:not([data-lang="bn"]):not([data-lang="hi"]) .lang-hi {
@@ -69,9 +77,9 @@ const currentPath = Astro.url.pathname;
       display: none !important;
     }
   </style>
-  <body class="notranslate min-h-screen flex flex-col font-sans bg-slate-100 text-slate-900 selection:bg-amber-400 selection:text-slate-950">
+  <body class="notranslate min-h-screen flex flex-col font-sans bg-slate-100 text-slate-900 selection:bg-amber-400 selection:text-slate-950" translate="no">
     <Header currentPath={currentPath} />
-    <main class="flex-1">
+    <main class="flex-1 notranslate" translate="no">
       <slot />
     </main>
     <Footer />

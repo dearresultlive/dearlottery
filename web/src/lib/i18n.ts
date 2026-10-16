@@ -218,7 +218,6 @@ export function setLanguage(lang: SupportedLang) {
   try {
     localStorage.setItem('dearlottery_lang', lang);
   } catch (e) {}
-  document.documentElement.lang = lang;
   document.documentElement.setAttribute('data-lang', lang);
   window.dispatchEvent(new CustomEvent('dearlottery:lang_change', { detail: lang }));
 }
