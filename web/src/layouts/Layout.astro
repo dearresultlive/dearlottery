@@ -16,7 +16,7 @@ interface Props {
 
 const { title, description, drawDate, drawTime, winningNumbers } = Astro.props;
 const currentPath = Astro.url.pathname;
-const isHomeActive = currentPath === '/' || currentPath === '/lottery-sambad' || currentPath.startsWith('/results');
+const isHomeActive = currentPath === '/' || currentPath.startsWith('/results');
 const isYesterdayActive = currentPath === '/yesterday';
 const isTargetsActive = currentPath === '/target-numbers' || currentPath === '/analytics';
 const isCheckerActive = currentPath === '/checker';
