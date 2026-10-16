@@ -264,6 +264,17 @@ export default function TicketChecker({ initialDraws = [], variant = 'slim' }: T
         </button>
       </form>
 
+      {/* Coverage Status Hint */}
+      <div className="flex items-center justify-between text-[11px] text-slate-500 px-1">
+        <span>
+          {lang === 'bn' 
+            ? '⚡ আজকের ৩টি ড্র ও গতরাতের ৮টা সহ সব প্রাইজ স্বয়ংক্রিয়ভাবে চেক হয়' 
+            : lang === 'hi' 
+            ? '⚡ आज के 3 ड्रॉ और कल रात 8 बजे सहित सभी प्राइज चेक होते हैं' 
+            : "⚡ Checks across all prize tiers for Today and Last Night's 8PM draw"}
+        </span>
+      </div>
+
       {/* Instant Result Feedback Badge */}
       {hasSearched && (
         <div className="pt-1">
@@ -281,8 +292,8 @@ export default function TicketChecker({ initialDraws = [], variant = 'slim' }: T
                         <span className="bg-emerald-700 text-white text-[11px] font-black px-2.5 py-0.5 rounded-full uppercase tracking-wider">
                           {lang === 'bn' ? `বিজয়ী (${m.prizeRank})` : lang === 'hi' ? `विजेता (${m.prizeRank})` : `Winner (${m.prizeRank})`}
                         </span>
-                        <span className="text-xs text-slate-600 font-bold">
-                          {m.drawName} ({m.drawTime})
+                        <span className="text-xs text-slate-700 font-bold">
+                          {m.drawDate ? `${m.drawDate.split('-').slice(1).reverse().join('/')} • ` : ''}{m.drawName} ({m.drawTime})
                         </span>
                       </div>
                       <p className="text-xs sm:text-sm font-bold text-slate-900 mt-1">
