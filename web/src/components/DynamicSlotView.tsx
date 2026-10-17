@@ -32,6 +32,7 @@ export default function DynamicSlotView({
   const [currentDraw, setCurrentDraw] = useState<any>(initialDraw);
   const [isUpcoming, setIsUpcoming] = useState<boolean>(isInitiallyUpcoming);
   const [showImageModal, setShowImageModal] = useState<boolean>(false);
+  const [showVoucher, setShowVoucher] = useState<boolean>(false);
   const [copiedLink, setCopiedLink] = useState<boolean>(false);
 
   useEffect(() => {
@@ -227,100 +228,180 @@ export default function DynamicSlotView({
             </div>
           </div>
 
-          {/* 1st Prize Authentic Physical Ticket Voucher */}
-          <LotteryTicketVoucher
-            status="DECLARED"
-            series={first.series}
-            number={first.number}
-            drawName={currentDraw?.draw_name || `${slotHour} Draw`}
-            drawTime={currentDraw?.draw_time || slotHour}
-            drawDate={targetDate}
-            drawNumber={currentDraw?.draw_number || '74'}
-          />
-
-          {/* Official Gazette Sheet Preview & Utility Bar */}
-          <div className="bg-white border border-slate-200 rounded-2xl p-4 sm:p-5 shadow-sm space-y-4">
-            <div className="border-b border-slate-100 pb-3.5 space-y-3">
-              <div>
-                <h3 className="text-base sm:text-lg font-black text-slate-900 flex items-center gap-2">
-                  <span>📄</span>
-                  <span>{t('gazette_sheet_title')}</span>
-                </h3>
-                <p className="text-xs text-slate-500 mt-0.5">
-                  {t('gazette_sheet_sub')}
-                </p>
-              </div>
-
-              <div className="grid grid-cols-3 gap-2">
-                <button
-                  type="button"
-                  onClick={() => setShowImageModal(true)}
-                  className="flex items-center justify-center gap-1 sm:gap-1.5 bg-blue-700 hover:bg-blue-800 text-white font-black text-xs sm:text-sm py-2.5 px-2 rounded-xl transition-all shadow-sm active:scale-95 text-center"
-                >
-                  <span className="truncate">{t('btn_open_sheet')}</span>
-                </button>
-                <a
-                  href={pdfUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  download={`Dear_Lottery_${targetDate}_${slotKey}.pdf`}
-                  className="flex items-center justify-center gap-1 sm:gap-1.5 bg-slate-100 hover:bg-slate-200 text-slate-800 font-bold text-xs sm:text-sm py-2.5 px-2 rounded-xl transition-all border border-slate-300 text-center"
-                >
-                  <span className="truncate">{t('btn_download_pdf')}</span>
-                </a>
-                <a
-                  href={whatsappUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="flex items-center justify-center gap-1 sm:gap-1.5 bg-[#25D366] hover:bg-[#20bd5a] text-white font-black text-xs sm:text-sm py-2.5 px-2 rounded-xl transition-all shadow-sm active:scale-95 text-center"
-                >
-                  <span className="truncate">{t('btn_share_whatsapp')}</span>
-                </a>
-              </div>
+          {/* 1. Lottery Sambad Winning Result Hero Card */}
+          <div
+            onClick={() => setShowImageModal(true)}
+            className={`cursor-pointer relative overflow-hidden rounded-2xl border p-4 sm:p-5 text-center transition-all hover:shadow-md ${
+              slotKey.includes('1')
+                ? 'bg-[#e9f5db] border-emerald-300'
+                : slotKey.includes('6')
+                ? 'bg-[#e3eefb] border-blue-300'
+                : 'bg-[#fbe8e8] border-red-300'
+            }`}
+          >
+            {/* Vertical Side Band */}
+            <div
+              className={`absolute top-0 right-0 bottom-0 w-8 sm:w-10 flex items-center justify-center overflow-hidden ${
+                slotKey.includes('1')
+                  ? 'bg-[#16a34a] text-[#ffdd00]'
+                  : slotKey.includes('6')
+                  ? 'bg-[#f5c518] text-[#dc2626]'
+                  : 'bg-[#dc2626] text-[#ffdd00]'
+              }`}
+            >
+              <span className="font-black text-xs sm:text-sm tracking-wider uppercase -rotate-90 whitespace-nowrap">
+                DEAR {slotHour}
+              </span>
             </div>
 
-            <div 
-              onClick={() => setShowImageModal(true)}
-              className="group cursor-pointer bg-slate-50 border border-slate-200 hover:border-blue-400 rounded-xl p-3 transition-all flex flex-col sm:flex-row items-center gap-4"
-            >
-              <div className="w-full sm:w-48 h-32 bg-white rounded-lg overflow-hidden border border-slate-200 flex items-center justify-center relative flex-shrink-0 shadow-inner">
-                <img
-                  src={activeSheetImg}
-                  alt={`Official Sheet ${currentDraw?.draw_name || slotHour}`}
-                  className="w-full h-full object-contain group-hover:scale-105 transition-transform"
-                  onError={() => {
-                    if (activeSheetImg !== sheetSvgUrl) {
-                      setActiveSheetImg(sheetSvgUrl);
-                    }
-                  }}
-                />
-                <div className="absolute inset-0 bg-slate-900/10 group-hover:bg-transparent transition-colors flex items-center justify-center">
-                  <span className="bg-white/95 text-blue-900 text-[11px] font-black px-2.5 py-1 rounded-md shadow-sm border border-slate-200">
-                    {lang === 'bn' ? '🔍 বড় করে দেখুন' : '🔍 Click to Zoom'}
+            <div className="pr-8 sm:pr-10">
+              {/* Top Date Header */}
+              <div className="flex items-center justify-between mb-1.5 gap-2">
+                <div className="flex items-center gap-1.5 flex-wrap">
+                  <span className="bg-[#e93323] text-white font-extrabold text-xs px-2.5 py-0.5 rounded-md shadow-2xs">
+                    {targetDate.split('-').reverse().join('/')}
+                  </span>
+                  <span className="text-[10px] font-black uppercase px-2 py-0.5 rounded-md bg-emerald-100 text-emerald-900 border border-emerald-300">
+                    {lang === 'bn' ? 'অফিসিয়াল ১ম পুরস্কার' : 'OFFICIAL 1ST PRIZE'}
                   </span>
                 </div>
+                <span className="text-xs text-slate-600 font-bold truncate">
+                  {currentDraw?.draw_name || `${slotHour} Draw`} • #{currentDraw?.draw_number || '74'}
+                </span>
               </div>
 
-              <div className="space-y-1.5 text-center sm:text-left flex-1">
-                <div className="flex items-center justify-center sm:justify-start gap-2">
-                  <span className="bg-emerald-100 text-emerald-800 border border-emerald-300 text-[10px] font-bold px-2 py-0.5 rounded-full uppercase">
-                    {t('verified_certified')}
+              {/* Massive 1st Prize Number */}
+              <div className="py-2">
+                <span className="text-[11px] font-black uppercase tracking-wider text-slate-600 block mb-0.5">
+                  {lang === 'bn' ? '১ম পুরস্কার • 1st Prize ₹1 Crore Winner' : '1st Prize • ₹1 Crore Winner (১ কোটি টাকা)'}
+                </span>
+                <div className={`first-prize-num font-mono font-black text-4xl sm:text-6xl tracking-widest ${
+                  slotKey.includes('1') ? 'text-[#2c65c5]' : slotKey.includes('6') ? 'text-[#dc2626]' : 'text-[#32733b]'
+                }`}>
+                  {first.series} {first.number}
+                </div>
+                <div className="flex items-center justify-center gap-2 mt-1">
+                  <span className="bg-amber-300 text-amber-950 font-bold text-[11px] px-2.5 py-0.5 rounded shadow-2xs">
+                    {lang === 'bn' ? 'সান্ত্বনা পুরস্কার: ₹১,০০০' : 'Consolation: ₹1,000'}
                   </span>
-                  <span className="text-xs text-slate-500 font-mono">
-                    Draw #{currentDraw?.draw_number || '74'}
+                  <span className="text-[11px] text-slate-600">
+                    {lang === 'bn' ? '(বাকি সব সিরিজে)' : '(Remaining Series)'}
                   </span>
                 </div>
-                <h4 className="text-sm sm:text-base font-bold text-slate-900">
-                  {currentDraw?.draw_name || `${slotHour} Draw`} {lang === 'bn' ? 'অফিসিয়াল স্বাক্ষরিত গেজেট' : 'Official Signed Result Document'}
-                </h4>
-                <p className="text-xs text-slate-600 leading-relaxed">
-                  {lang === 'bn'
-                    ? 'সরকারি সিল ও স্বাক্ষর সম্বলিত আসল স্ক্যান কপি। সম্পূর্ণ শিটটি হাই-রেজোলিউশনে দেখতে এখানে ট্যাপ করুন।'
-                    : 'Authentic scanned copy with directorate seals, judges signatures, and complete 5 prize tiers. Tap anywhere on this card to open in high-resolution full screen.'}
-                </p>
               </div>
             </div>
           </div>
+
+          {/* 2. Action Controls Toolbar (Zoom, PDF, JPG, WhatsApp) */}
+          <div className="grid grid-cols-4 gap-1.5 sm:gap-2 text-xs font-bold">
+            <button
+              type="button"
+              onClick={() => setShowImageModal(true)}
+              className="bg-blue-700 hover:bg-blue-800 text-white rounded-xl py-2 px-1 sm:px-2 flex items-center justify-center gap-1 font-black shadow-2xs text-center transition-all active:scale-95"
+            >
+              <span>🔍</span>
+              <span className="truncate">{lang === 'bn' ? 'বড় শিট' : 'Zoom'}</span>
+            </button>
+            <a
+              href={pdfUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              download={`Dear_Lottery_${targetDate}_${slotKey}.pdf`}
+              className="bg-slate-100 hover:bg-slate-200 border border-slate-300 text-slate-800 rounded-xl py-2 px-1 sm:px-2 flex items-center justify-center gap-1 font-black uppercase shadow-2xs text-center transition-colors"
+            >
+              <span>📥 PDF</span>
+            </a>
+            <a
+              href={activeSheetImg}
+              target="_blank"
+              rel="noopener noreferrer"
+              download={`Dear_Lottery_${targetDate}_${slotKey}.jpg`}
+              className="bg-slate-100 hover:bg-slate-200 border border-slate-300 text-slate-800 rounded-xl py-2 px-1 sm:px-2 flex items-center justify-center gap-1 font-black uppercase shadow-2xs text-center transition-colors"
+            >
+              <span>🖼️ JPG</span>
+            </a>
+            <a
+              href={whatsappUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="bg-[#25D366] hover:bg-[#20bd5a] text-white rounded-xl py-2 px-1 sm:px-2 flex items-center justify-center gap-1 font-black uppercase shadow-2xs text-center transition-all active:scale-95"
+            >
+              <span>💬 Share</span>
+            </a>
+          </div>
+
+          {/* 3. Direct Scanned / Official Gazette Result Sheet Image (TOTAL RESULT) */}
+          <div className="bg-white border border-slate-200 rounded-2xl p-2.5 sm:p-4 shadow-sm text-center space-y-2.5">
+            <div className="flex items-center justify-between px-1 pb-1 border-b border-slate-100">
+              <div className="flex items-center gap-1.5 text-left">
+                <span className="text-sm">📜</span>
+                <span className="text-xs sm:text-sm font-black text-slate-900">
+                  {lang === 'bn' 
+                    ? `অফিসিয়াল গেজেট রেজাল্ট শিট (${currentDraw?.draw_time || slotHour}) • সম্পূর্ণ ফলাফল` 
+                    : `Official Gazette Result Sheet (${currentDraw?.draw_time || slotHour}) • Total Result`}
+                </span>
+              </div>
+              <button
+                type="button"
+                onClick={() => setShowImageModal(true)}
+                className="text-xs font-black text-blue-700 hover:underline flex items-center gap-1"
+              >
+                <span>{lang === 'bn' ? '🔍 ফুল স্ক্রিন জুম' : '🔍 Full Screen Zoom'}</span>
+              </button>
+            </div>
+
+            <div
+              onClick={() => setShowImageModal(true)}
+              style={{ minHeight: '380px' }}
+              className="cursor-zoom-in relative rounded-xl overflow-hidden border border-slate-200 bg-[#fcfbf7] group shadow-inner aspect-[1/1.414] max-w-[480px] sm:max-w-[500px] mx-auto"
+            >
+              <img
+                src={activeSheetImg}
+                alt={`Official Gazette Result Sheet ${currentDraw?.draw_name || slotHour} ${targetDate}`}
+                width={557}
+                height={788}
+                decoding="async"
+                className="w-full h-full object-contain transition-transform group-hover:scale-[1.01]"
+                loading="eager"
+                onError={() => {
+                  if (activeSheetImg !== sheetSvgUrl) {
+                    setActiveSheetImg(sheetSvgUrl);
+                  }
+                }}
+              />
+              <div className="absolute inset-0 bg-slate-900/5 group-hover:bg-transparent transition-colors flex items-center justify-center pointer-events-none">
+                <span className="bg-white/95 text-slate-900 text-xs font-black px-3.5 py-1.5 rounded-full shadow border border-slate-200 opacity-90 group-hover:opacity-100">
+                  {lang === 'bn' ? '🔍 ট্যাপ করে ফুল স্ক্রিনে বড় করুন' : '🔍 Tap to view full screen zoom'}
+                </span>
+              </div>
+            </div>
+          </div>
+
+          {/* 4. Optional Ticket Voucher View Toggle */}
+          <div className="text-center">
+            <button
+              type="button"
+              onClick={() => setShowVoucher(!showVoucher)}
+              className="inline-flex items-center gap-1.5 text-xs font-bold text-slate-600 hover:text-blue-700 bg-slate-50 hover:bg-slate-100 border border-slate-200 px-3 py-1.5 rounded-xl transition-colors"
+            >
+              <span>🎟️</span>
+              <span>{showVoucher ? (lang === 'bn' ? 'টিকিট ভাউচার লুকান' : 'Hide Ticket Voucher') : (lang === 'bn' ? 'টিকিট ভাউচার ভিউ দেখুন' : 'View Ticket Voucher')}</span>
+            </button>
+          </div>
+
+          {showVoucher && (
+            <div className="animate-in fade-in duration-200">
+              <LotteryTicketVoucher
+                status="DECLARED"
+                series={first.series}
+                number={first.number}
+                drawName={currentDraw?.draw_name || `${slotHour} Draw`}
+                drawTime={currentDraw?.draw_time || slotHour}
+                drawDate={targetDate}
+                drawNumber={currentDraw?.draw_number || '74'}
+              />
+            </div>
+          )}
 
           {/* 2nd Prize Table */}
           <div className="bg-white border border-slate-200 rounded-2xl p-4 sm:p-5 shadow-sm space-y-3">
