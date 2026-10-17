@@ -1,6 +1,15 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { useLanguage } from '../lib/i18n';
-import { getISTDateString, getISTNow, formatINR, parseTicketInput, getSlotStatus, getSlotCountdown } from '../lib/lottery-utils';
+import { 
+  getISTDateString, 
+  getISTNow, 
+  formatINR, 
+  parseTicketInput, 
+  getSlotStatus, 
+  getSlotCountdown,
+  getNextUpcomingDraw,
+  isDrawSlotUpcoming
+} from '../lib/lottery-utils';
 import confetti from 'canvas-confetti';
 
 interface PrizeRecord {
@@ -35,9 +44,26 @@ interface DemoPlayModuleProps {
 export default function DemoPlayModule({ initialDraws = [] }: DemoPlayModuleProps) {
   const { lang } = useLanguage();
   const todayStr = getISTDateString();
+  const tomorrowStr = useMemo(() => {
+    const d = new Date(getISTNow());
+    d.setDate(d.getDate() + 1);
+    return getISTDateString(d);
+  }, []);
 
-  // Active draw slot selection
-  const [selectedSlot, setSelectedSlot] = useState<'1PM' | '6PM' | '8PM'>('1PM');
+  // Time & slot status calculations
+  const istNow = getISTNow();
+  const currentTotalMin = istNow.getHours() * 60 + istNow.getMinutes();
+  const is1pmPassed = currentTotalMin >= 795;
+  const is6pmPassed = currentTotalMin >= 1095;
+  const is8pmPassed = currentTotalMin >= 1215;
+  const isAllTodayOver = is8pmPassed;
+
+  // Next upcoming draw
+  const nextUpcoming = useMemo(() => getNextUpcomingDraw(), []);
+
+  // Active draw slot selection defaults directly to next upcoming game!
+  const [selectedSlot, setSelectedSlot] = useState<'1PM' | '6PM' | '8PM'>(nextUpcoming.slot);
+  const [copiedTicketId, setCopiedTicketId] = useState<string | null>(null);
   const [manualSeries, setManualSeries] = useState('');
   const [manualNumber, setManualNumber] = useState('');
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
@@ -255,6 +281,26 @@ export default function DemoPlayModule({ initialDraws = [] }: DemoPlayModuleProp
     };
   };
 
+  // Copy ticket helper
+  const handleCopyTicket = (ticketId: string, text: string) => {
+    try {
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(text);
+      } else {
+        const ta = document.createElement('textarea');
+        ta.value = text;
+        document.body.appendChild(ta);
+        ta.select();
+        document.execCommand('copy');
+        document.body.removeChild(ta);
+      }
+      setCopiedTicketId(ticketId);
+      setTimeout(() => setCopiedTicketId(null), 2000);
+    } catch (e) {
+      console.error('Failed to copy ticket', e);
+    }
+  };
+
   // Add ticket helper
   const addTicket = (series: string, number: string) => {
     setErrorMsg(null);
@@ -267,15 +313,23 @@ export default function DemoPlayModule({ initialDraws = [] }: DemoPlayModuleProp
 
     const cleanSeries = series.trim().toUpperCase() || '72B';
 
+    // If slot has passed today, next official draw for that slot will be tomorrow
+    const isSlotPassedToday = (
+      (selectedSlot === '1PM' && is1pmPassed) ||
+      (selectedSlot === '6PM' && is6pmPassed) ||
+      (selectedSlot === '8PM' && is8pmPassed)
+    );
+    const targetDate = (isAllTodayOver || isSlotPassedToday) ? tomorrowStr : todayStr;
+
     // Prevent duplicate within the same slot and date
-    const exists = myTickets.some(t => t.date === todayStr && t.slot === selectedSlot && t.number === cleanNum);
+    const exists = myTickets.some(t => t.date === targetDate && t.slot === selectedSlot && t.number === cleanNum);
     if (exists) {
       setErrorMsg(lang === 'bn' ? 'এই টিকিটটি ইতিমধ্যে আপনার তালিকায় রয়েছে।' : lang === 'hi' ? 'यह टिकट पहले से आपकी सूची में है।' : 'This ticket is already in your pocket.');
       return;
     }
 
     // Limit to 6 active tickets per slot to prevent clutter
-    const slotCount = myTickets.filter(t => t.date === todayStr && t.slot === selectedSlot).length;
+    const slotCount = myTickets.filter(t => t.slot === selectedSlot).length;
     if (slotCount >= 6) {
       setErrorMsg(lang === 'bn' ? 'একটি ড্র-তে সর্বোচ্চ ৬টি ডেমো টিকিট নেওয়া যাবে।' : lang === 'hi' ? 'एक ड्रॉ में अधिकतम 6 डेमो टिकट लिए जा सकते हैं।' : 'Maximum 6 demo tickets allowed per slot.');
       return;
@@ -286,7 +340,7 @@ export default function DemoPlayModule({ initialDraws = [] }: DemoPlayModuleProp
       series: cleanSeries,
       number: cleanNum,
       slot: selectedSlot,
-      date: todayStr,
+      date: targetDate,
       createdAt: Date.now()
     };
 
@@ -364,8 +418,8 @@ export default function DemoPlayModule({ initialDraws = [] }: DemoPlayModuleProp
     }
   };
 
-  // Filter tickets for currently selected slot and date
-  const activeSlotTickets = myTickets.filter(t => t.date === todayStr && t.slot === selectedSlot);
+  // Filter tickets for currently selected slot
+  const activeSlotTickets = myTickets.filter(t => t.slot === selectedSlot);
 
   // Calculate live accuracy
   const accuracyPercent = stats.totalSimulated > 0 
@@ -450,8 +504,8 @@ export default function DemoPlayModule({ initialDraws = [] }: DemoPlayModuleProp
       </div>
 
       {/* 3. Slot Selector */}
-      <div className="bg-white border border-slate-200 rounded-2xl p-3 shadow-2xs">
-        <div className="flex items-center justify-between mb-2 px-1">
+      <div className="bg-white border border-slate-200 rounded-2xl p-3 shadow-2xs space-y-2">
+        <div className="flex items-center justify-between px-1">
           <span className="text-xs font-black text-slate-900 flex items-center gap-1.5">
             <span>⏰</span>
             <span>{lang === 'bn' ? 'ড্র টাইম সিলেক্ট করুন:' : lang === 'hi' ? 'ड्रॉ समय चुनें:' : 'Select Draw Time:'}</span>
@@ -464,27 +518,92 @@ export default function DemoPlayModule({ initialDraws = [] }: DemoPlayModuleProp
         <div className="grid grid-cols-3 gap-2">
           {(['1PM', '6PM', '8PM'] as const).map(slot => {
             const isSelected = selectedSlot === slot;
+            const isUpcomingNext = nextUpcoming.slot === slot;
+            const isSlotPassed = (
+              (slot === '1PM' && is1pmPassed) ||
+              (slot === '6PM' && is6pmPassed) ||
+              (slot === '8PM' && is8pmPassed)
+            );
+
             return (
               <button
                 key={slot}
                 type="button"
                 onClick={() => { setSelectedSlot(slot); setErrorMsg(null); }}
-                className={`py-2 px-2 rounded-xl text-center font-black transition-all ${
+                className={`py-2 px-1.5 sm:px-2 rounded-xl text-center font-black transition-all relative ${
                   isSelected
                     ? 'bg-blue-700 text-white shadow-sm ring-2 ring-blue-600 scale-[1.01]'
+                    : isUpcomingNext
+                    ? 'bg-emerald-50 hover:bg-emerald-100 border-2 border-emerald-500 text-emerald-950 shadow-xs'
                     : 'bg-slate-100 hover:bg-slate-200 border border-slate-200 text-slate-700'
                 }`}
               >
-                <div className="text-sm sm:text-base leading-tight">
+                <div className="text-sm sm:text-base leading-tight font-black">
                   {slot === '1PM' ? '1:00 PM' : slot === '6PM' ? '6:00 PM' : '8:00 PM'}
                 </div>
-                <div className={`text-[9px] sm:text-[10px] mt-0.5 ${isSelected ? 'text-blue-100' : 'text-slate-500'}`}>
+                <div className={`text-[9px] sm:text-[10px] mt-0.5 font-bold ${
+                  isSelected 
+                    ? 'text-blue-100' 
+                    : isUpcomingNext
+                    ? 'text-emerald-700'
+                    : 'text-slate-500'
+                }`}>
                   {slot === '1PM' ? 'Morning' : slot === '6PM' ? 'Day' : 'Night'}
+                </div>
+
+                {/* Status Badges */}
+                <div className="mt-1">
+                  {isUpcomingNext ? (
+                    <span className={`inline-block text-[8px] sm:text-[9px] px-1.5 py-0.2 rounded-full font-black uppercase tracking-tight ${
+                      isSelected 
+                        ? 'bg-emerald-400 text-slate-950' 
+                        : 'bg-emerald-600 text-white animate-pulse'
+                    }`}>
+                      ⚡ {lang === 'bn' ? 'পরবর্তী ড্র' : 'Next Game'}
+                    </span>
+                  ) : isSlotPassed ? (
+                    <span className={`inline-block text-[8px] sm:text-[9px] px-1.5 py-0.2 rounded-full font-bold ${
+                      isSelected ? 'bg-blue-800 text-blue-200' : 'bg-slate-200 text-slate-600'
+                    }`}>
+                      {lang === 'bn' ? 'খেলা শেষ' : 'Done'}
+                    </span>
+                  ) : (
+                    <span className={`inline-block text-[8px] sm:text-[9px] px-1.5 py-0.2 rounded-full font-bold ${
+                      isSelected ? 'bg-blue-800 text-blue-200' : 'bg-slate-200 text-slate-600'
+                    }`}>
+                      {lang === 'bn' ? 'আসন্ন' : 'Upcoming'}
+                    </span>
+                  )}
                 </div>
               </button>
             );
           })}
         </div>
+
+        {/* Notice when viewing a passed slot */}
+        {(
+          (selectedSlot === '1PM' && is1pmPassed) ||
+          (selectedSlot === '6PM' && is6pmPassed) ||
+          (selectedSlot === '8PM' && is8pmPassed)
+        ) && (
+          <div className="p-2.5 bg-amber-50 border border-amber-300 rounded-xl text-xs text-amber-950 flex flex-col sm:flex-row sm:items-center justify-between gap-2 shadow-2xs">
+            <div className="flex items-center gap-1.5">
+              <span>ℹ️</span>
+              <span>
+                {lang === 'bn'
+                  ? `আজকের ${selectedSlot.replace('PM', ':00 PM')} ড্র সম্পন্ন হয়েছে। লাইভ পরবর্তী ড্র-এর টিকিট নিন:`
+                  : `Today's ${selectedSlot} draw is finished. Pick tickets for next upcoming live draw:`}
+              </span>
+            </div>
+            <button
+              type="button"
+              onClick={() => setSelectedSlot(nextUpcoming.slot)}
+              className="bg-amber-600 hover:bg-amber-700 text-white font-black text-[11px] px-3 py-1 rounded-lg shrink-0 self-start sm:self-auto shadow-xs active:scale-95 transition-all"
+            >
+              ⚡ {nextUpcoming.timeLabel} ড্র সিলেক্ট করুন ➔
+            </button>
+          </div>
+        )}
       </div>
 
       {/* 4. Ticket Picker & Generator */}
@@ -638,10 +757,26 @@ export default function DemoPlayModule({ initialDraws = [] }: DemoPlayModuleProp
                       </span>
                     </div>
 
-                    <div className="flex items-center gap-2 flex-shrink-0">
+                    <div className="flex items-center gap-1.5 flex-shrink-0">
                       <span className="bg-amber-400 text-slate-950 font-black text-[9px] sm:text-[10px] px-2 py-0.5 rounded shadow-2xs">
                         MRP ₹7.00
                       </span>
+
+                      {/* Copy ticket number button */}
+                      <button
+                        type="button"
+                        onClick={() => handleCopyTicket(ticket.id, `${ticket.series} ${ticket.number}`)}
+                        className={`rounded-md px-1.5 py-0.5 flex items-center gap-1 text-[9px] sm:text-[10px] font-black transition-colors ${
+                          copiedTicketId === ticket.id
+                            ? 'bg-emerald-500 text-white'
+                            : 'bg-white/10 hover:bg-white/20 text-white'
+                        }`}
+                        title={lang === 'bn' ? 'টিকিট নম্বর কপি করুন' : 'Copy ticket number'}
+                      >
+                        <span>{copiedTicketId === ticket.id ? '✓' : '📋'}</span>
+                        <span>{copiedTicketId === ticket.id ? (lang === 'bn' ? 'কপি!' : 'Copied!') : (lang === 'bn' ? 'কপি' : 'Copy')}</span>
+                      </button>
+
                       <button
                         type="button"
                         onClick={() => handleDeleteTicket(ticket.id)}
@@ -662,9 +797,14 @@ export default function DemoPlayModule({ initialDraws = [] }: DemoPlayModuleProp
                         <span>🏆</span>
                         <span>{lang === 'bn' ? '১ম পুরস্কার: ₹১ কোটি' : lang === 'hi' ? 'पहला पुरस्कार: ₹1 करोड़' : '1st Prize: ₹1 Crore'}</span>
                       </span>
-                      <span className="font-mono text-slate-500">
-                        📅 {ticket.date.split('-').reverse().join('/')}
-                      </span>
+                      <div className="flex items-center gap-1 font-mono text-slate-500">
+                        {ticket.date > todayStr && (
+                          <span className="bg-blue-100 text-blue-900 border border-blue-300 text-[9px] font-sans font-black px-1.5 py-0.2 rounded">
+                            {lang === 'bn' ? 'আগামীকাল' : 'Tomorrow'}
+                          </span>
+                        )}
+                        <span>📅 {ticket.date.split('-').reverse().join('/')}</span>
+                      </div>
                     </div>
 
                     {/* Prominent Ticket Numbers Display */}

@@ -1,6 +1,6 @@
 import React, { useState, useMemo } from 'react';
 import { useLanguage } from '../lib/i18n';
-import { getISTDateString, getISTNow } from '../lib/lottery-utils';
+import { getISTDateString, getISTNow, getNextUpcomingDraw } from '../lib/lottery-utils';
 
 interface TargetNumbersToolProps {
   initialMatrix?: any[];
@@ -12,8 +12,10 @@ export default function TargetNumbersTool({
   initialHot = []
 }: TargetNumbersToolProps) {
   const { lang } = useLanguage();
-  const [selectedSlot, setSelectedSlot] = useState<'1PM' | '6PM' | '8PM'>('1PM');
+  const upcomingDraw = useMemo(() => getNextUpcomingDraw(), []);
+  const [selectedSlot, setSelectedSlot] = useState<'1PM' | '6PM' | '8PM'>(upcomingDraw.slot);
   const [luckyNumber, setLuckyNumber] = useState<string | null>(null);
+  const [copiedText, setCopiedText] = useState<string | null>(null);
   const [isGenerating, setIsGenerating] = useState(false);
   const todayStr = getISTDateString();
 
@@ -41,14 +43,36 @@ export default function TargetNumbersTool({
     return slotSeeds[selectedSlot] || slotSeeds['1PM'];
   }, [selectedSlot]);
 
-  // Generate interactive lucky target combo
+  // Copy helper
+  const handleCopy = (text: string) => {
+    try {
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(text);
+      } else {
+        const ta = document.createElement('textarea');
+        ta.value = text;
+        document.body.appendChild(ta);
+        ta.select();
+        document.execCommand('copy');
+        document.body.removeChild(ta);
+      }
+      setCopiedText(text);
+      setTimeout(() => setCopiedText(null), 2000);
+    } catch (e) {
+      console.error('Failed to copy', e);
+    }
+  };
+
+  // Generate interactive lucky target combo (5-digit realistic format)
   const handleGenerateLucky = () => {
     setIsGenerating(true);
     setTimeout(() => {
       const s = slotData.series[Math.floor(Math.random() * slotData.series.length)];
+      const leadDigit = String(Math.floor(Math.random() * 9) + 1);
       const m = slotData.middles[Math.floor(Math.random() * slotData.middles.length)];
       const end = String(Math.floor(10 + Math.random() * 90));
-      setLuckyNumber(`${s} ${m}${end}`);
+      const fullCombo = `${s} ${leadDigit}${m}${end.slice(-2)}`;
+      setLuckyNumber(fullCombo);
       setIsGenerating(false);
     }, 400);
   };
@@ -79,20 +103,24 @@ export default function TargetNumbersTool({
 
         {/* Slot Switcher */}
         <div className="flex bg-slate-100 p-1 rounded-xl border border-slate-200 self-start sm:self-auto text-xs font-black">
-          {(['1PM', '6PM', '8PM'] as const).map(slot => (
-            <button
-              key={slot}
-              type="button"
-              onClick={() => { setSelectedSlot(slot); setLuckyNumber(null); }}
-              className={`py-1 px-2.5 sm:px-3 rounded-lg transition-all ${
-                selectedSlot === slot
-                  ? 'bg-blue-700 text-white shadow-xs'
-                  : 'text-slate-600 hover:text-slate-900'
-              }`}
-            >
-              {slot === '1PM' ? '1:00 PM' : slot === '6PM' ? '6:00 PM' : '8:00 PM'}
-            </button>
-          ))}
+          {(['1PM', '6PM', '8PM'] as const).map(slot => {
+            const isUpcoming = slot === upcomingDraw.slot;
+            return (
+              <button
+                key={slot}
+                type="button"
+                onClick={() => { setSelectedSlot(slot); setLuckyNumber(null); }}
+                className={`py-1 px-2.5 sm:px-3 rounded-lg transition-all flex items-center gap-1 ${
+                  selectedSlot === slot
+                    ? 'bg-blue-700 text-white shadow-xs'
+                    : 'text-slate-600 hover:text-slate-900'
+                }`}
+              >
+                {isUpcoming && <span className="text-[10px]">⚡</span>}
+                <span>{slot === '1PM' ? '1:00 PM' : slot === '6PM' ? '6:00 PM' : '8:00 PM'}</span>
+              </button>
+            );
+          })}
         </div>
       </div>
 
@@ -111,19 +139,25 @@ export default function TargetNumbersTool({
           </div>
           <p className="text-[11px] text-slate-600">
             {lang === 'bn'
-              ? 'সাম্প্রতিক ড্র-এর ৫ম পুরস্কার ও ৪র্থ পুরস্কারে সর্বাধিক আসা মিডিল:'
+              ? 'সাম্প্রতিক ড্র-এর ৫ম পুরস্কার ও ৪র্থ পুরস্কারে সর্বাধিক আসা মিডিল (ক্লিক করে কপি করুন):'
               : lang === 'hi'
-              ? 'हाल के ड्रॉ के 5वें और 4वें पुरस्कार में सबसे ज्यादा आने वाले मिडिल:'
-              : 'Most frequent middle digit pairs in recent 4th & 5th prizes:'}
+              ? 'हाल के ड्रॉ के 5वें और 4वें पुरस्कार में सबसे ज्यादा आने वाले मिडिल (कॉपी करने के लिए क्लिक करें):'
+              : 'Most frequent middle digit pairs in recent 4th & 5th prizes (click to copy):'}
           </p>
           <div className="flex flex-wrap gap-1.5 pt-1">
             {slotData.middles.map(m => (
-              <span
+              <button
                 key={m}
-                className="font-mono font-black text-sm bg-white text-slate-900 border border-amber-300 px-2.5 py-1 rounded-lg shadow-2xs"
+                type="button"
+                onClick={() => handleCopy(m)}
+                title="Click to copy middle pair"
+                className="font-mono font-black text-sm bg-white hover:bg-amber-100 text-slate-900 border border-amber-300 px-2.5 py-1 rounded-lg shadow-2xs transition-all active:scale-95 flex items-center gap-1"
               >
-                {m}xx
-              </span>
+                <span>{m}xx</span>
+                <span className="text-[9px] text-amber-700 font-sans opacity-70">
+                  {copiedText === m ? '✓' : '📋'}
+                </span>
+              </button>
             ))}
           </div>
         </div>
@@ -141,19 +175,25 @@ export default function TargetNumbersTool({
           </div>
           <p className="text-[11px] text-slate-600">
             {lang === 'bn'
-              ? 'টিকিটের শেষ ২ সংখ্যার পুনরাবৃত্তি পরিসংখ্যান ভিত্তিক তালিকা:'
+              ? 'টিকিটের শেষ ২ সংখ্যার পুনরাবৃত্তি পরিসংখ্যান ভিত্তিক তালিকা (ক্লিক করে কপি করুন):'
               : lang === 'hi'
-              ? 'टिकट के अंतिम 2 अंकों की आवृत्ति पर आधारित सूची:'
-              : 'Statistical high-occurrence last 2-digit patterns:'}
+              ? 'टिकट के अंतिम 2 अंकों की आवृत्ति पर आधारित सूची (कॉपी करने के लिए क्लिक करें):'
+              : 'Statistical high-occurrence last 2-digit patterns (click to copy):'}
           </p>
           <div className="flex flex-wrap gap-1.5 pt-1">
             {slotData.endings.map(end => (
-              <span
+              <button
                 key={end}
-                className="font-mono font-black text-sm bg-white text-blue-700 border border-blue-300 px-2.5 py-1 rounded-lg shadow-2xs"
+                type="button"
+                onClick={() => handleCopy(end)}
+                title="Click to copy ending digits"
+                className="font-mono font-black text-sm bg-white hover:bg-blue-100 text-blue-700 border border-blue-300 px-2.5 py-1 rounded-lg shadow-2xs transition-all active:scale-95 flex items-center gap-1"
               >
-                ..{end}
-              </span>
+                <span>..{end}</span>
+                <span className="text-[9px] text-blue-600 font-sans opacity-70">
+                  {copiedText === end ? '✓' : '📋'}
+                </span>
+              </button>
             ))}
           </div>
         </div>
@@ -170,19 +210,44 @@ export default function TargetNumbersTool({
         </span>
 
         {luckyNumber ? (
-          <div className="space-y-2">
-            <div className="inline-block bg-white border-2 border-emerald-500 rounded-2xl px-5 py-2.5 shadow-sm">
-              <span className="text-[10px] font-black text-emerald-700 uppercase tracking-wider block">
-                {lang === 'bn' ? 'প্রস্তাবিত টার্গেট কম্বিনেশন' : lang === 'hi' ? 'सुझाया गया कॉम्बिनेशन' : 'Suggested Target Combination'}
-              </span>
-              <span className="font-mono font-black text-2xl sm:text-3xl text-emerald-800 tracking-wider">
-                {luckyNumber}
-              </span>
+          <div className="space-y-3">
+            <div
+              onClick={() => handleCopy(luckyNumber)}
+              className="inline-block bg-white border-2 border-emerald-500 hover:border-emerald-600 rounded-2xl px-5 py-3 shadow-sm cursor-pointer group transition-all"
+              title={lang === 'bn' ? 'ক্লিক করে কপি করুন' : 'Click to copy'}
+            >
+              <div className="flex items-center justify-center gap-1.5 text-[10px] font-black text-emerald-700 uppercase tracking-wider">
+                <span>{copiedText === luckyNumber ? '✓ কপি হয়েছে!' : 'প্রস্তাবিত টার্গেট কম্বিনেশন (ক্লিক করে কপি করুন)'}</span>
+              </div>
+              <div className="font-mono font-black text-2xl sm:text-4xl text-emerald-800 tracking-wider flex items-center justify-center gap-2.5 mt-1">
+                <span>{luckyNumber}</span>
+                <span className="text-[11px] font-sans font-bold bg-emerald-100 group-hover:bg-emerald-200 text-emerald-800 px-2.5 py-0.5 rounded-lg flex items-center gap-1">
+                  {copiedText === luckyNumber ? '✓ Copied' : '📋 Copy'}
+                </span>
+              </div>
             </div>
-            <div>
+
+            <div className="flex items-center justify-center gap-2 flex-wrap">
+              <button
+                type="button"
+                onClick={() => handleCopy(luckyNumber)}
+                className={`inline-flex items-center gap-1.5 font-black text-xs px-4 py-2 rounded-xl shadow-xs transition-all active:scale-95 border ${
+                  copiedText === luckyNumber
+                    ? 'bg-emerald-600 text-white border-emerald-700'
+                    : 'bg-white hover:bg-slate-50 text-slate-800 border-slate-300'
+                }`}
+              >
+                <span>{copiedText === luckyNumber ? '✓' : '📋'}</span>
+                <span>
+                  {copiedText === luckyNumber
+                    ? (lang === 'bn' ? 'নম্বর কপি হয়েছে!' : lang === 'hi' ? 'नंबर कॉपी हो गया!' : 'Number Copied!')
+                    : (lang === 'bn' ? 'নম্বর কপি করুন' : lang === 'hi' ? 'नंबर कॉपी करें' : 'Copy Number')}
+                </span>
+              </button>
+
               <a
                 href={`/demo?num=${encodeURIComponent(luckyNumber)}&slot=${selectedSlot}`}
-                className="inline-flex items-center gap-1.5 bg-blue-700 hover:bg-blue-800 text-white font-black text-xs px-3.5 py-1.5 rounded-xl shadow-xs transition-all active:scale-95"
+                className="inline-flex items-center gap-1.5 bg-blue-700 hover:bg-blue-800 text-white font-black text-xs px-4 py-2 rounded-xl shadow-xs transition-all active:scale-95"
               >
                 <span>🎮</span>
                 <span>{lang === 'bn' ? 'ডেমো প্লে-তে টেস্ট করুন ➔' : lang === 'hi' ? 'डेमो प्ले में टेस्ट करें ➔' : 'Test in Demo Play ➔'}</span>
