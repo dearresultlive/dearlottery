@@ -17,7 +17,7 @@ interface Props {
 const { title, description, drawDate, drawTime, winningNumbers } = Astro.props;
 const currentPath = Astro.url.pathname;
 const isHomeActive = currentPath === '/' || currentPath.startsWith('/results');
-const isYesterdayActive = currentPath === '/yesterday';
+const isDemoActive = currentPath === '/demo';
 const isTargetsActive = currentPath === '/target-numbers' || currentPath === '/analytics';
 const isCheckerActive = currentPath === '/checker';
 ---
@@ -106,17 +106,17 @@ const isCheckerActive = currentPath === '/checker';
       </a>
 
       <a
-        href="/yesterday"
-        aria-label="Yesterday Results"
+        href="/demo"
+        aria-label="Demo Lottery Paper Play"
         class={`flex flex-col items-center justify-center flex-1 min-h-[48px] py-1 transition-all active:scale-95 ${
-          isYesterdayActive ? 'text-blue-700 font-black' : 'text-slate-600 font-semibold hover:text-slate-900'
+          isDemoActive ? 'text-blue-700 font-black' : 'text-slate-600 font-semibold hover:text-slate-900'
         }`}
       >
-        <span class="text-lg">🌙</span>
+        <span class="text-lg">🎮</span>
         <span class="text-[10px] mt-0.5">
-          <span class="lang-en">Yesterday</span>
-          <span class="lang-bn">গতকাল</span>
-          <span class="lang-hi">कल का रिजल्ट</span>
+          <span class="lang-en">Demo Play</span>
+          <span class="lang-bn">ডেমো প্লে</span>
+          <span class="lang-hi">डेमो प्ले</span>
         </span>
       </a>
 

@@ -1,0 +1,75 @@
+---
+import Layout from '../layouts/Layout.astro';
+import DemoPlayModule from '../components/DemoPlayModule';
+import { fetchLatestDraws, fetchDrawsByDate } from '../lib/api';
+import { getISTDateString, getISTNow } from '../lib/lottery-utils';
+
+const istNow = getISTNow();
+const todayDateStr = getISTDateString(istNow);
+
+const yesterday = new Date(istNow);
+yesterday.setDate(yesterday.getDate() - 1);
+const yesterdayDateStr = getISTDateString(yesterday);
+
+const todayDraws = await fetchLatestDraws();
+const yesterdayDraws = await fetchDrawsByDate(yesterdayDateStr);
+const allDraws = [...todayDraws, ...yesterdayDraws];
+---
+
+<Layout
+  title={`Dear Lottery Demo Play • Paper Ticket Simulator (${todayDateStr}) | Lottery Sambad`}
+  description={`Practice your Dear Lottery ticket predictions for free. 100% simulated paper ticket tracker for 1:00 PM, 6:00 PM, and 8:00 PM draws. Test your accuracy and middle number hit rate without spending real money.`}
+  drawDate={todayDateStr}
+>
+  <div class="max-w-[620px] md:max-w-2xl lg:max-w-3xl mx-auto px-2.5 sm:px-4 py-2 sm:py-4 space-y-4">
+    
+    {/* Breadcrumbs Navigation */}
+    <nav aria-label="Breadcrumb" class="flex items-center gap-2 text-xs text-slate-500 border-b border-slate-200 pb-2">
+      <a href="/" class="hover:text-blue-700 font-medium">Home (হোম)</a>
+      <span>/</span>
+      <span class="text-slate-900 font-bold">Demo Play (ডেমো প্লে)</span>
+    </nav>
+
+    {/* Primary Interactive Demo Play Module */}
+    <section id="demo-module">
+      <DemoPlayModule client:load initialDraws={allDraws} />
+    </section>
+
+    {/* Educational Guide on Paper Lottery & Strategy */}
+    <section class="bg-white border border-slate-200 rounded-2xl p-4 sm:p-6 text-slate-700 space-y-3.5 shadow-sm text-xs leading-relaxed">
+      <h2 class="text-base sm:text-lg font-black text-slate-900">
+        About Dear Lottery Demo & Paper Play (পেপার টেস্ট কী এবং কেন করবেন?)
+      </h2>
+      <p>
+        Just as stock market traders use <strong>Paper Trading</strong> to test indicators and strategies before putting real capital at risk, smart lottery enthusiasts use <strong>Paper Lottery Simulation</strong> to test their intuition and frequency patterns.
+      </p>
+
+      <div class="space-y-2 border-t border-slate-100 pt-3">
+        <h3 class="font-bold text-slate-900 text-xs sm:text-sm">Key Benefits of Demo Simulation:</h3>
+        <ul class="list-disc list-inside space-y-1 text-slate-600">
+          <li><strong>Track Your Prediction Accuracy:</strong> See your real hit-rate percentage over 10, 20, or 50 simulated draws.</li>
+          <li><strong>Test Middle Number Theories:</strong> Test whether certain 2-digit middle pairs (e.g., 48, 79) or ending digits consistently appear in the 5th prize category (₹120).</li>
+          <li><strong>Zero Financial Risk:</strong> Learn how random draw probabilities truly behave without spending a single rupee.</li>
+        </ul>
+      </div>
+
+      <div class="border-t border-slate-100 pt-3 flex flex-wrap gap-2 justify-center">
+        <a
+          href="/target-numbers"
+          class="inline-flex items-center gap-1.5 bg-amber-600 hover:bg-amber-700 text-white font-bold text-xs px-4 py-2 rounded-xl shadow-xs transition-all"
+        >
+          <span>🎯</span>
+          <span>View Hot Target Numbers (টার্গেট নম্বর)</span>
+        </a>
+        <a
+          href="/"
+          class="inline-flex items-center gap-1.5 bg-blue-700 hover:bg-blue-800 text-white font-bold text-xs px-4 py-2 rounded-xl shadow-xs transition-all"
+        >
+          <span>👈</span>
+          <span>View Live Draw Results (আজকের লাইভ রেজাল্ট)</span>
+        </a>
+      </div>
+    </section>
+
+  </div>
+</Layout>

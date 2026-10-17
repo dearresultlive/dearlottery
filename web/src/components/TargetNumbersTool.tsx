@@ -170,13 +170,24 @@ export default function TargetNumbersTool({
         </span>
 
         {luckyNumber ? (
-          <div className="inline-block bg-white border-2 border-emerald-500 rounded-2xl px-5 py-2.5 shadow-sm">
-            <span className="text-[10px] font-black text-emerald-700 uppercase tracking-wider block">
-              {lang === 'bn' ? 'প্রস্তাবিত টার্গেট কম্বিনেশন' : lang === 'hi' ? 'सुझाया गया कॉम्बिनेशन' : 'Suggested Target Combination'}
-            </span>
-            <span className="font-mono font-black text-2xl sm:text-3xl text-emerald-800 tracking-wider">
-              {luckyNumber}
-            </span>
+          <div className="space-y-2">
+            <div className="inline-block bg-white border-2 border-emerald-500 rounded-2xl px-5 py-2.5 shadow-sm">
+              <span className="text-[10px] font-black text-emerald-700 uppercase tracking-wider block">
+                {lang === 'bn' ? 'প্রস্তাবিত টার্গেট কম্বিনেশন' : lang === 'hi' ? 'सुझाया गया कॉम्बिनेशन' : 'Suggested Target Combination'}
+              </span>
+              <span className="font-mono font-black text-2xl sm:text-3xl text-emerald-800 tracking-wider">
+                {luckyNumber}
+              </span>
+            </div>
+            <div>
+              <a
+                href={`/demo?num=${encodeURIComponent(luckyNumber)}&slot=${selectedSlot}`}
+                className="inline-flex items-center gap-1.5 bg-blue-700 hover:bg-blue-800 text-white font-black text-xs px-3.5 py-1.5 rounded-xl shadow-xs transition-all active:scale-95"
+              >
+                <span>🎮</span>
+                <span>{lang === 'bn' ? 'ডেমো প্লে-তে টেস্ট করুন ➔' : lang === 'hi' ? 'डेमो प्ले में टेस्ट करें ➔' : 'Test in Demo Play ➔'}</span>
+              </a>
+            </div>
           </div>
         ) : null}
 
