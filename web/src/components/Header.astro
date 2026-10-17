@@ -104,6 +104,16 @@ const { currentPath = '/' } = Astro.props;
         <NotificationBell client:idle />
         <LanguageToggle client:idle />
 
+        <button
+          type="button"
+          onclick="window.dispatchEvent(new CustomEvent('dearlottery:open_install_pwa'))"
+          class="inline-flex items-center gap-1 bg-amber-50 hover:bg-amber-100 text-amber-900 border border-amber-300 text-[11px] sm:text-xs font-black px-2 sm:px-2.5 py-1.5 sm:py-2 rounded-lg sm:rounded-xl shadow-2xs transition-all active:scale-95 cursor-pointer"
+          title="Install Dear Result Live App"
+        >
+          <span>📲</span>
+          <span class="hidden sm:inline">App</span>
+        </button>
+
         <a
           href="/checker"
           aria-label="Ticket Checker"

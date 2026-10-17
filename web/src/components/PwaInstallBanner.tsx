@@ -50,11 +50,27 @@ export default function PwaInstallBanner() {
       setIsVisible(true);
     }, 1200);
 
+    // Global event listener to allow reopening the banner from header/footer buttons
+    const handleManualOpen = () => {
+      try {
+        localStorage.removeItem('dear_pwa_install_dismissed');
+      } catch (e) {}
+      setIsDismissed(false);
+      setIsVisible(true);
+      setShowGuide(true);
+      if (deferredPrompt) {
+        deferredPrompt.prompt();
+      }
+    };
+
+    window.addEventListener('dearlottery:open_install_pwa', handleManualOpen);
+
     return () => {
       clearTimeout(timer);
       window.removeEventListener('beforeinstallprompt', handleBeforeInstall);
+      window.removeEventListener('dearlottery:open_install_pwa', handleManualOpen);
     };
-  }, []);
+  }, [deferredPrompt]);
 
   const handleInstallClick = async () => {
     if (isIOS) {
