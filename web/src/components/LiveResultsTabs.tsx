@@ -184,7 +184,7 @@ export default function LiveResultsTabs({
   const isYesterday = activeDateStr === yesterdayDateStr;
   const isPastDate = !isToday && !isYesterday;
 
-  // 7-day past dates list with hybrid format (Today • DD.MM, Yesterday • DD.MM, DD.MM (Day))
+  // 7-day past dates list with full dd/mm/yyyy format (Today • DD/MM/YYYY, Yesterday • DD/MM/YYYY, DD/MM/YYYY (Day))
   const pastDatesList = useMemo(() => {
     const list: Array<{ value: string; label: string }> = [];
     const baseDate = new Date(getISTNow());
@@ -193,12 +193,15 @@ export default function LiveResultsTabs({
       d.setDate(baseDate.getDate() - i);
       const iso = getISTDateString(d);
       const dayShort = d.toLocaleDateString('en-IN', { weekday: 'short' });
-      const ddmm = `${String(d.getDate()).padStart(2, '0')}.${String(d.getMonth() + 1).padStart(2, '0')}`;
-      let label = `${ddmm} (${dayShort})`;
+      const dd = String(d.getDate()).padStart(2, '0');
+      const mm = String(d.getMonth() + 1).padStart(2, '0');
+      const yyyy = d.getFullYear();
+      const ddmmyyyy = `${dd}/${mm}/${yyyy}`;
+      let label = `${ddmmyyyy} (${dayShort})`;
       if (i === 0) {
-        label = lang === 'bn' ? `আজ • ${ddmm}` : lang === 'hi' ? `आज • ${ddmm}` : `Today • ${ddmm}`;
+        label = lang === 'bn' ? `আজ • ${ddmmyyyy}` : lang === 'hi' ? `आज • ${ddmmyyyy}` : `Today • ${ddmmyyyy}`;
       } else if (i === 1) {
-        label = lang === 'bn' ? `গতকাল • ${ddmm}` : lang === 'hi' ? `कल • ${ddmm}` : `Yesterday • ${ddmm}`;
+        label = lang === 'bn' ? `গতকাল • ${ddmmyyyy}` : lang === 'hi' ? `कल • ${ddmmyyyy}` : `Yesterday • ${ddmmyyyy}`;
       }
       list.push({ value: iso, label });
     }
@@ -650,11 +653,11 @@ export default function LiveResultsTabs({
             value={activeDateStr}
             aria-label="Select Draw Date"
             onChange={(e) => handleDateChange(e.target.value)}
-            className="w-full bg-blue-50/90 hover:bg-blue-100 border-2 border-blue-600 text-blue-950 rounded-xl sm:rounded-2xl py-2.5 sm:py-3 pl-3 pr-8 sm:pl-4 sm:pr-9 font-black appearance-none text-center cursor-pointer shadow-xs ring-2 ring-blue-500/20 active:scale-95 transition-all text-xs sm:text-sm truncate"
+            className="w-full bg-blue-50/90 hover:bg-blue-100 border-2 border-blue-600 text-blue-950 rounded-xl sm:rounded-2xl py-2.5 sm:py-3 pl-2 pr-6 sm:pl-3 sm:pr-8 font-black appearance-none text-center cursor-pointer shadow-xs ring-2 ring-blue-500/20 active:scale-95 transition-all text-xs sm:text-sm truncate"
           >
             {!hasActiveDateInList && activeDateStr && (
               <option value={activeDateStr} className="bg-white text-slate-900 font-bold py-1.5">
-                {activeDateStr.split('-').reverse().join('.')} (Archive)
+                {activeDateStr.split('-').reverse().join('/')} (Archive)
               </option>
             )}
             {pastDatesList.map((item) => (
