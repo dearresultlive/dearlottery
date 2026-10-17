@@ -96,7 +96,7 @@ export default function TicketChecker({ initialDraws = [], variant = 'slim' }: T
               drawTime,
               drawDate,
               prizeRank: getRankName('2nd'),
-              prizeAmount: 10000,
+              prizeAmount: 9000,
               ticketNumber: num,
               seriesMatched: true
             });
@@ -112,7 +112,7 @@ export default function TicketChecker({ initialDraws = [], variant = 'slim' }: T
               drawTime,
               drawDate,
               prizeRank: getRankName('3rd'),
-              prizeAmount: 500,
+              prizeAmount: 450,
               ticketNumber: num,
               seriesMatched: true
             });

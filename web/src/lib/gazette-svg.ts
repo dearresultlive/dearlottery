@@ -199,7 +199,7 @@ export function generateGazetteSvg(data: GazetteSvgData): string {
     <text x="10" y="12" fill="#0c2461" font-size="8.5" font-weight="900">2nd</text>
     <text x="28" y="11" fill="#000000" font-size="6.5" font-weight="700">Prize Amount</text>
     <text x="28" y="17" fill="#000000" font-size="6" font-weight="700">for Winner</text>
-    <text x="8" y="31" fill="#e01a1a" font-size="16" font-weight="900" class="t-impact">₹ 10,000/-</text>
+    <text x="8" y="31" fill="#e01a1a" font-size="16" font-weight="900" class="t-impact">₹ 9,000/-</text>
     <text x="95" y="34" fill="#000000" font-size="6.5" font-weight="800">for Seller ₹ 500/-</text>
 
     <!-- 10 Numbers (2 rows of 5) -->
@@ -214,14 +214,14 @@ export function generateGazetteSvg(data: GazetteSvgData): string {
     <line x1="0" y1="39" x2="536" y2="39" stroke="#cbd5e1" stroke-width="1" />
   </g>
 
-  <!-- ================= 6. 3RD PRIZE SECTION (₹ 500/-) ================= -->
+  <!-- ================= 6. 3RD PRIZE SECTION (₹ 450/-) ================= -->
   <g transform="translate(2, 246)">
     <!-- Blue Chevron Left -->
     <polygon points="0,0 162,0 178,17 162,34 0,34" fill="#0056b3" />
     <text x="10" y="12" fill="#ffffff" font-size="9" font-weight="900">3rd</text>
     <text x="28" y="11" fill="#ffffff" font-size="6.5" font-weight="700">Prize</text>
     <text x="28" y="17" fill="#ffffff" font-size="6" font-weight="700">Amount</text>
-    <text x="60" y="18" fill="#ffffff" font-size="15" font-weight="900" class="t-impact">₹ 500/-</text>
+    <text x="60" y="18" fill="#ffffff" font-size="15" font-weight="900" class="t-impact">₹ 450/-</text>
     <text x="10" y="29" fill="#fff100" font-size="6.5" font-weight="800">for Winner / for Seller ₹ 50/-</text>
 
     <!-- 10 Numbers (2 rows of 5) -->
@@ -371,7 +371,7 @@ export function generateGazetteSvg(data: GazetteSvgData): string {
     </text>
     <rect x="68" y="360" width="400" height="48" fill="#00802b" rx="8" />
     <text x="268" y="390" fill="#ffffff" font-size="13" font-weight="900" text-anchor="middle">
-      TOTAL PRIZE: 1ST PRIZE ₹1 CRORE • 2ND PRIZE ₹10,000
+      TOTAL PRIZE: 1ST PRIZE ₹1 CRORE • 2ND PRIZE ₹9,000
     </text>
   </g>
   `}

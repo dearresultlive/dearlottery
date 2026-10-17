@@ -224,8 +224,8 @@ export async function generateLotteryPdf(data: DrawPdfData): Promise<Uint8Array>
     const prizeTiers = [
       { rank: "1st Prize", amount: "Rs. 1,00,00,000/- (1 Crore)", count: "1 Winner", digits: "5 Digits with Series" },
       { rank: "Consolation", amount: "Rs. 1,000/-", count: "Remaining Series", digits: "5 Digits (Matching 1st Prize)" },
-      { rank: "2nd Prize", amount: "Rs. 10,000/-", count: "10 Winners", digits: "5 Digits" },
-      { rank: "3rd Prize", amount: "Rs. 500/-", count: "10 Winners", digits: "Last 4 Digits" },
+      { rank: "2nd Prize", amount: "Rs. 9,000/-", count: "10 Winners", digits: "5 Digits" },
+      { rank: "3rd Prize", amount: "Rs. 450/-", count: "10 Winners", digits: "Last 4 Digits" },
       { rank: "4th Prize", amount: "Rs. 250/-", count: "10 Winners", digits: "Last 4 Digits" },
       { rank: "5th Prize", amount: "Rs. 120/-", count: "100 Winners", digits: "Last 4 Digits" }
     ];
@@ -372,8 +372,8 @@ export async function generateLotteryPdf(data: DrawPdfData): Promise<Uint8Array>
 
     currentY -= (firstBoxHeight + 16);
 
-    // 4. 2ND PRIZE (Rs. 10,000 - 10 Winners)
-    drawSectionHeader("2ND PRIZE: Rs. 10,000/- (10 WINNERS - 5 DIGITS)", currentY, darkGreen);
+    // 4. 2ND PRIZE (Rs. 9,000 - 10 Winners)
+    drawSectionHeader("2ND PRIZE: Rs. 9,000/- (10 WINNERS - 5 DIGITS)", currentY, darkGreen);
     currentY -= 20;
 
     const secPadded = [...seconds];
@@ -398,8 +398,8 @@ export async function generateLotteryPdf(data: DrawPdfData): Promise<Uint8Array>
 
     currentY -= 6;
 
-    // 5. 3RD PRIZE (Rs. 500 - 10 Winners)
-    drawSectionHeader("3RD PRIZE: Rs. 500/- (10 WINNERS - LAST 4 DIGITS)", currentY, darkBlue);
+    // 5. 3RD PRIZE (Rs. 450 - 10 Winners)
+    drawSectionHeader("3RD PRIZE: Rs. 450/- (10 WINNERS - LAST 4 DIGITS)", currentY, darkBlue);
     currentY -= 20;
 
     const thirdPadded = [...thirds];
