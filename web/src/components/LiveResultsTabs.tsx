@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import {
   formatINR,
   getISTNow,
@@ -176,6 +176,27 @@ export default function LiveResultsTabs({
     return getISTDateString(y);
   })();
 
+  // 7-day past dates list with hybrid format (Today • DD.MM, Yesterday • DD.MM, DD.MM (Day))
+  const pastDatesList = useMemo(() => {
+    const list: Array<{ value: string; label: string }> = [];
+    const baseDate = new Date(getISTNow());
+    for (let i = 0; i < 7; i++) {
+      const d = new Date(baseDate);
+      d.setDate(baseDate.getDate() - i);
+      const iso = getISTDateString(d);
+      const dayShort = d.toLocaleDateString('en-IN', { weekday: 'short' });
+      const ddmm = `${String(d.getDate()).padStart(2, '0')}.${String(d.getMonth() + 1).padStart(2, '0')}`;
+      let label = `${ddmm} (${dayShort})`;
+      if (i === 0) {
+        label = lang === 'bn' ? `আজ • ${ddmm}` : lang === 'hi' ? `आज • ${ddmm}` : `Today • ${ddmm}`;
+      } else if (i === 1) {
+        label = lang === 'bn' ? `গতকাল • ${ddmm}` : lang === 'hi' ? `कल • ${ddmm}` : `Yesterday • ${ddmm}`;
+      }
+      list.push({ value: iso, label });
+    }
+    return list;
+  }, [lang]);
+
   // Find Yesterday's 8:00 PM Draw specifically (for morning check)
   const yesterday8pmDraw = (yesterdayDraws || []).find(d => 
     d.draw_time?.includes('8') || d.id?.includes('8PM')
@@ -259,6 +280,40 @@ export default function LiveResultsTabs({
   const handleResetZoom = () => setZoomScale(1);
 
   const currentSlotInfo = slots.find(s => s.key === activeSlot) || slots[0];
+
+  const hasActiveDateInList = pastDatesList.some(item => item.value === activeDateStr);
+
+  const handleDateChange = (selectedValue: string) => {
+    if (selectedValue === 'MORE') {
+      window.location.href = '/old-results';
+      return;
+    }
+
+    const realToday = pastDatesList[0]?.value || todayStr;
+    const realYesterday = pastDatesList[1]?.value || yesterdayDateStr;
+    const isHome = typeof window !== 'undefined' && (window.location.pathname === '/' || window.location.pathname === '');
+
+    if (selectedValue === realToday) {
+      if (isHome) {
+        setDateMode('TODAY');
+      } else {
+        window.location.href = `/#${activeSlot.toLowerCase()}`;
+      }
+      return;
+    }
+
+    if (selectedValue === realYesterday) {
+      if (isHome) {
+        setDateMode('YESTERDAY');
+      } else {
+        window.location.href = '/yesterday';
+      }
+      return;
+    }
+
+    // Historical archive navigation
+    window.location.href = `/results/${selectedValue}/${activeSlot.toLowerCase()}`;
+  };
 
   return (
     <div className="space-y-3 sm:space-y-3.5 max-w-[557px] mx-auto">
@@ -570,17 +625,26 @@ export default function LiveResultsTabs({
 
         <div className="relative">
           <select
-            value={todayStr}
+            value={activeDateStr}
             aria-label="Select Draw Date"
-            onChange={(e) => {
-              window.location.href = `/results/${e.target.value}/${activeSlot.toLowerCase()}`;
-            }}
-            className="w-full bg-slate-100 hover:bg-slate-200 border border-slate-300 text-slate-800 rounded-xl py-2 px-1.5 sm:px-2.5 font-bold appearance-none text-center cursor-pointer shadow-2xs"
+            onChange={(e) => handleDateChange(e.target.value)}
+            className="w-full bg-slate-100 hover:bg-slate-200 border border-slate-300 text-slate-800 rounded-xl py-2 pl-1 sm:pl-2 pr-4 sm:pr-4 font-bold appearance-none text-center cursor-pointer shadow-2xs text-[11px] sm:text-xs truncate"
           >
-            <option value={todayStr}>{todayStr.split('-').reverse().join('.')}</option>
-            <option value={yesterdayDateStr}>{yesterdayDateStr.split('-').reverse().join('.')}</option>
+            {!hasActiveDateInList && activeDateStr && (
+              <option value={activeDateStr}>
+                {activeDateStr.split('-').reverse().join('.')} (Archive)
+              </option>
+            )}
+            {pastDatesList.map((item) => (
+              <option key={item.value} value={item.value}>
+                {item.label}
+              </option>
+            ))}
+            <option value="MORE">
+              {lang === 'bn' ? 'পুরনো রেজাল্ট (৩০ দিন) →' : lang === 'hi' ? 'पुराने नतीजे (30 दिन) →' : 'More Results (30 Days) →'}
+            </option>
           </select>
-          <span className="pointer-events-none absolute right-1.5 sm:right-2 top-1/2 -translate-y-1/2 text-slate-400 text-xs">▾</span>
+          <span className="pointer-events-none absolute right-1 sm:right-2 top-1/2 -translate-y-1/2 text-slate-400 text-xs">▾</span>
         </div>
       </div>
 
