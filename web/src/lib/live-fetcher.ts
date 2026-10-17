@@ -135,6 +135,14 @@ export async function checkAndFetchLiveSlot(
               existing.image_r2_url = imgMatch[1];
               if (!DYNAMIC_DRAWS_CACHE[dateStr]) DYNAMIC_DRAWS_CACHE[dateStr] = {};
               DYNAMIC_DRAWS_CACHE[dateStr][slot] = existing;
+
+              return {
+                slot,
+                status: 'RESULT_OUT',
+                first_prize: existing.first_prize,
+                imageUrl: imgMatch[1],
+                prizes: existing
+              };
             }
           }
         }
