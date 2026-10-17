@@ -677,26 +677,69 @@ export default function DemoPlayModule({ initialDraws = [] }: DemoPlayModuleProp
           </span>
         </div>
 
-        {/* Hot Target Number Generator */}
+        {/* High-Probability Hot Target Prediction Card Button */}
         <button
           type="button"
           onClick={handleSmartPick}
-          className="w-full flex items-center justify-between bg-gradient-to-r from-amber-500 via-orange-500 to-amber-600 hover:from-amber-600 hover:to-orange-600 text-white font-black text-xs sm:text-sm py-2.5 sm:py-3 px-3.5 rounded-xl shadow-xs transition-all active:scale-98"
+          className="w-full text-left bg-gradient-to-r from-amber-500 via-orange-500 to-red-600 hover:from-amber-600 hover:via-orange-600 hover:to-red-700 text-white rounded-2xl p-3 sm:p-4 shadow-sm hover:shadow-md transition-all active:scale-[0.99] group relative overflow-hidden border border-amber-300/40"
         >
-          <span className="flex items-center gap-2">
-            <span className="text-base sm:text-lg animate-pulse">🔥</span>
-            <span>
-              {lang === 'bn' 
-                ? 'হট টার্গেট নম্বর থেকে টিকিট জেনারেট করুন' 
-                : lang === 'hi' 
-                ? 'हॉट टारगेट नंबर से टिकट जनरेट करें' 
-                : 'Generate Hot Target Ticket'}
+          {/* Subtle decorative glow */}
+          <div className="absolute top-0 right-0 -translate-y-4 translate-x-4 w-32 h-32 bg-yellow-300/20 rounded-full blur-xl pointer-events-none group-hover:scale-125 transition-transform"></div>
+
+          {/* Top Pill / Badge */}
+          <div className="flex items-center justify-between gap-2 mb-2">
+            <span className="inline-flex items-center gap-1.5 bg-black/25 text-amber-200 border border-amber-300/30 text-[10px] sm:text-[11px] font-black px-2.5 py-0.5 rounded-full backdrop-blur-xs">
+              <span className="animate-pulse">🎯</span>
+              <span>
+                {lang === 'bn' 
+                  ? 'অতীত ড্র অ্যানালাইসিস ভিত্তিক প্রেডিকশন' 
+                  : lang === 'hi' 
+                  ? 'ड्रॉ एनालिसिस आधारित हाई-हिट प्रेडिक्शन' 
+                  : 'Past Draw Analysis & High-Hit Prediction'}
+              </span>
             </span>
-          </span>
-          <span className="text-[10px] sm:text-xs font-mono font-bold bg-black/15 text-white px-2 py-0.5 rounded-md flex items-center gap-1">
-            <span>+ ১-ক্লিক অ্যাড</span>
-            <span>➔</span>
-          </span>
+
+            <span className="text-[10px] sm:text-[11px] font-mono font-bold bg-white text-orange-700 px-2.5 py-0.5 rounded-md shadow-2xs shrink-0 flex items-center gap-1">
+              <span>⚡ ১-ক্লিক প্রেডিকশন</span>
+              <span>➔</span>
+            </span>
+          </div>
+
+          {/* Main Title */}
+          <div className="flex items-center gap-2">
+            <span className="text-xl sm:text-2xl animate-bounce">🔥</span>
+            <div className="font-black text-sm sm:text-base tracking-tight text-white drop-shadow-2xs">
+              {lang === 'bn'
+                ? 'হট উইনিং টার্গেট টিকিট জেনারেট করুন'
+                : lang === 'hi'
+                ? 'हॉट विनिंग टारगेट टिकट जनरेट करें'
+                : 'Generate Hot Winning Target Ticket'}
+            </div>
+          </div>
+
+          {/* Subtitle / Why this wins */}
+          <p className="text-[11px] sm:text-xs text-amber-100 font-medium mt-1 leading-relaxed">
+            {lang === 'bn'
+              ? 'সাম্প্রতিক ড্র-তে যে নম্বর ও মিডিলগুলো বারবার ১ম, ২য় ও ৫ম পুরস্কার জিতেছে—সেই উইনিং ট্রেন্ড প্যাটার্ন অনুযায়ী টিকিট তৈরি হয়।'
+              : lang === 'hi'
+              ? 'हाल के खेलों में सबसे ज्यादा बार जीतने वाले मिडिल और एंडिंग पैटर्न के आधार पर यह टिकट जनरेट होता है।'
+              : 'Generated using high-frequency winning middles & ending combinations that repeatedly won prizes in recent draws.'}
+          </p>
+
+          {/* Live Hot Seeds Preview Tag */}
+          <div className="mt-2.5 pt-2 border-t border-white/20 flex flex-wrap items-center justify-between gap-1 text-[10px] text-amber-200/90 font-mono">
+            <div className="flex items-center gap-1.5">
+              <span className="font-bold text-white uppercase text-[9px] bg-black/20 px-1.5 py-0.2 rounded font-sans">
+                {selectedSlot} ট্রেন্ড
+              </span>
+              <span>মিডিল: <strong className="text-white">{slotTrends.middles.slice(0, 3).join(', ')}</strong></span>
+              <span>•</span>
+              <span>এন্ডিং: <strong className="text-white">{slotTrends.endings.slice(0, 3).join(', ')}</strong></span>
+            </div>
+            <span className="text-white font-black underline underline-offset-2 text-[10px] sm:text-[11px]">
+              {lang === 'bn' ? '+ টিকিট ব্যাগে যোগ করুন' : '+ Add to Pocket'}
+            </span>
+          </div>
         </button>
 
         {/* Manual Input Form */}
@@ -739,94 +782,6 @@ export default function DemoPlayModule({ initialDraws = [] }: DemoPlayModuleProp
             </div>
           )}
         </form>
-
-        {/* Winning & Most Frequent Number Suggestions from Recent Games */}
-        {winningSuggestions.length > 0 && (
-          <div className="pt-2 border-t border-slate-100 space-y-2">
-            <div className="flex items-center justify-between">
-              <span className="text-[11px] sm:text-xs font-black text-slate-800 flex items-center gap-1.5">
-                <span className="text-amber-500">🏆</span>
-                <span>
-                  {lang === 'bn'
-                    ? 'সাম্প্রতিক খেলায় সর্বাধিক আসা ও জয়ী নম্বরের সাজেশন'
-                    : lang === 'hi'
-                    ? 'हाल के खेलों में सबसे ज्यादा जीतने वाले नंबर'
-                    : 'Numbers Mostly Won in Recent Games'}
-                </span>
-              </span>
-              <span className="text-[9px] font-bold text-slate-400">
-                {lang === 'bn' ? '১-ক্লিক প্লে' : '1-Click Play'}
-              </span>
-            </div>
-
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-              {winningSuggestions.map((item, idx) => {
-                const fullText = `${item.series} ${item.number}`;
-                const isCopied = copiedTicketId === `sug-${idx}`;
-                return (
-                  <div
-                    key={`sug-${idx}`}
-                    className="flex items-center justify-between bg-slate-50 hover:bg-amber-50/50 border border-slate-200 hover:border-amber-300 rounded-xl p-2 transition-all group"
-                  >
-                    <div 
-                      onClick={() => {
-                        setManualSeries(item.series);
-                        setManualNumber(item.number);
-                      }}
-                      className="cursor-pointer min-w-0 flex-1 pr-1"
-                      title={lang === 'bn' ? 'নম্বরটি বক্সে বসাতে ক্লিক করুন' : 'Click to autofill input'}
-                    >
-                      <div className="flex items-center gap-1.5">
-                        <span className="text-[11px] font-black text-amber-700 bg-amber-100/80 px-1.5 py-0.2 rounded font-mono">
-                          {item.series}
-                        </span>
-                        <span className="text-sm font-black text-slate-900 tracking-wider font-mono">
-                          {item.number}
-                        </span>
-                      </div>
-                      <div className="text-[10px] text-slate-500 truncate mt-0.5 font-medium flex items-center gap-1">
-                        <span className="text-emerald-700 font-bold">
-                          {lang === 'bn' ? item.tagBn : item.tag}
-                        </span>
-                        <span>•</span>
-                        <span className="truncate">{lang === 'bn' ? item.reasonBn : item.reason}</span>
-                      </div>
-                    </div>
-
-                    <div className="flex items-center gap-1 shrink-0">
-                      {/* Copy Button */}
-                      <button
-                        type="button"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleCopyTicket(`sug-${idx}`, fullText);
-                        }}
-                        title={lang === 'bn' ? 'কপি করুন' : 'Copy'}
-                        className="text-[11px] text-slate-500 hover:text-slate-800 bg-white hover:bg-slate-100 border border-slate-200 rounded-lg p-1.5 transition-all"
-                      >
-                        {isCopied ? '✅' : '📋'}
-                      </button>
-
-                      {/* 1-Click Play Button */}
-                      <button
-                        type="button"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          addTicket(item.series, item.number);
-                        }}
-                        className="text-[11px] font-black text-white bg-emerald-600 hover:bg-emerald-700 active:scale-95 px-2.5 py-1.5 rounded-lg shadow-2xs transition-all flex items-center gap-1"
-                        title={lang === 'bn' ? 'ডেমো ব্যাগে যোগ করুন' : 'Add to pocket'}
-                      >
-                        <span>+</span>
-                        <span>{lang === 'bn' ? 'খেলুন' : lang === 'hi' ? 'खेलें' : 'Play'}</span>
-                      </button>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-        )}
       </div>
 
       {/* 5. "My Virtual Pocket" - Active Simulated Tickets List */}
@@ -872,8 +827,10 @@ export default function DemoPlayModule({ initialDraws = [] }: DemoPlayModuleProp
             </p>
             <p className="text-[11px] text-slate-400">
               {lang === 'bn'
-                ? 'উপরের "স্মার্ট ট্রেন্ড পিক" বা "লাকি পিক" বাটনে ক্লিক করে টিকিট যোগ করুন!'
-                : 'Tap "Smart Trend Pick" or "Lucky Random Pick" above to simulate your tickets!'}
+                ? 'উপরের "হট টার্গেট প্রেডিকশন" বাটন বা নিচের উইনিং সাজেশন থেকে টিকিট যোগ করুন!'
+                : lang === 'hi'
+                ? 'ऊपर "हॉट टारगेट प्रेडिक्शन" बटन या नीचे दिए गए सुझावों से टिकट जोड़ें!'
+                : 'Tap "Hot Target Prediction" button above or winning suggestions below to add simulated tickets!'}
             </p>
           </div>
         ) : (
@@ -1022,7 +979,102 @@ export default function DemoPlayModule({ initialDraws = [] }: DemoPlayModuleProp
         )}
       </div>
 
-      {/* 6. WhatsApp Share & Reset Actions */}
+      {/* 6. Winning & Most Frequent Number Suggestions from Recent Games */}
+      {winningSuggestions.length > 0 && (
+        <div className="bg-white border border-slate-200 rounded-2xl p-3 sm:p-4 shadow-sm space-y-2.5">
+          <div className="flex items-center justify-between border-b border-slate-100 pb-2">
+            <div>
+              <span className="text-xs sm:text-sm font-black text-slate-900 flex items-center gap-1.5">
+                <span className="text-amber-500 text-base">🏆</span>
+                <span>
+                  {lang === 'bn'
+                    ? 'সাম্প্রতিক খেলায় সর্বাধিক আসা ও জয়ী নম্বরের সাজেশন'
+                    : lang === 'hi'
+                    ? 'हाल के खेलों में सबसे ज्यादा जीतने वाले नंबर'
+                    : 'Numbers Mostly Won in Recent Games'}
+                </span>
+              </span>
+              <p className="text-[10px] text-slate-500 mt-0.5">
+                {lang === 'bn' 
+                  ? 'সাম্প্রতিক ড্র-তে ১ম ও ২য় প্রাইজ বিজয়ী এবং ৫ম প্রাইজ-এ সর্বাধিক আসা হিট প্যাটার্ন'
+                  : '1st & 2nd prize winners and repeating high-hit combinations from recent draws'}
+              </p>
+            </div>
+            <span className="text-[10px] font-bold text-emerald-700 bg-emerald-50 border border-emerald-200 px-2 py-0.5 rounded-full shrink-0">
+              {lang === 'bn' ? '১-ক্লিক প্লে' : '1-Click Play'}
+            </span>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-1">
+            {winningSuggestions.map((item, idx) => {
+              const fullText = `${item.series} ${item.number}`;
+              const isCopied = copiedTicketId === `sug-${idx}`;
+              return (
+                <div
+                  key={`sug-${idx}`}
+                  className="flex items-center justify-between bg-slate-50 hover:bg-amber-50/50 border border-slate-200 hover:border-amber-300 rounded-xl p-2 sm:p-2.5 transition-all group"
+                >
+                  <div 
+                    onClick={() => {
+                      setManualSeries(item.series);
+                      setManualNumber(item.number);
+                    }}
+                    className="cursor-pointer min-w-0 flex-1 pr-1.5"
+                    title={lang === 'bn' ? 'নম্বরটি বক্সে বসাতে ক্লিক করুন' : 'Click to autofill input'}
+                  >
+                    <div className="flex items-center gap-1.5">
+                      <span className="text-[11px] font-black text-amber-800 bg-amber-100/90 border border-amber-200/80 px-1.5 py-0.2 rounded font-mono">
+                        {item.series}
+                      </span>
+                      <span className="text-sm sm:text-base font-black text-slate-950 tracking-wider font-mono">
+                        {item.number}
+                      </span>
+                    </div>
+                    <div className="text-[10px] text-slate-500 truncate mt-0.5 font-medium flex items-center gap-1">
+                      <span className="text-emerald-700 font-bold shrink-0">
+                        {lang === 'bn' ? item.tagBn : item.tag}
+                      </span>
+                      <span>•</span>
+                      <span className="truncate">{lang === 'bn' ? item.reasonBn : item.reason}</span>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center gap-1 shrink-0">
+                    {/* Copy Button */}
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleCopyTicket(`sug-${idx}`, fullText);
+                      }}
+                      title={lang === 'bn' ? 'কপি করুন' : 'Copy'}
+                      className="text-[11px] text-slate-600 hover:text-slate-900 bg-white hover:bg-slate-100 border border-slate-200 rounded-lg p-1.5 transition-all shadow-2xs"
+                    >
+                      {isCopied ? '✅' : '📋'}
+                    </button>
+
+                    {/* 1-Click Play Button */}
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        addTicket(item.series, item.number);
+                      }}
+                      className="text-[11px] font-black text-white bg-emerald-600 hover:bg-emerald-700 active:scale-95 px-2.5 py-1.5 rounded-lg shadow-2xs transition-all flex items-center gap-1"
+                      title={lang === 'bn' ? 'ডেমো ব্যাগে যোগ করুন' : 'Add to pocket'}
+                    >
+                      <span>+</span>
+                      <span>{lang === 'bn' ? 'খেলুন' : lang === 'hi' ? 'खेलें' : 'Play'}</span>
+                    </button>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
+      {/* 7. WhatsApp Share & Reset Actions */}
       <div className="flex items-center justify-between gap-2 pt-2">
         <a
           href={whatsappUrl}
@@ -1045,7 +1097,7 @@ export default function DemoPlayModule({ initialDraws = [] }: DemoPlayModuleProp
         )}
       </div>
 
-      {/* 7. Responsible Play & Educational Disclaimer */}
+      {/* 8. Responsible Play & Educational Disclaimer */}
       <div className="bg-slate-50 border border-slate-200 rounded-2xl p-3.5 text-[11px] text-slate-600 leading-relaxed space-y-1">
         <div className="font-black text-slate-800 flex items-center gap-1">
           <span>ℹ️</span>
