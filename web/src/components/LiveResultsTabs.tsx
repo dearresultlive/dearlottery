@@ -60,7 +60,9 @@ export default function LiveResultsTabs({
 
   const todayStr = todayDateStr || getISTDateString();
   const { lang, t } = useLanguage();
-  const [dateMode, setDateMode] = useState<'TODAY' | 'YESTERDAY'>('TODAY');
+  const [activeDateStr, setActiveDateStr] = useState<string>(
+    todayDateStr || getISTDateString()
+  );
   const [activeSlot, setActiveSlot] = useState<'1PM' | '6PM' | '8PM'>(
     initialSlot || (isYesterdayPage ? '8PM' : '1PM')
   );
@@ -117,34 +119,41 @@ export default function LiveResultsTabs({
     Boolean(d.parsed_data?.prizes?.first_prize?.number || d.prizes?.first_prize?.number)
   );
 
+  // Yesterday date resolution
+  const yesterdayDateStr = (yesterdayDraws && yesterdayDraws[0]?.draw_date) || (() => {
+    const y = new Date(getISTNow());
+    y.setDate(y.getDate() - 1);
+    return getISTDateString(y);
+  })();
+
   // Auto-detect Morning mode: before 1PM, if today has no results yet, default to Last Night 8PM!
   useEffect(() => {
     if (initialSlot) {
-      setDateMode('TODAY');
+      if (todayDateStr) setActiveDateStr(todayDateStr);
       setActiveSlot(initialSlot);
       return;
     }
     if (isYesterdayPage) {
-      setDateMode('TODAY');
+      if (todayDateStr) setActiveDateStr(todayDateStr);
       setActiveSlot('8PM');
       return;
     }
     const istNow = getISTNow();
     const hour = istNow.getHours();
     if (!hasTodayResults && hour < 13) {
-      setDateMode('YESTERDAY');
+      setActiveDateStr(yesterdayDateStr);
       setActiveSlot('8PM');
     } else if (hour >= 20) {
-      setDateMode('TODAY');
+      setActiveDateStr(todayStr);
       setActiveSlot('8PM');
     } else if (hour >= 18) {
-      setDateMode('TODAY');
+      setActiveDateStr(todayStr);
       setActiveSlot('6PM');
     } else {
-      setDateMode('TODAY');
+      setActiveDateStr(todayStr);
       setActiveSlot('1PM');
     }
-  }, [hasTodayResults, isYesterdayPage, initialSlot]);
+  }, [hasTodayResults, isYesterdayPage, initialSlot, todayDateStr, yesterdayDateStr, todayStr]);
 
   // Listen for auto-polling zero-refresh event from DrawCountdown
   useEffect(() => {
@@ -161,7 +170,7 @@ export default function LiveResultsTabs({
           return [newDraw, ...prev];
         });
 
-        setDateMode('TODAY');
+        setActiveDateStr(todayStr);
         if (newDraw.draw_time?.includes('6') || newDraw.id?.includes('6PM')) {
           setActiveSlot('6PM');
         } else if (newDraw.draw_time?.includes('8') || newDraw.id?.includes('8PM')) {
@@ -176,14 +185,23 @@ export default function LiveResultsTabs({
       window.addEventListener('dearlottery:new_result', handleNewResult);
       return () => window.removeEventListener('dearlottery:new_result', handleNewResult);
     }
-  }, []);
+  }, [todayStr]);
 
-  // Yesterday date resolution
-  const yesterdayDateStr = (yesterdayDraws && yesterdayDraws[0]?.draw_date) || (() => {
-    const y = new Date(getISTNow());
-    y.setDate(y.getDate() - 1);
-    return getISTDateString(y);
-  })();
+  // Master pool of all known draws (initial props + client-fetched history)
+  const allKnownDraws = useMemo(() => {
+    const map = new Map<string, DrawRecord>();
+    [...(yesterdayDraws || []), ...(draws || []), ...drawsList].forEach(d => {
+      if (d) {
+        const key = d.id || `${d.draw_date}-${d.draw_time}`;
+        map.set(key, d);
+      }
+    });
+    return Array.from(map.values());
+  }, [yesterdayDraws, draws, drawsList]);
+
+  const isToday = activeDateStr === todayStr;
+  const isYesterday = activeDateStr === yesterdayDateStr;
+  const isPastDate = !isToday && !isYesterday;
 
   // 7-day past dates list with hybrid format (Today • DD.MM, Yesterday • DD.MM, DD.MM (Day))
   const pastDatesList = useMemo(() => {
@@ -212,38 +230,27 @@ export default function LiveResultsTabs({
   );
   const yesterday8pmPrize = yesterday8pmDraw?.parsed_data?.prizes?.first_prize || yesterday8pmDraw?.prizes?.first_prize;
 
-  // Active draw for TODAY (must match date and have declared prizes)
-  const currentDrawForToday = drawsList.find(d => 
-    (d.draw_time?.includes(activeSlot.replace('PM', '')) || d.id?.includes(activeSlot)) &&
-    d.draw_date === todayStr
+  // Find active draw matching activeDateStr and activeSlot
+  const currentSlotNumber = activeSlot.replace('PM', '');
+  const currentDraw = useMemo(() => {
+    return allKnownDraws.find(d => 
+      d.draw_date === activeDateStr &&
+      (d.draw_time?.includes(currentSlotNumber) || d.id?.includes(activeSlot))
+    ) || allKnownDraws.find(d => d.draw_date === activeDateStr) || null;
+  }, [allKnownDraws, activeDateStr, activeSlot, currentSlotNumber]);
+
+  const prizesData: PrizeData = currentDraw?.parsed_data?.prizes || currentDraw?.prizes || {};
+  const hasPrizes = Boolean(
+    prizesData.first_prize?.number &&
+    currentDraw?.status !== 'UPCOMING' &&
+    currentDraw?.status !== 'DRAWING'
   );
-  const todayPrizes: PrizeData = currentDrawForToday?.parsed_data?.prizes || currentDrawForToday?.prizes || {};
-  const todayHasPrizes = Boolean(
-    todayPrizes.first_prize?.number &&
-    currentDrawForToday?.status !== 'UPCOMING' &&
-    currentDrawForToday?.status !== 'DRAWING'
-  );
 
-  // Draw for YESTERDAY in current slot
-  const yesterdayDrawForSlot = (yesterdayDraws || []).find(d => 
-    d.draw_time?.includes(activeSlot.replace('PM', '')) || d.id?.includes(activeSlot)
-  ) || yesterdayDraws[0];
-  const yesterdayPrizes: PrizeData = yesterdayDrawForSlot?.parsed_data?.prizes || yesterdayDrawForSlot?.prizes || {};
-  const yesterdayHasPrizes = Boolean(yesterdayPrizes.first_prize?.number);
+  const activeStatus = isToday
+    ? getSlotStatus(todayStr, activeSlot, hasPrizes)
+    : (hasPrizes ? 'RESULT_OUT' : (isSyncing ? 'DRAWING' : 'RESULT_OUT'));
 
-  // Active session parameters based on dateMode
-  const activeDateStr = dateMode === 'TODAY' ? todayStr : yesterdayDateStr;
-  const currentDraw = dateMode === 'TODAY' 
-    ? (currentDrawForToday || drawsList[0] || yesterdayDrawForSlot) 
-    : (yesterdayDrawForSlot || yesterdayDraws[0]);
-
-  const hasPrizes = dateMode === 'TODAY' ? todayHasPrizes : yesterdayHasPrizes;
-  const activeStatus = dateMode === 'TODAY' ? getSlotStatus(todayStr, activeSlot, todayHasPrizes) : 'RESULT_OUT';
-
-  const declaredPrizes: PrizeData = dateMode === 'TODAY'
-    ? (todayHasPrizes ? todayPrizes : {})
-    : (yesterdayHasPrizes ? yesterdayPrizes : {});
-
+  const declaredPrizes: PrizeData = hasPrizes ? prizesData : {};
   const firstPrize = declaredPrizes.first_prize || { series: '', number: '' };
   const secondPrizes = declaredPrizes.second_prize || [];
   const thirdPrizes = declaredPrizes.third_prize || [];
@@ -256,10 +263,16 @@ export default function LiveResultsTabs({
     ? (currentDraw?.image_r2_url || `/results/${activeDateStr}/${activeSlot.toLowerCase()}.jpg`)
     : sheetSvgUrl;
 
+  const dateLabel = isToday
+    ? (lang === 'bn' ? 'আজকের' : 'Today')
+    : isYesterday
+    ? (lang === 'bn' ? 'গতকালকের' : 'Yesterday')
+    : activeDateStr.split('-').reverse().join('/');
+
   const shareTargetUrl = `https://dearresultlive.in/results/${activeDateStr}/${activeSlot.toLowerCase()}`;
-  const whatsappShareText = `🎯 *Dear Lottery Result (${dateMode === 'TODAY' ? 'Today' : 'Yesterday'} ${currentDraw?.draw_time || activeSlot})*\n📅 তারিখ: ${activeDateStr}\n\n🏆 *১ম পুরস্কার (₹1 Crore Winner)*: *${firstPrize.series} ${firstPrize.number}*\n\n👉 সম্পূর্ণ অফিসিয়াল রেজাল্ট শিট ও সব প্রাইজ নম্বর দেখুন:\n${shareTargetUrl}`;
+  const whatsappShareText = `🎯 *Dear Lottery Result (${dateLabel} ${currentDraw?.draw_time || activeSlot})*\n📅 তারিখ: ${activeDateStr}\n\n🏆 *১ম পুরস্কার (₹1 Crore Winner)*: *${firstPrize.series} ${firstPrize.number}*\n\n👉 সম্পূর্ণ অফিসিয়াল রেজাল্ট শিট ও সব প্রাইজ নম্বর দেখুন:\n${shareTargetUrl}`;
   const whatsappUrl = `https://api.whatsapp.com/send?text=${encodeURIComponent(whatsappShareText)}`;
-  const telegramUrl = `https://t.me/share/url?url=${encodeURIComponent(shareTargetUrl)}&text=${encodeURIComponent(`🎯 Dear Lottery Result (${dateMode === 'TODAY' ? 'Today' : 'Yesterday'} ${currentDraw?.draw_time || activeSlot}) | 1st Prize ₹1 Crore: ${firstPrize.series} ${firstPrize.number}`)}`;
+  const telegramUrl = `https://t.me/share/url?url=${encodeURIComponent(shareTargetUrl)}&text=${encodeURIComponent(`🎯 Dear Lottery Result (${dateLabel} ${currentDraw?.draw_time || activeSlot}) | 1st Prize ₹1 Crore: ${firstPrize.series} ${firstPrize.number}`)}`;
 
   const handleNativeShare = async () => {
     if (typeof navigator !== 'undefined' && navigator.share) {
@@ -271,7 +284,6 @@ export default function LiveResultsTabs({
         });
         return;
       } catch (err) {
-        // User cancelled share
         return;
       }
     }
@@ -289,40 +301,69 @@ export default function LiveResultsTabs({
   const handleResetZoom = () => setZoomScale(1);
 
   const currentSlotInfo = slots.find(s => s.key === activeSlot) || slots[0];
-
   const hasActiveDateInList = pastDatesList.some(item => item.value === activeDateStr);
 
-  const handleDateChange = (selectedValue: string) => {
+  const handleDateChange = async (selectedValue: string) => {
     if (selectedValue === 'MORE') {
       window.location.href = '/old-results';
       return;
     }
 
-    const realToday = pastDatesList[0]?.value || todayStr;
-    const realYesterday = pastDatesList[1]?.value || yesterdayDateStr;
-    const isHome = typeof window !== 'undefined' && (window.location.pathname === '/' || window.location.pathname === '');
+    setActiveDateStr(selectedValue);
 
-    if (selectedValue === realToday) {
-      if (isHome) {
-        setDateMode('TODAY');
+    // Update browser URL query without full page reload for shareability
+    if (typeof window !== 'undefined' && window.history) {
+      const url = new URL(window.location.href);
+      if (selectedValue === todayStr) {
+        url.searchParams.delete('date');
       } else {
-        window.location.href = `/#${activeSlot.toLowerCase()}`;
+        url.searchParams.set('date', selectedValue);
       }
-      return;
+      window.history.replaceState({}, '', url.toString());
     }
 
-    if (selectedValue === realYesterday) {
-      if (isHome) {
-        setDateMode('YESTERDAY');
-      } else {
-        window.location.href = '/yesterday';
-      }
-      return;
-    }
+    // Check if we already have draws for this date in memory
+    const alreadyLoaded = allKnownDraws.some(d => 
+      d.draw_date === selectedValue &&
+      Boolean(d.parsed_data?.prizes?.first_prize?.number || d.prizes?.first_prize?.number)
+    );
 
-    // Historical archive navigation
-    window.location.href = `/results/${selectedValue}/${activeSlot.toLowerCase()}`;
+    if (!alreadyLoaded) {
+      setIsSyncing(true);
+      try {
+        const res = await fetch(`/api/results/date/${selectedValue}`);
+        if (res.ok) {
+          const data = await res.json();
+          if (data.draws && data.draws.length > 0) {
+            setDrawsList(prev => {
+              const next = [...prev];
+              data.draws.forEach((nd: DrawRecord) => {
+                const idx = next.findIndex(d => d.id === nd.id);
+                if (idx >= 0) next[idx] = nd;
+                else next.push(nd);
+              });
+              return next;
+            });
+          }
+        }
+      } catch (err) {
+        console.error('Failed to load draws for date:', selectedValue, err);
+      } finally {
+        setIsSyncing(false);
+      }
+    }
   };
+
+  // Check URL query on mount for direct link handling
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const params = new URLSearchParams(window.location.search);
+      const qDate = params.get('date');
+      if (qDate && qDate !== todayStr && /^\d{4}-\d{2}-\d{2}$/.test(qDate)) {
+        handleDateChange(qDate);
+      }
+    }
+  }, []);
 
   return (
     <div className="space-y-3 sm:space-y-3.5 max-w-[557px] mx-auto">
@@ -344,46 +385,42 @@ export default function LiveResultsTabs({
         </button>
       </div>
 
-      {/* 0. Smart Day Selector (Today vs Last Night / Yesterday) */}
+      {/* 0. Smart Day Selector (Today vs Yesterday / Previous Dates) */}
       <div className="flex items-center gap-1.5 bg-slate-200/90 p-1 rounded-2xl text-xs font-black shadow-inner">
         <button
           type="button"
-          onClick={() => setDateMode('TODAY')}
+          onClick={() => handleDateChange(todayStr)}
           className={`flex-1 py-2 px-2.5 sm:px-3 rounded-xl flex items-center justify-center gap-1.5 transition-all ${
-            dateMode === 'TODAY'
+            isToday
               ? 'bg-blue-700 text-white shadow-sm ring-1 ring-blue-600 scale-[1.01]'
               : 'text-slate-700 hover:text-slate-900 hover:bg-slate-300/60'
           }`}
         >
-          <span>{isYesterdayPage ? '🌙' : '☀️'}</span>
+          <span>☀️</span>
           <span>
-            {isYesterdayPage 
-              ? (lang === 'bn' ? 'গতকালকের ড্র' : lang === 'hi' ? 'कल का ड्रॉ' : "Yesterday's Draws")
-              : (lang === 'bn' ? 'আজকের ড্র' : lang === 'hi' ? 'आज का ड्रॉ' : "Today's Draws")}
+            {lang === 'bn' ? 'আজকের ড্র' : lang === 'hi' ? 'आज का ड्रॉ' : "Today's Draws"}
           </span>
           <span className={`text-[10px] px-1.5 py-0.2 rounded-full font-bold ${
-            dateMode === 'TODAY' ? 'bg-blue-800 text-blue-100' : 'bg-slate-300 text-slate-700'
+            isToday ? 'bg-blue-800 text-blue-100' : 'bg-slate-300 text-slate-700'
           }`}>
             {todayStr.split('-').slice(1).reverse().join('/')}
           </span>
         </button>
         <button
           type="button"
-          onClick={() => { setDateMode('YESTERDAY'); handleSlotSelect('8PM'); }}
+          onClick={() => { handleDateChange(yesterdayDateStr); handleSlotSelect('8PM'); }}
           className={`flex-1 py-2 px-2.5 sm:px-3 rounded-xl flex items-center justify-center gap-1.5 transition-all ${
-            dateMode === 'YESTERDAY'
+            isYesterday
               ? 'bg-blue-700 text-white shadow-sm ring-1 ring-blue-600 scale-[1.01]'
               : 'text-slate-700 hover:text-slate-900 hover:bg-slate-300/60'
           }`}
         >
-          <span>{isYesterdayPage ? '📜' : '🌙'}</span>
+          <span>🌙</span>
           <span>
-            {isYesterdayPage
-              ? (lang === 'bn' ? 'আগের দিন (৮টা)' : lang === 'hi' ? 'पिछला दिन (8 बजे)' : 'Previous Day 8PM')
-              : (lang === 'bn' ? 'গতরাতের ৮টা / গতকাল' : lang === 'hi' ? 'कल रात 8 बजे / कल' : 'Last Night 8PM')}
+            {lang === 'bn' ? 'গতরাতের ৮টা / গতকাল' : lang === 'hi' ? 'कल रात 8 बजे / कल' : "Yesterday's Draws"}
           </span>
           <span className={`text-[10px] px-1.5 py-0.2 rounded-full font-bold ${
-            dateMode === 'YESTERDAY' ? 'bg-blue-800 text-blue-100' : 'bg-slate-300 text-slate-700'
+            isYesterday ? 'bg-blue-800 text-blue-100' : 'bg-slate-300 text-slate-700'
           }`}>
             {yesterdayDateStr.split('-').slice(1).reverse().join('/')}
           </span>
@@ -391,17 +428,17 @@ export default function LiveResultsTabs({
       </div>
 
       {/* Yesterday Mode Notice Banner */}
-      {dateMode === 'YESTERDAY' && (
+      {isYesterday && (
         <div className="bg-emerald-50 border border-emerald-300 rounded-xl p-2.5 text-xs flex items-center justify-between text-emerald-950 shadow-2xs">
           <div className="flex items-center gap-2">
             <span className="text-base flex-shrink-0">🌙</span>
             <div>
               <span className="font-black text-slate-900 block leading-tight">
                 {lang === 'bn' 
-                  ? `গতরাতের (${yesterdayDateStr}) ৮:০০ নাইট ড্র রেজাল্ট শিট`
+                  ? `গতকালকের (${yesterdayDateStr.split('-').reverse().join('/')}) ${currentSlotInfo.time} ফলাফল শিট`
                   : lang === 'hi'
-                  ? `कल रात (${yesterdayDateStr}) 8:00 नाइट ड्रॉ रिजल्ट शीट`
-                  : `Last Night's 8:00 PM Official Gazette Result (${yesterdayDateStr})`}
+                  ? `कल (${yesterdayDateStr.split('-').reverse().join('/')}) ${currentSlotInfo.time} परिणाम शीट`
+                  : `Yesterday's (${yesterdayDateStr}) ${currentSlotInfo.time} Official Gazette Result`}
               </span>
               <span className="text-[10px] text-emerald-800 font-medium block">
                 {lang === 'bn'
@@ -414,8 +451,40 @@ export default function LiveResultsTabs({
           </div>
           <button
             type="button"
-            onClick={() => setDateMode('TODAY')}
+            onClick={() => handleDateChange(todayStr)}
             className="bg-emerald-700 hover:bg-emerald-800 text-white font-black text-[11px] px-2.5 py-1.5 rounded-lg shadow-2xs ml-2 flex-shrink-0 active:scale-95 transition-all"
+          >
+            {lang === 'bn' ? 'আজকের ড্র ➔' : lang === 'hi' ? 'आज का ड्रॉ ➔' : "Today's Draw ➔"}
+          </button>
+        </div>
+      )}
+
+      {/* Historical Archive Notice Banner */}
+      {isPastDate && (
+        <div className="bg-blue-50 border border-blue-300 rounded-xl p-2.5 text-xs flex items-center justify-between text-blue-950 shadow-2xs">
+          <div className="flex items-center gap-2">
+            <span className="text-base flex-shrink-0">📜</span>
+            <div>
+              <span className="font-black text-slate-900 block leading-tight">
+                {lang === 'bn' 
+                  ? `পুরনো গেজেট রেকর্ড (${activeDateStr.split('-').reverse().join('/')}) • ${currentSlotInfo.time} ফলাফল`
+                  : lang === 'hi'
+                  ? `पुराना आधिकारिक रिकॉर्ड (${activeDateStr.split('-').reverse().join('/')}) • ${currentSlotInfo.time} परिणाम`
+                  : `Official Gazette Archive (${activeDateStr}) • ${currentSlotInfo.time} Result`}
+              </span>
+              <span className="text-[10px] text-blue-800 font-medium block">
+                {lang === 'bn'
+                  ? 'নাগাল্যান্ড ও সিকিম রাজ্য লটারির ঐতিহাসিক ড্র ফলাফল'
+                  : lang === 'hi'
+                  ? 'नागालैंड और सिक्किम राज्य लॉटरी का ऐतिहासिक ड्रॉ परिणाम'
+                  : 'Historical draw records for Nagaland & Sikkim State Lotteries'}
+              </span>
+            </div>
+          </div>
+          <button
+            type="button"
+            onClick={() => handleDateChange(todayStr)}
+            className="bg-blue-700 hover:bg-blue-800 text-white font-black text-[11px] px-2.5 py-1.5 rounded-lg shadow-2xs ml-2 flex-shrink-0 active:scale-95 transition-all"
           >
             {lang === 'bn' ? 'আজকের ড্র ➔' : lang === 'hi' ? 'आज का ड्रॉ ➔' : "Today's Draw ➔"}
           </button>
@@ -483,19 +552,23 @@ export default function LiveResultsTabs({
                   {activeDateStr.split('-').reverse().join('/')}
                 </span>
                 <span className={`text-[10px] font-black uppercase px-2 py-0.5 rounded-md ${
-                  dateMode === 'YESTERDAY' || isYesterdayPage
+                  isYesterday
                     ? 'bg-amber-100 text-amber-900 border border-amber-300' 
+                    : isPastDate
+                    ? 'bg-blue-100 text-blue-900 border border-blue-300'
                     : 'bg-emerald-100 text-emerald-900 border border-emerald-300'
                 }`}>
-                  {dateMode === 'YESTERDAY' || isYesterdayPage
+                  {isYesterday
                     ? (activeSlot === '8PM'
                         ? (lang === 'bn' ? 'গতরাতের ৮টা' : lang === 'hi' ? 'कल रात 8 बजे' : 'LAST NIGHT 8PM')
                         : (lang === 'bn' ? 'গতকাল' : lang === 'hi' ? 'कल' : 'YESTERDAY'))
-                    : (lang === 'bn' ? 'আজকের' : lang === 'hi' ? 'आज' : 'TODAY')}
+                    : isPastDate
+                    ? (lang === 'bn' ? 'পুরনো রেকর্ড' : lang === 'hi' ? 'पुराना रिकॉर्ड' : 'ARCHIVE')
+                    : (lang === 'bn' ? 'আজকের' : lang === 'hi' ? 'আজ' : 'TODAY')}
                 </span>
               </div>
               <span className="text-xs text-slate-600 font-bold truncate">
-                {currentDraw.draw_name} • #{currentDraw.draw_number || '74'}
+                {currentDraw?.draw_name || 'DEAR LOTTERY'} • #{currentDraw?.draw_number || '74'}
               </span>
             </div>
 
@@ -683,7 +756,7 @@ export default function LiveResultsTabs({
           >
             <img
               src={activeSheetUrl}
-              alt={`Official Gazette Result Sheet ${currentDraw.draw_name} ${currentSlotInfo.time}`}
+              alt={`Official Gazette Result Sheet ${currentDraw?.draw_name || 'Dear Lottery'} ${currentSlotInfo.time}`}
               width={557}
               height={788}
               decoding="async"
@@ -847,7 +920,7 @@ export default function LiveResultsTabs({
           >
             <div className="flex items-center gap-2 font-black text-xs sm:text-sm">
               <span>📄</span>
-              <span>{currentDraw.draw_name} • {currentSlotInfo.time}</span>
+              <span>{currentDraw?.draw_name || 'Dear Lottery'} • {currentSlotInfo.time}</span>
             </div>
             <button
               type="button"
