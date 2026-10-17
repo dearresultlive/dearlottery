@@ -1,11 +1,3 @@
-/results/*
-  X-Robots-Tag: noindex, noarchive, nosnippet
-  Cache-Control: public, max-age=86400
-
-/pdf/*
-  X-Robots-Tag: noindex, noarchive, nosnippet
-  Cache-Control: public, max-age=86400
-
 /api/*
   X-Robots-Tag: noindex, nofollow
 

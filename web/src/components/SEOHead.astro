@@ -21,8 +21,9 @@ const {
 } = Astro.props;
 
 const currentPath = Astro.url.pathname;
-const host = Astro.url.origin;
-const cleanCanonical = canonicalUrl || `${host}${currentPath === '/' ? '' : currentPath}`;
+const cleanPath = currentPath === '/' ? '/' : currentPath.replace(/\/+$/, '');
+const host = Astro.url.origin.includes('localhost') ? Astro.url.origin : 'https://dearresultlive.in';
+const cleanCanonical = canonicalUrl ? canonicalUrl.split('?')[0] : `${host}${cleanPath}`;
 
 // Determine exact publication timestamp based on slot in IST (+05:30)
 const pubHour = drawTime?.includes('6') ? '18:00:00+05:30' : drawTime?.includes('8') ? '20:00:00+05:30' : '13:00:00+05:30';

@@ -32,6 +32,26 @@ const checkerDraws = [...draws, ...yesterdayDraws];
       <span class="text-slate-900 font-bold">Target Numbers (টার্গেট নম্বর)</span>
     </nav>
 
+    {/* Target Numbers Banner Header */}
+    <div class="bg-gradient-to-r from-amber-50 via-white to-amber-50 border border-amber-300 rounded-2xl p-3.5 text-center shadow-xs">
+      <span class="inline-flex items-center gap-1.5 bg-amber-500 text-white text-[10px] sm:text-xs font-black px-2.5 py-0.5 rounded-full uppercase tracking-wider">
+        <span>🎯</span>
+        <span class="lang-en">Daily Analysis • টার্গেট ও কমন নম্বর</span>
+        <span class="lang-bn">টার্গেট ও কমন নম্বর</span>
+        <span class="lang-hi">टारगेट और कॉमन नंबर</span>
+      </span>
+      <h1 class="text-base sm:text-xl font-black text-slate-900 mt-1">
+        <span class="lang-en">Dear Lottery Target Number Today ({todayDateStr})</span>
+        <span class="lang-bn">আজকের ডিয়ার লটারি টার্গেট নম্বর ({todayDateStr})</span>
+        <span class="lang-hi">आज का डियर लॉटरी टारगेट नंबर ({todayDateStr})</span>
+      </h1>
+      <p class="text-[11px] sm:text-xs text-slate-600 mt-0.5">
+        <span class="lang-en">Hot middle pairs, high-frequency 2-digit endings, and common numbers.</span>
+        <span class="lang-bn">পরিসংখ্যান ভিত্তিক মিডিল নম্বর, শেষ ২-ডিজিট এবং দৈনিক কমন নম্বর।</span>
+        <span class="lang-hi">सांख्यिकी आधारित मिडिल नंबर, अंतिम 2-अंक और दैनिक कॉमन नंबर।</span>
+      </p>
+    </div>
+
     {/* Primary Target Numbers Module */}
     <section id="target-tool">
       <TargetNumbersTool
@@ -48,9 +68,9 @@ const checkerDraws = [...draws, ...yesterdayDraws];
 
     {/* Comprehensive Guide on Lottery Target Numbers */}
     <section class="bg-white border border-slate-200 rounded-2xl p-4 sm:p-6 text-slate-700 space-y-4 shadow-sm text-xs leading-relaxed">
-      <h1 class="text-base sm:text-xl font-black text-slate-900">
+      <h2 class="text-base sm:text-xl font-black text-slate-900">
         About Dear Lottery Target & Common Numbers (কমন ও টার্গেট নম্বর)
-      </h1>
+      </h2>
       <p>
         In Indian state lotteries like Nagaland State Lotteries and Sikkim State Lotteries, lottery ticket buyers analyze past draw frequency patterns before purchasing tickets at authorized retail counters.
       </p>

@@ -4,7 +4,7 @@ import { getISTNow, getISTDateString } from '../lib/lottery-utils';
 export const prerender = false;
 
 export const GET: APIRoute = async ({ request }) => {
-  const host = new URL(request.url).origin;
+  const host = request.url.includes('localhost') ? new URL(request.url).origin : 'https://dearresultlive.in';
   const istNow = getISTNow();
   const today = getISTDateString(istNow);
 

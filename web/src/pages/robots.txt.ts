@@ -1,11 +1,14 @@
 import type { APIRoute } from 'astro';
 
 export const GET: APIRoute = async ({ request }) => {
-  const host = new URL(request.url).origin;
+  const host = request.url.includes('localhost') ? new URL(request.url).origin : 'https://dearresultlive.in';
 
   const robots = `User-agent: *
 Allow: /
 Disallow: /api/
+
+User-agent: Googlebot-Image
+Allow: /
 
 Sitemap: ${host}/sitemap.xml
 `;

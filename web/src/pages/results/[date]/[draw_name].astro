@@ -60,14 +60,20 @@ if (draw?.status === 'UPCOMING' || draw?.status === 'DRAWING' || !firstPrize || 
   isUpcoming = true;
 }
 
-// Dynamic SEO Meta Tags based on state
-const seoTitle = isUpcoming
-  ? `Dear Lottery Result Today ${slotHour} Live - ${targetDate} | Lottery Sambad (লটারি সংবাদ / डियर लॉटरी)`
-  : `Dear Lottery Result Today ${slotHour} Live - ${targetDate} | 1st Prize Winner | Lottery Sambad`;
+const isToday = targetDate === todayStr;
 
-const seoDesc = isUpcoming
-  ? `Dear Lottery Result Today ${slotHour} Live on ${targetDate}. 1st Prize ₹1 Crore winning ticket and official gazette sheet published at ${slotHour}. Watch live countdown timer and instant ticket verify.`
-  : `Dear Lottery Result Today ${slotHour} Live (${targetDate}). 1st Prize ₹1 Crore winning ticket is ${firstPrize ? `${firstPrize.series} ${firstPrize.number}` : 'Official Winner'}. Download official gazette PDF and check all prize tables.`;
+// Dynamic SEO Meta Tags based on state and temporal context (Today vs Past Date)
+const seoTitle = isToday
+  ? (isUpcoming
+      ? `Dear Lottery Result Today ${slotHour} Live - ${targetDate} | Lottery Sambad (লটারি সংবাদ / डियर लॉटरी)`
+      : `Dear Lottery Result Today ${slotHour} Live - ${targetDate} | 1st Prize Winner | Lottery Sambad`)
+  : `Dear Lottery Result ${slotHour} (${targetDate}) Official Gazette • 1st Prize Winner | Lottery Sambad`;
+
+const seoDesc = isToday
+  ? (isUpcoming
+      ? `Dear Lottery Result Today ${slotHour} Live on ${targetDate}. 1st Prize ₹1 Crore winning ticket and official gazette sheet published at ${slotHour}. Watch live countdown timer and instant ticket verify.`
+      : `Dear Lottery Result Today ${slotHour} Live (${targetDate}). 1st Prize ₹1 Crore winning ticket is ${firstPrize ? `${firstPrize.series} ${firstPrize.number}` : 'Official Winner'}. Download official gazette PDF and check all prize tables.`)
+  : `Official Dear Lottery Sambad result for ${slotHour} draw on ${targetDate}. 1st Prize ₹1 Crore winning ticket is ${firstPrize ? `${firstPrize.series} ${firstPrize.number}` : 'Official Winner'}. Complete prize breakdown and official gazette.`;
 
 const slotTabs = [
   { key: '1pm', time: '1:00 PM', labelEn: '1:00 PM Morning', labelBn: 'দুপুর ১টা', icon: '☀️' },
