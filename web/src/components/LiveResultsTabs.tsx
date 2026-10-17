@@ -629,40 +629,20 @@ export default function LiveResultsTabs({
         </div>
       )}
 
-      {/* 3. Control Row (PDF Download + Save Sheet Image + Slot Selector + Date Selector) */}
-      <div className="grid grid-cols-4 gap-1.5 sm:gap-2 text-xs font-bold">
-        <a
-          href={pdfUrl}
-          target="_blank"
-          rel="noopener noreferrer"
-          download={`Dear_Lottery_${activeDateStr}_${activeSlot}.pdf`}
-          className="bg-slate-100 hover:bg-slate-200 border border-slate-300 text-slate-800 rounded-xl py-2 px-1 sm:px-2 flex items-center justify-center gap-1 font-black uppercase shadow-2xs text-center"
-        >
-          <span>📥 PDF</span>
-        </a>
-
-        <a
-          href={activeSheetUrl}
-          target="_blank"
-          rel="noopener noreferrer"
-          download={`Dear_Lottery_${activeDateStr}_${activeSlot}.jpg`}
-          className="bg-slate-100 hover:bg-slate-200 border border-slate-300 text-slate-800 rounded-xl py-2 px-1 sm:px-2 flex items-center justify-center gap-1 font-black uppercase shadow-2xs text-center"
-        >
-          <span>🖼️ JPG</span>
-        </a>
-
+      {/* 3. Draw Selector Row (Slot Selector + Date Selector) */}
+      <div className="grid grid-cols-2 gap-2 sm:gap-3">
         <div className="relative">
           <select
             value={activeSlot}
             aria-label="Select Draw Time Slot"
             onChange={(e) => setActiveSlot(e.target.value as any)}
-            className="w-full bg-blue-50/90 hover:bg-blue-100 border-2 border-blue-600 text-blue-950 rounded-xl py-2 pl-1.5 pr-4 sm:px-2.5 font-black appearance-none text-center cursor-pointer shadow-xs ring-2 ring-blue-500/20 active:scale-95 transition-all text-xs"
+            className="w-full bg-blue-50/90 hover:bg-blue-100 border-2 border-blue-600 text-blue-950 rounded-xl sm:rounded-2xl py-2.5 sm:py-3 pl-3 pr-8 sm:pl-4 sm:pr-9 font-black appearance-none text-center cursor-pointer shadow-xs ring-2 ring-blue-500/20 active:scale-95 transition-all text-sm sm:text-base"
           >
-            <option value="1PM" className="bg-white text-slate-900 font-bold py-1">1:00 PM</option>
-            <option value="6PM" className="bg-white text-slate-900 font-bold py-1">6:00 PM</option>
-            <option value="8PM" className="bg-white text-slate-900 font-bold py-1">8:00 PM</option>
+            <option value="1PM" className="bg-white text-slate-900 font-bold py-1.5">1:00 PM</option>
+            <option value="6PM" className="bg-white text-slate-900 font-bold py-1.5">6:00 PM</option>
+            <option value="8PM" className="bg-white text-slate-900 font-bold py-1.5">8:00 PM</option>
           </select>
-          <span className="pointer-events-none absolute right-1 sm:right-1.5 top-1/2 -translate-y-1/2 text-blue-700 font-black text-xs leading-none">▾</span>
+          <span className="pointer-events-none absolute right-2.5 sm:right-3.5 top-1/2 -translate-y-1/2 text-blue-700 font-black text-sm sm:text-base leading-none">▾</span>
         </div>
 
         <div className="relative">
@@ -670,23 +650,23 @@ export default function LiveResultsTabs({
             value={activeDateStr}
             aria-label="Select Draw Date"
             onChange={(e) => handleDateChange(e.target.value)}
-            className="w-full bg-blue-50/90 hover:bg-blue-100 border-2 border-blue-600 text-blue-950 rounded-xl py-2 pl-1 sm:pl-2 pr-4 sm:pr-4 font-black appearance-none text-center cursor-pointer shadow-xs ring-2 ring-blue-500/20 active:scale-95 transition-all text-[11px] sm:text-xs truncate"
+            className="w-full bg-blue-50/90 hover:bg-blue-100 border-2 border-blue-600 text-blue-950 rounded-xl sm:rounded-2xl py-2.5 sm:py-3 pl-3 pr-8 sm:pl-4 sm:pr-9 font-black appearance-none text-center cursor-pointer shadow-xs ring-2 ring-blue-500/20 active:scale-95 transition-all text-xs sm:text-sm truncate"
           >
             {!hasActiveDateInList && activeDateStr && (
-              <option value={activeDateStr} className="bg-white text-slate-900 font-bold py-1">
+              <option value={activeDateStr} className="bg-white text-slate-900 font-bold py-1.5">
                 {activeDateStr.split('-').reverse().join('.')} (Archive)
               </option>
             )}
             {pastDatesList.map((item) => (
-              <option key={item.value} value={item.value} className="bg-white text-slate-900 font-bold py-1">
+              <option key={item.value} value={item.value} className="bg-white text-slate-900 font-bold py-1.5">
                 {item.label}
               </option>
             ))}
-            <option value="MORE" className="bg-white text-slate-900 font-bold py-1">
+            <option value="MORE" className="bg-white text-slate-900 font-bold py-1.5">
               {lang === 'bn' ? 'পুরনো রেজাল্ট (৩০ দিন) →' : lang === 'hi' ? 'पुराने नतीजे (30 दिन) →' : 'More Results (30 Days) →'}
             </option>
           </select>
-          <span className="pointer-events-none absolute right-1 sm:right-1.5 top-1/2 -translate-y-1/2 text-blue-700 font-black text-xs leading-none">▾</span>
+          <span className="pointer-events-none absolute right-2.5 sm:right-3.5 top-1/2 -translate-y-1/2 text-blue-700 font-black text-sm sm:text-base leading-none">▾</span>
         </div>
       </div>
 
