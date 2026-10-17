@@ -74,7 +74,7 @@ export function generateGazetteSvg(data: GazetteSvgData): string {
     }
   }
 
-  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 540 760" width="540" height="760" style="background:#ffffff; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, Roboto, 'Courier New', sans-serif;">
+  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 540 784" width="540" height="784" style="background:#ffffff; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, Roboto, 'Courier New', sans-serif;">
   <defs>
     <style>
       .t-impact { font-family: 'Arial Black', Impact, sans-serif; font-weight: 900; }
@@ -83,10 +83,10 @@ export function generateGazetteSvg(data: GazetteSvgData): string {
   </defs>
 
   <!-- Canvas Outer Background -->
-  <rect x="0" y="0" width="540" height="760" fill="#ffffff" />
+  <rect x="0" y="0" width="540" height="784" fill="#ffffff" />
   
   <!-- Outer Green Paper Border -->
-  <rect x="2" y="2" width="536" height="756" fill="none" stroke="#00802b" stroke-width="4" rx="4" />
+  <rect x="2" y="2" width="536" height="780" fill="none" stroke="#00802b" stroke-width="4" rx="4" />
 
   <!-- ================= 1. TOP HEADER GREEN BAR ================= -->
   <rect x="2" y="2" width="536" height="38" fill="#00802b" />
@@ -394,6 +394,14 @@ export function generateGazetteSvg(data: GazetteSvgData): string {
     <!-- Right Date -->
     <text x="486" y="24" fill="#fff100" font-size="18" font-weight="900" text-anchor="middle" class="t-impact">
       ${displayDate}
+    </text>
+  </g>
+
+  <!-- ================= 12. DOMAIN BRAND & AUTHENTICATION BAR ================= -->
+  <g transform="translate(2, 758)">
+    <rect x="0" y="0" width="536" height="22" fill="#0c2461" />
+    <text x="268" y="15" fill="#38bdf8" font-size="10" font-weight="900" text-anchor="middle" letter-spacing="1">
+      OFFICIAL GAZETTE • DEARRESULTLIVE.IN • LIVE 1PM, 6PM &amp; 8PM DRAWS
     </text>
   </g>
 
