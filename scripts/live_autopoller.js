@@ -298,6 +298,30 @@ async function processSlot(dateStr, slot) {
   let sambadFirstPrize = null;
   if (sambadRes && sambadRes.number) {
     sambadFirstPrize = { series: sambadRes.series, number: sambadRes.number };
+
+    // FAST-RELEASE STAGE 1: Publish 1st Prize immediately to live_draws.json
+    // so users and Cloudflare see the ₹1 Crore winner instantly without waiting for OCR!
+    if (!dayDb[slot]?.first_prize?.number) {
+      console.log(`[Poller] ⚡ FAST RELEASE: Ingesting 1st Prize ${sambadFirstPrize.series} ${sambadFirstPrize.number} immediately!`);
+      if (!db[dateStr]) db[dateStr] = {};
+      db[dateStr][slot] = {
+        first_prize: sambadFirstPrize,
+        consolation_prize_amount: 1000,
+        second_prize: dayDb[slot]?.second_prize || [],
+        third_prize: dayDb[slot]?.third_prize || [],
+        fourth_prize: dayDb[slot]?.fourth_prize || [],
+        fifth_prize: dayDb[slot]?.fifth_prize || [],
+        draw_name: sambadRes.drawName || `DEAR ${slot}`
+      };
+      saveLiveDraws(db);
+
+      // Trigger instant OneSignal push for 1st Prize
+      try {
+        await sendOneSignalResultPush({ dateStr, slot, prizeData: db[dateStr][slot] });
+      } catch (pushErr) {
+        console.warn('[Poller] Fast-release push warning:', pushErr.message);
+      }
+    }
   }
 
   let prizeData = null;

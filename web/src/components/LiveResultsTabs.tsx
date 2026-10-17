@@ -756,6 +756,24 @@ export default function LiveResultsTabs({
 
             {showTextTables && (
               <div className="space-y-3 animate-in fade-in duration-200">
+                {secondPrizes.length === 0 ? (
+                  <div className="bg-amber-50 border border-amber-300 rounded-xl p-4 text-center space-y-1.5 shadow-2xs">
+                    <div className="inline-flex items-center gap-2 bg-amber-100 text-amber-900 text-xs font-black px-3 py-1 rounded-full">
+                      <span className="w-2 h-2 rounded-full bg-amber-600 animate-ping"></span>
+                      <span>
+                        {lang === 'bn' ? '১ম পুরস্কার প্রকাশিত • বাকি প্রাইজ শিট স্ক্যান হচ্ছে' : lang === 'hi' ? '1st प्राइज घोषित • बाकी शीट स्कैन हो रही है' : '1st Prize Out • Remaining tiers scanning'}
+                      </span>
+                    </div>
+                    <p className="text-xs text-slate-700 font-medium">
+                      {lang === 'bn'
+                        ? '১ কোটি টাকার ১ম পুরস্কার নম্বর লাইভ হয়েছে। সরকারি ডিরেক্টরেটের সম্পূর্ণ গেজেট শিট থেকে ২য় থেকে ৫ম পুরস্কারের নম্বরসমূহ কয়েক মিনিটের মধ্যে স্বয়ংক্রিয়ভাবে আপডেট হবে।'
+                        : lang === 'hi'
+                        ? '₹1 करोड़ का प्रथम पुरस्कार लाइव हो चुका है। आधिकारिक गजट शीट से 2nd से 5th पुरस्कार के नंबर कुछ ही मिनटों में अपडेट हो जाएंगे।'
+                        : '1st Prize of ₹1 Crore is live above. Full 2nd to 5th prize tiers are being extracted from the official gazette sheet.'}
+                    </p>
+                  </div>
+                ) : (
+                  <>
                 {/* 2nd Prize */}
                 <div className="bg-white border border-slate-200 rounded-xl p-3.5 shadow-xs space-y-2">
                   <div className="flex items-center justify-between border-b border-slate-100 pb-1.5">
@@ -828,6 +846,8 @@ export default function LiveResultsTabs({
                     ))}
                   </div>
                 </div>
+                </>
+                )}
               </div>
             )}
           </div>

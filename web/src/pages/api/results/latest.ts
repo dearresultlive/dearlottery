@@ -38,18 +38,36 @@ export const GET: APIRoute = async ({ request, locals }) => {
     draws = await fetchLatestDraws();
   }
 
-  // If a slot is in DRAWING state, attempt autonomous on-demand check of live upstream
+  // Autonomous on-demand live check: if active slot has passed scheduled draw time and is not yet declared
   const istNow = getISTNow();
   const todayStr = getISTDateString(istNow);
-  const drawingSlot = draws.find(d => d.status === 'DRAWING' || d.parsed_data?.status === 'DRAWING');
+  const currentHour = istNow.getHours();
 
-  if (drawingSlot) {
-    const rawSlot = (drawingSlot.draw_time?.includes('1:00') ? '1PM' : drawingSlot.draw_time?.includes('6:00') ? '6PM' : '8PM') as '1PM' | '6PM' | '8PM';
+  // Determine which slot is relevant
+  const targetSlot: '1PM' | '6PM' | '8PM' = slot
+    ? (slot.includes('1') ? '1PM' : slot.includes('6') ? '6PM' : '8PM')
+    : (currentHour >= 20 ? '8PM' : currentHour >= 18 ? '6PM' : '1PM');
+
+  const isPastSlotTime = (targetSlot === '1PM' && currentHour >= 13) ||
+                         (targetSlot === '6PM' && currentHour >= 18) ||
+                         (targetSlot === '8PM' && currentHour >= 20);
+
+  const existingDeclared = draws.find(d => 
+    d.draw_date === todayStr &&
+    (d.draw_time?.includes(targetSlot.replace('PM', '')) || d.id?.includes(targetSlot)) &&
+    (d.parsed_data?.prizes?.first_prize?.number || d.prizes?.first_prize?.number)
+  );
+
+  if (!existingDeclared && isPastSlotTime) {
     try {
-      const check = await checkAndFetchLiveSlot(todayStr, rawSlot, istNow);
+      const check = await checkAndFetchLiveSlot(todayStr, targetSlot, istNow);
       if (check.status === 'RESULT_OUT' && check.first_prize?.number) {
         const resolvedDraw = {
-          ...drawingSlot,
+          id: `${todayStr}-${targetSlot}`,
+          draw_date: todayStr,
+          draw_time: targetSlot === '1PM' ? '1:00 PM' : targetSlot === '6PM' ? '6:00 PM' : '8:00 PM',
+          draw_name: `DEAR ${targetSlot}`,
+          draw_number: '50',
           status: 'DECLARED',
           source_url: check.imageUrl,
           prizes: check.prizes,
@@ -60,14 +78,16 @@ export const GET: APIRoute = async ({ request, locals }) => {
             source_url: check.imageUrl
           }
         };
-        const idx = draws.findIndex(d => d.id === drawingSlot.id);
+        const idx = draws.findIndex(d => d.id === resolvedDraw.id);
         if (idx !== -1) {
           draws[idx] = resolvedDraw;
         } else {
           draws.unshift(resolvedDraw);
         }
       }
-    } catch (e) {}
+    } catch (e) {
+      console.error('On-demand live fetch error:', e);
+    }
   }
 
   // Filter by slot if requested
