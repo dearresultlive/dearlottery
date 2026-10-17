@@ -416,39 +416,39 @@ export default function DemoPlayModule({ initialDraws = [] }: DemoPlayModuleProp
       </div>
 
       {/* 2. Personal Performance & Accuracy Stats Cards */}
-      <div className="grid grid-cols-4 gap-2 text-center">
-        <div className="bg-white border border-slate-200 rounded-2xl p-2.5 shadow-2xs">
-          <span className="text-[10px] font-bold text-slate-500 block uppercase">
+      <div className="grid grid-cols-4 gap-1.5 sm:gap-2 text-center">
+        <div className="bg-white border border-slate-200 rounded-2xl p-2 sm:p-2.5 shadow-2xs">
+          <span className="text-[9px] sm:text-[10px] font-bold text-slate-500 block uppercase truncate">
             {lang === 'bn' ? 'মোট টিকিট' : 'Tickets'}
           </span>
-          <span className="font-mono text-base sm:text-lg font-black text-slate-900">
+          <span className="font-mono text-sm sm:text-lg font-black text-slate-900">
             {stats.totalSimulated}
           </span>
         </div>
 
-        <div className="bg-white border border-slate-200 rounded-2xl p-2.5 shadow-2xs">
-          <span className="text-[10px] font-bold text-slate-500 block uppercase">
+        <div className="bg-white border border-slate-200 rounded-2xl p-2 sm:p-2.5 shadow-2xs">
+          <span className="text-[9px] sm:text-[10px] font-bold text-slate-500 block uppercase truncate">
             {lang === 'bn' ? 'ম্যাচ/জয়' : 'Matches'}
           </span>
-          <span className="font-mono text-base sm:text-lg font-black text-emerald-600">
+          <span className="font-mono text-sm sm:text-lg font-black text-emerald-600">
             {stats.totalWins}
           </span>
         </div>
 
-        <div className="bg-white border border-slate-200 rounded-2xl p-2.5 shadow-2xs">
-          <span className="text-[10px] font-bold text-slate-500 block uppercase">
+        <div className="bg-white border border-slate-200 rounded-2xl p-2 sm:p-2.5 shadow-2xs">
+          <span className="text-[9px] sm:text-[10px] font-bold text-slate-500 block uppercase truncate">
             {lang === 'bn' ? 'সফলতা' : 'Accuracy'}
           </span>
-          <span className="font-mono text-base sm:text-lg font-black text-blue-700">
+          <span className="font-mono text-sm sm:text-lg font-black text-blue-700">
             {accuracyPercent}%
           </span>
         </div>
 
-        <div className="bg-white border border-slate-200 rounded-2xl p-2.5 shadow-2xs">
-          <span className="text-[10px] font-bold text-slate-500 block uppercase">
+        <div className="bg-white border border-slate-200 rounded-2xl p-2 sm:p-2.5 shadow-2xs">
+          <span className="text-[9px] sm:text-[10px] font-bold text-slate-500 block uppercase truncate">
             {lang === 'bn' ? 'ভার্চুয়াল P/L' : 'Demo P/L'}
           </span>
-          <span className={`font-mono text-base sm:text-lg font-black ${netPnl >= 0 ? 'text-emerald-700' : 'text-slate-700'}`}>
+          <span className={`font-mono text-xs sm:text-base font-black truncate block ${netPnl >= 0 ? 'text-emerald-700' : 'text-slate-700'}`}>
             {netPnl >= 0 ? `+${formatINR(netPnl)}` : `-${formatINR(Math.abs(netPnl))}`}
           </span>
         </div>
@@ -497,10 +497,10 @@ export default function DemoPlayModule({ initialDraws = [] }: DemoPlayModuleProp
         <div className="flex items-center justify-between border-b border-slate-100 pb-2">
           <span className="text-xs font-black text-slate-900 flex items-center gap-1.5">
             <span>🎟️</span>
-            <span>{lang === 'bn' ? 'ভার্চুয়াল টিকিট যোগ করুন' : lang === 'hi' ? 'वर्चुअल टिकट जोड़ें' : 'Add Simulated Ticket'}</span>
+            <span>{lang === 'bn' ? 'টিকিট কাউন্টার (ভার্চুয়াল)' : lang === 'hi' ? 'टिकट काउंटर (वर्चुअल)' : 'Simulated Ticket Counter'}</span>
           </span>
-          <span className="text-[10px] text-slate-500 font-bold bg-slate-100 px-2 py-0.5 rounded-full">
-            ₹6 / {lang === 'bn' ? 'টিকিট (সিমুলেটেড)' : 'ticket (simulated)'}
+          <span className="text-[10px] text-amber-900 font-black bg-amber-100 border border-amber-300 px-2 py-0.5 rounded-full">
+            {lang === 'bn' ? 'অফিশিয়াল MRP ₹৬ / টিকিট' : 'Official MRP: ₹6 / ticket'}
           </span>
         </div>
 
@@ -612,74 +612,122 @@ export default function DemoPlayModule({ initialDraws = [] }: DemoPlayModuleProp
             </p>
           </div>
         ) : (
-          <div className="space-y-2.5">
-            {activeSlotTickets.map((ticket, index) => {
+          <div className="space-y-3">
+            {activeSlotTickets.map((ticket) => {
               const evalRes = evaluateTicket(ticket);
               return (
                 <div
                   key={ticket.id}
-                  className={`border rounded-2xl p-3 sm:p-3.5 transition-all shadow-2xs relative ${
-                    evalRes.isWin
-                      ? 'bg-gradient-to-r from-emerald-50 via-white to-emerald-50 border-emerald-400 ring-2 ring-emerald-500/30'
-                      : evalRes.status === 'DRAWING'
-                      ? 'bg-red-50/60 border-red-200'
-                      : 'bg-white border-slate-200'
-                  }`}
+                  className="relative bg-white border-2 border-amber-300 rounded-2xl shadow-sm hover:shadow-md transition-all overflow-hidden"
                 >
-                  <div className="flex items-center justify-between gap-2">
-                    
-                    {/* Ticket Representation Badge */}
-                    <div className="flex items-center gap-2">
-                      <span className="font-mono font-black text-xs sm:text-sm bg-slate-900 text-amber-400 px-2 py-1 rounded-lg shadow-2xs">
-                        {ticket.series}
+                  {/* Perforated ticket circular notches on left and right */}
+                  <div className="absolute -left-2.5 top-1/2 -translate-y-1/2 w-5 h-5 rounded-full bg-slate-100 border-r-2 border-amber-300 z-10 pointer-events-none"></div>
+                  <div className="absolute -right-2.5 top-1/2 -translate-y-1/2 w-5 h-5 rounded-full bg-slate-100 border-l-2 border-amber-300 z-10 pointer-events-none"></div>
+
+                  {/* 1. Official Government Header Bar */}
+                  <div className={`px-3 sm:px-4 py-1.5 flex items-center justify-between text-white text-[10px] sm:text-xs font-black uppercase tracking-wider ${
+                    ticket.slot === '1PM' 
+                      ? 'bg-gradient-to-r from-blue-900 via-indigo-900 to-blue-950' 
+                      : ticket.slot === '6PM'
+                      ? 'bg-gradient-to-r from-rose-900 via-red-900 to-rose-950'
+                      : 'bg-gradient-to-r from-emerald-950 via-teal-950 to-slate-950'
+                  }`}>
+                    <div className="flex items-center gap-1.5 min-w-0">
+                      <span>🏛️</span>
+                      <span className="truncate">
+                        {lang === 'bn' ? 'নাগাল্যান্ড ও সিকিম রাজ্য লটারি' : lang === 'hi' ? 'नागालैंड व सिक्किम राज्य लॉटरी' : 'State Lotteries'}
                       </span>
-                      <span className="font-mono font-black text-xl sm:text-2xl tracking-widest text-slate-900">
-                        {ticket.number}
+                      <span className="text-amber-300 font-bold">•</span>
+                      <span className="text-amber-300 truncate">
+                        {ticket.slot === '1PM' ? 'DEAR MORNING (1:00 PM)' : ticket.slot === '6PM' ? 'DEAR DAY (6:00 PM)' : 'DEAR NIGHT (8:00 PM)'}
                       </span>
                     </div>
 
-                    {/* Result Status / Delete */}
-                    <div className="flex items-center gap-2">
-                      {evalRes.isWin ? (
-                        <span className="inline-flex items-center gap-1 bg-emerald-600 text-white text-[11px] font-black px-2.5 py-1 rounded-full shadow-2xs animate-bounce">
-                          <span>🎉</span>
-                          <span>{formatINR(evalRes.prizeAmount)}</span>
-                        </span>
-                      ) : evalRes.status === 'DRAWING' ? (
-                        <span className="inline-flex items-center gap-1 bg-red-100 text-red-800 text-[10px] font-bold px-2 py-0.5 rounded-full animate-pulse">
-                          <span className="w-1.5 h-1.5 rounded-full bg-red-600"></span>
-                          <span>{lang === 'bn' ? 'ড্র চলছে...' : 'Drawing...'}</span>
-                        </span>
-                      ) : evalRes.status === 'UPCOMING' ? (
-                        <span className="inline-flex items-center gap-1 bg-slate-100 text-slate-600 text-[10px] font-bold px-2 py-0.5 rounded-full">
-                          <span>⏳</span>
-                          <span>{lang === 'bn' ? 'অপেক্ষমাণ' : 'Pending'}</span>
-                        </span>
-                      ) : (
-                        <span className="text-[10px] text-slate-400 font-bold">
-                          {lang === 'bn' ? 'মেলেনি' : 'No match'}
-                        </span>
-                      )}
-
+                    <div className="flex items-center gap-2 flex-shrink-0">
+                      <span className="bg-amber-400 text-slate-950 font-black text-[9px] sm:text-[10px] px-2 py-0.5 rounded shadow-2xs">
+                        MRP ₹6.00
+                      </span>
                       <button
                         type="button"
                         onClick={() => handleDeleteTicket(ticket.id)}
-                        className="text-slate-400 hover:text-red-600 text-xs p-1"
-                        title="Delete ticket"
+                        className="text-white/60 hover:text-white hover:bg-white/20 rounded-full w-5 h-5 flex items-center justify-center text-xs transition-colors"
+                        title="Remove ticket"
                       >
                         ✕
                       </button>
                     </div>
                   </div>
 
-                  {/* Evaluation Message */}
-                  <div className="mt-2 pt-2 border-t border-slate-100 flex items-center justify-between text-[11px]">
-                    <span className={`font-black ${evalRes.isWin ? 'text-emerald-700' : 'text-slate-600'}`}>
-                      {evalRes.prizeTitle}
-                    </span>
-                    <span className="text-slate-400 text-[10px]">
-                      {ticket.slot} • {ticket.date.split('-').reverse().join('/')}
-                    </span>
+                  {/* 2. Ticket Inner Body: Realistic Colors & Typography */}
+                  <div className="p-3 sm:p-4 bg-gradient-to-b from-[#fffef8] to-[#faf6ea]">
+                    
+                    {/* 1st Prize Goal & Draw Date Ribbon */}
+                    <div className="flex items-center justify-between text-[10px] font-bold text-slate-500 mb-2 border-b border-amber-200/60 pb-1.5">
+                      <span className="text-red-700 font-black flex items-center gap-1">
+                        <span>🏆</span>
+                        <span>{lang === 'bn' ? '১ম পুরস্কার: ₹১ কোটি' : lang === 'hi' ? 'पहला पुरस्कार: ₹1 करोड़' : '1st Prize: ₹1 Crore'}</span>
+                      </span>
+                      <span className="font-mono text-slate-500">
+                        📅 {ticket.date.split('-').reverse().join('/')}
+                      </span>
+                    </div>
+
+                    {/* Prominent Ticket Numbers Display */}
+                    <div className="flex items-center justify-center gap-2.5 sm:gap-4 py-1.5">
+                      {/* Series Pill */}
+                      <div className="flex flex-col items-center">
+                        <span className="text-[8px] sm:text-[9px] font-black text-slate-400 tracking-wider font-mono uppercase">SERIES</span>
+                        <span className="bg-slate-950 text-amber-300 font-mono text-xl sm:text-2xl font-black px-3 py-1 rounded-xl shadow-xs border border-slate-800">
+                          {ticket.series}
+                        </span>
+                      </div>
+
+                      {/* 5-Digit Number */}
+                      <div className="flex flex-col items-center">
+                        <span className="text-[8px] sm:text-[9px] font-black text-slate-400 tracking-wider font-mono uppercase">TICKET NUMBER</span>
+                        <span className="font-mono text-3xl sm:text-4xl font-black text-slate-950 tracking-[0.2em] sm:tracking-[0.25em] pl-2 drop-shadow-2xs">
+                          {ticket.number}
+                        </span>
+                      </div>
+                    </div>
+
+                    {/* 3. Barcode & Live Evaluation Footer */}
+                    <div className="mt-2.5 pt-2 border-t border-dashed border-amber-300/80 flex items-center justify-between text-[10px]">
+                      
+                      {/* Barcode Graphic */}
+                      <div className="flex items-center gap-1 opacity-70">
+                        <span className="font-mono tracking-tighter text-xs font-black select-none text-slate-700">
+                          ||||| | |||| || ||| |||| | |||
+                        </span>
+                        <span className="text-[8px] font-mono text-slate-400 hidden sm:inline">#{ticket.id.slice(-6).toUpperCase()}</span>
+                      </div>
+
+                      {/* Real-time Result Stamp */}
+                      <div>
+                        {evalRes.isWin ? (
+                          <span className="inline-flex items-center gap-1 bg-gradient-to-r from-emerald-600 to-teal-600 text-white font-black text-[11px] px-3 py-1 rounded-full shadow-sm animate-bounce">
+                            <span>🎉</span>
+                            <span>{evalRes.prizeTitle}</span>
+                          </span>
+                        ) : evalRes.status === 'DRAWING' ? (
+                          <span className="inline-flex items-center gap-1.5 bg-red-100 border border-red-300 text-red-800 font-bold text-[10px] px-2.5 py-0.5 rounded-full animate-pulse">
+                            <span className="w-1.5 h-1.5 rounded-full bg-red-600 animate-ping"></span>
+                            <span>{lang === 'bn' ? 'ড্র চলছে...' : 'Drawing in progress...'}</span>
+                          </span>
+                        ) : evalRes.status === 'UPCOMING' ? (
+                          <span className="inline-flex items-center gap-1 bg-slate-100 border border-slate-200 text-slate-600 font-bold text-[10px] px-2.5 py-0.5 rounded-full">
+                            <span>⏳</span>
+                            <span>{lang === 'bn' ? `${ticket.slot} ড্র অপেক্ষমাণ` : `Awaiting ${ticket.slot} draw`}</span>
+                          </span>
+                        ) : (
+                          <span className="inline-flex items-center gap-1 bg-slate-100 text-slate-500 font-bold text-[10px] px-2 py-0.5 rounded-full">
+                            <span>{evalRes.prizeTitle}</span>
+                          </span>
+                        )}
+                      </div>
+
+                    </div>
+
                   </div>
                 </div>
               );
