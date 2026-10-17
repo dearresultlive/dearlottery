@@ -250,6 +250,52 @@ export default function LiveResultsTabs({
     ? getSlotStatus(todayStr, activeSlot, hasPrizes)
     : (hasPrizes ? 'RESULT_OUT' : (isSyncing ? 'DRAWING' : 'RESULT_OUT'));
 
+  // Autonomous live polling when active slot is in DRAWING state (Zero-refresh live reveal)
+  useEffect(() => {
+    if (activeStatus !== 'DRAWING') return;
+
+    let isPolling = true;
+
+    const pollLiveResult = async () => {
+      try {
+        const res = await fetch(`/api/results/latest?slot=${activeSlot}&t=${Date.now()}`, {
+          headers: { 'Accept': 'application/json' },
+          cache: 'no-store'
+        });
+        if (res.ok && isPolling) {
+          const data = await res.json();
+          const draws = data.draws || [];
+          const slotNumber = activeSlot.replace('PM', '');
+          const matching = draws.find((d: any) => 
+            d.draw_date === activeDateStr &&
+            (d.draw_time?.includes(slotNumber) || d.id?.includes(activeSlot))
+          );
+          if (matching && (matching.parsed_data?.prizes?.first_prize?.number || matching.prizes?.first_prize?.number)) {
+            setDrawsList(prev => {
+              const idx = prev.findIndex(d => d.id === matching.id);
+              if (idx >= 0) {
+                const next = [...prev];
+                next[idx] = matching;
+                return next;
+              }
+              return [matching, ...prev];
+            });
+          }
+        }
+      } catch (err) {
+        // Silently retry next cycle
+      }
+    };
+
+    pollLiveResult();
+    const interval = setInterval(pollLiveResult, 5000);
+
+    return () => {
+      isPolling = false;
+      clearInterval(interval);
+    };
+  }, [activeStatus, activeSlot, activeDateStr]);
+
   const declaredPrizes: PrizeData = hasPrizes ? prizesData : {};
   const firstPrize = declaredPrizes.first_prize || { series: '', number: '' };
   const secondPrizes = declaredPrizes.second_prize || [];

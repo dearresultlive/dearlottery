@@ -38,9 +38,50 @@ export function getNextUpcomingDraw(): {
   name: string;
   targetTimestamp: number;
   timeLabel: string;
+  isDrawingWindow?: boolean;
 } {
   const istNow = getISTNow();
-  const todayStr = getISTDateString(istNow);
+  const currentTotalMin = istNow.getHours() * 60 + istNow.getMinutes();
+
+  // If currently in drawing/publishing window (e.g. 1:00 PM - 1:30 PM):
+  // 1:00 PM is 780 min -> window: 780 to 810 (1:00 PM - 1:30 PM)
+  // 6:00 PM is 1080 min -> window: 1080 to 1110 (6:00 PM - 6:30 PM)
+  // 8:00 PM is 1200 min -> window: 1200 to 1230 (8:00 PM - 8:30 PM)
+  if (currentTotalMin >= 780 && currentTotalMin < 810) {
+    const target = new Date(istNow);
+    target.setHours(13, 0, 0, 0);
+    return {
+      slot: '1PM',
+      name: 'DEAR MORNING',
+      targetTimestamp: target.getTime(),
+      timeLabel: '1:00 PM',
+      isDrawingWindow: true
+    };
+  }
+
+  if (currentTotalMin >= 1080 && currentTotalMin < 1110) {
+    const target = new Date(istNow);
+    target.setHours(18, 0, 0, 0);
+    return {
+      slot: '6PM',
+      name: 'DEAR DAY',
+      targetTimestamp: target.getTime(),
+      timeLabel: '6:00 PM',
+      isDrawingWindow: true
+    };
+  }
+
+  if (currentTotalMin >= 1200 && currentTotalMin < 1230) {
+    const target = new Date(istNow);
+    target.setHours(20, 0, 0, 0);
+    return {
+      slot: '8PM',
+      name: 'DEAR NIGHT',
+      targetTimestamp: target.getTime(),
+      timeLabel: '8:00 PM',
+      isDrawingWindow: true
+    };
+  }
 
   const drawSlots = [
     { slot: '1PM' as const, hour: 13, min: 0, label: '1:00 PM', name: 'DEAR MORNING' },
@@ -56,12 +97,13 @@ export function getNextUpcomingDraw(): {
         slot: s.slot,
         name: s.name,
         targetTimestamp: target.getTime(),
-        timeLabel: s.label
+        timeLabel: s.label,
+        isDrawingWindow: false
       };
     }
   }
 
-  // If past 8:00 PM, next draw is tomorrow 1:00 PM
+  // If past 8:30 PM, next draw is tomorrow 1:00 PM
   const tomorrow = new Date(istNow);
   tomorrow.setDate(tomorrow.getDate() + 1);
   tomorrow.setHours(13, 0, 0, 0);
@@ -70,7 +112,8 @@ export function getNextUpcomingDraw(): {
     slot: '1PM',
     name: 'DEAR MORNING',
     targetTimestamp: tomorrow.getTime(),
-    timeLabel: '1:00 PM Tomorrow'
+    timeLabel: '1:00 PM Tomorrow',
+    isDrawingWindow: false
   };
 }
 

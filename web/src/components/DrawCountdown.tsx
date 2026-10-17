@@ -72,7 +72,7 @@ export default function DrawCountdown({ onResultDetected, compact = false }: Dra
 
       const diff = currentUpcoming.targetTimestamp - istNow.getTime();
 
-      const isWithin2MinWindow = diff <= 120 * 1000 && diff >= -15 * 60 * 1000;
+      const isWithin2MinWindow = Boolean(currentUpcoming.isDrawingWindow) || (diff <= 120 * 1000 && diff >= -25 * 60 * 1000);
       
       if (isWithin2MinWindow && !newResultData) {
         setIsPollingActive(true);

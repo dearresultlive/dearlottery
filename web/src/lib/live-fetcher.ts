@@ -70,7 +70,7 @@ export async function checkAndFetchLiveSlot(
       headers: {
         'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
       },
-      signal: AbortSignal.timeout(3000)
+      signal: AbortSignal.timeout(6000)
     });
 
     if (res.ok) {
@@ -111,6 +111,36 @@ export async function checkAndFetchLiveSlot(
   } catch (e) {
     // Upstream network timeout / offline
   }
+
+  // Secondary check: Nagaland official results portal
+  try {
+    const [year, month, day] = dateStr.split('-');
+    const shortDate = `${day}/${month}/${year.slice(2)}`;
+    const slotText = slot === '1PM' ? '1 PM' : slot === '6PM' ? '6 PM' : '8 PM';
+    const slotAnchor = slot === '1PM' ? 'dear1pm' : slot === '6PM' ? 'dear6pm' : 'dear8pm';
+
+    const nRes = await fetch('https://www.nagalandlotteryresults.com/', {
+      headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36' },
+      signal: AbortSignal.timeout(6000)
+    });
+    if (nRes.ok) {
+      const nHtml = await nRes.text();
+      const blocks = nHtml.match(/<div class=['"]dls-update[\s\S]*?<\/div>\s*<\/div>/gi) || [];
+      for (const b of blocks) {
+        if (b.includes('dls-success') && (b.includes(slotAnchor) || b.includes(slotText))) {
+          if (b.toLowerCase().includes('published') && (b.includes(shortDate) || b.includes(dateStr))) {
+            const imgMatch = b.match(/<img[^>]+src=['"]([^'"]+)['"]/i);
+            if (imgMatch) {
+              const existing = DYNAMIC_DRAWS_CACHE[dateStr]?.[slot] || {};
+              existing.image_r2_url = imgMatch[1];
+              if (!DYNAMIC_DRAWS_CACHE[dateStr]) DYNAMIC_DRAWS_CACHE[dateStr] = {};
+              DYNAMIC_DRAWS_CACHE[dateStr][slot] = existing;
+            }
+          }
+        }
+      }
+    }
+  } catch (e) {}
 
   // Not published yet, draw is currently underway
   return {
