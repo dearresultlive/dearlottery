@@ -47,6 +47,39 @@ const isCheckerActive = currentPath === '/checker';
         document.documentElement.setAttribute('data-lang', e.detail);
       }
     });
+
+    // Instant notification pre-paint check: suppresses 1s bell icon flicker on page refresh
+    try {
+      if (typeof window !== 'undefined' && 'Notification' in window && Notification.permission === 'granted') {
+        document.documentElement.classList.add('notifications-granted');
+      }
+    } catch (e) {}
+
+    // Global early capture of PWA beforeinstallprompt event for instant 1-tap install
+    window.deferredPwaPrompt = null;
+    window.addEventListener('beforeinstallprompt', function(e) {
+      e.preventDefault();
+      window.deferredPwaPrompt = e;
+      window.dispatchEvent(new CustomEvent('dearlottery:pwa_ready'));
+    });
+
+    window.addEventListener('appinstalled', function() {
+      window.deferredPwaPrompt = null;
+      var btn = document.getElementById('header-install-app-btn');
+      if (btn) btn.style.display = 'none';
+      var modal = document.getElementById('pwa-install-modal');
+      if (modal) {
+        modal.classList.add('hidden');
+        modal.classList.remove('flex');
+      }
+    });
+
+    // Register PWA service worker with offline fallback & push support
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', function() {
+        navigator.serviceWorker.register('/sw.js').catch(function() {});
+      });
+    }
   </script>
 
   <style is:global>
@@ -79,6 +112,13 @@ const isCheckerActive = currentPath === '/checker';
 
     html[data-lang="hi"] .lang-en,
     html[data-lang="hi"] .lang-bn {
+      display: none !important;
+    }
+
+    /* Instantly hide notification bell for already subscribed users (0ms flicker prevention) */
+    html.notifications-granted #header-bell-wrapper,
+    html.notifications-granted #header-notification-bell,
+    html.notifications-granted .header-notification-bell-wrapper {
       display: none !important;
     }
   </style>
@@ -154,5 +194,171 @@ const isCheckerActive = currentPath === '/checker';
         </span>
       </a>
     </nav>
+
+    {/* PWA Install Guidance Modal for Mobile & Desktop */}
+    <div
+      id="pwa-install-modal"
+      class="fixed inset-0 z-50 bg-slate-950/70 backdrop-blur-xs hidden items-center justify-center p-3.5 sm:p-4 select-none notranslate"
+      onclick="if (event.target === this) { this.classList.add('hidden'); this.classList.remove('flex'); }"
+      role="dialog"
+      aria-modal="true"
+      aria-label="Install App"
+    >
+      <div class="bg-gradient-to-b from-slate-900 to-slate-950 text-white w-full max-w-sm rounded-2xl p-5 shadow-2xl border border-amber-400/40 relative overflow-hidden animate-in fade-in zoom-in-95 duration-200">
+        
+        {/* Subtle decorative glow */}
+        <div class="absolute -top-12 -right-12 w-28 h-28 bg-amber-400/20 rounded-full blur-2xl pointer-events-none"></div>
+
+        {/* Modal Header */}
+        <div class="flex items-start justify-between gap-3 relative z-10 pb-3 border-b border-white/10">
+          <div class="flex items-center gap-2.5">
+            <img
+              src="/pwa-192x192.png"
+              alt="Dear Result Live Logo"
+              class="w-11 h-11 rounded-xl shadow-md border border-amber-300/40 p-0.5 bg-slate-900 flex-shrink-0"
+            />
+            <div>
+              <div class="flex items-center gap-1.5">
+                <h3 class="font-black text-sm tracking-tight text-white">
+                  <span class="lang-en">Dear Result Live App</span>
+                  <span class="lang-bn">ডিয়ার রেজাল্ট লাইভ অ্যাপ</span>
+                  <span class="lang-hi">डियर रिजल्ट लाइव ऐप</span>
+                </h3>
+                <span class="bg-amber-400 text-slate-950 font-black text-[9px] px-1.5 py-0.2 rounded-full uppercase">
+                  PWA
+                </span>
+              </div>
+              <p class="text-[11px] text-blue-200 font-semibold mt-0.5">
+                <span class="lang-en">Fast • Ad-Free • 1-Tap Results</span>
+                <span class="lang-bn">দ্রুততম • বিজ্ঞাপনহীন • ১-ট্যাপে রেজাল্ট</span>
+                <span class="lang-hi">सबसे तेज़ • विज्ञापनमुक्त • 1-टैप रिजल्ट</span>
+              </p>
+            </div>
+          </div>
+
+          <button
+            type="button"
+            onclick="document.getElementById('pwa-install-modal').classList.add('hidden'); document.getElementById('pwa-install-modal').classList.remove('flex');"
+            class="text-white/60 hover:text-white p-1 rounded-lg transition-colors text-base font-bold leading-none cursor-pointer"
+            aria-label="Close"
+          >
+            ✕
+          </button>
+        </div>
+
+        {/* Modal Body / Guided Instructions */}
+        <div class="py-4 space-y-3 relative z-10">
+          {/* iOS Safari Guide */}
+          <div id="pwa-guide-ios" class="space-y-2 text-xs text-slate-200">
+            <p class="font-bold text-amber-300 text-xs flex items-center gap-1">
+              <span>🍏</span>
+              <span class="lang-en">iPhone / iPad Safari Install:</span>
+              <span class="lang-bn">আইফোন / আইপ্যাডে ইনস্টল করুন:</span>
+              <span class="lang-hi">iPhone / iPad में इंस्टॉल करें:</span>
+            </p>
+            <ol class="space-y-2 pl-1 text-[11px] text-slate-300">
+              <li class="flex items-start gap-2">
+                <span class="w-5 h-5 rounded-full bg-blue-600/50 text-blue-200 font-black flex items-center justify-center flex-shrink-0 text-[10px]">1</span>
+                <div>
+                  <span class="lang-en">Tap the <strong>Share</strong> button (⎋) at bottom of Safari.</span>
+                  <span class="lang-bn">Safari-র নিচে থাকা <strong>Share (⎋)</strong> বাটনে ট্যাপ করুন।</span>
+                  <span class="lang-hi">Safari में नीचे <strong>Share (⎋)</strong> बटन दबाएं।</span>
+                </div>
+              </li>
+              <li class="flex items-start gap-2">
+                <span class="w-5 h-5 rounded-full bg-blue-600/50 text-blue-200 font-black flex items-center justify-center flex-shrink-0 text-[10px]">2</span>
+                <div>
+                  <span class="lang-en">Scroll down and tap <strong>"Add to Home Screen" (+)</strong>.</span>
+                  <span class="lang-bn">নিচে স্ক্রোল করে <strong>"Add to Home Screen" (+)</strong> চাপুন।</span>
+                  <span class="lang-hi">नीचे जाकर <strong>"Add to Home Screen" (+)</strong> चुनें।</span>
+                </div>
+              </li>
+              <li class="flex items-start gap-2">
+                <span class="w-5 h-5 rounded-full bg-blue-600/50 text-blue-200 font-black flex items-center justify-center flex-shrink-0 text-[10px]">3</span>
+                <div>
+                  <span class="lang-en">Tap <strong>"Add"</strong> at top-right. App is ready!</span>
+                  <span class="lang-bn">উপরে ডানদিকে <strong>"Add"</strong> বাটনে ক্লিক করলেই তৈরি!</span>
+                  <span class="lang-hi">ऊपर दाईं तरफ <strong>"Add"</strong> दबाएं।</span>
+                </div>
+              </li>
+            </ol>
+          </div>
+
+          {/* Android / Chrome Guide */}
+          <div id="pwa-guide-android" class="space-y-2 text-xs text-slate-200">
+            <p class="font-bold text-amber-300 text-xs flex items-center gap-1">
+              <span>📲</span>
+              <span class="lang-en">Android / Chrome 1-Click Install:</span>
+              <span class="lang-bn">অ্যান্ড্রয়েড / ক্রোমে ইনস্টল করার নিয়ম:</span>
+              <span class="lang-hi">Android / Chrome में इंस्टॉल करने का तरीका:</span>
+            </p>
+            <ol class="space-y-2 pl-1 text-[11px] text-slate-300">
+              <li class="flex items-start gap-2">
+                <span class="w-5 h-5 rounded-full bg-amber-500/30 text-amber-300 font-black flex items-center justify-center flex-shrink-0 text-[10px]">1</span>
+                <div>
+                  <span class="lang-en">Tap the <strong>3-dots menu (⋮)</strong> at top-right of browser.</span>
+                  <span class="lang-bn">ব্রাউজারের উপরের ডানদিকের <strong>৩-ডট মেনুতে (⋮)</strong> চাপুন।</span>
+                  <span class="lang-hi">ब्राउज़र के ऊपर दाईं ओर <strong>3-डॉट मेनू (⋮)</strong> पर दबाएं।</span>
+                </div>
+              </li>
+              <li class="flex items-start gap-2">
+                <span class="w-5 h-5 rounded-full bg-amber-500/30 text-amber-300 font-black flex items-center justify-center flex-shrink-0 text-[10px]">2</span>
+                <div>
+                  <span class="lang-en">Select <strong>"Install app"</strong> or <strong>"Add to Home screen"</strong>.</span>
+                  <span class="lang-bn"><strong>"Install app"</strong> অথবা <strong>"Add to Home screen"</strong> চাপুন।</span>
+                  <span class="lang-hi"><strong>"Install app"</strong> या <strong>"Add to Home screen"</strong> चुनें।</span>
+                </div>
+              </li>
+              <li class="flex items-start gap-2">
+                <span class="w-5 h-5 rounded-full bg-amber-500/30 text-amber-300 font-black flex items-center justify-center flex-shrink-0 text-[10px]">3</span>
+                <div>
+                  <span class="lang-en">Tap <strong>"Install"</strong> to add the app icon to your phone!</span>
+                  <span class="lang-bn"><strong>"Install"</strong> চাপলেই ফোনের হোম স্ক্রিনে অ্যাপ যুক্ত হয়ে যাবে!</span>
+                  <span class="lang-hi"><strong>"Install"</strong> दबाते ही फोन में ऐप आ जाएगा!</span>
+                </div>
+              </li>
+            </ol>
+          </div>
+        </div>
+
+        {/* Modal Action Buttons */}
+        <div class="pt-3 border-t border-white/10 flex items-center gap-2">
+          <button
+            id="pwa-modal-action-btn"
+            type="button"
+            onclick="if (window.deferredPwaPrompt) { window.deferredPwaPrompt.prompt(); } document.getElementById('pwa-install-modal').classList.add('hidden'); document.getElementById('pwa-install-modal').classList.remove('flex');"
+            class="flex-1 bg-gradient-to-r from-amber-400 to-amber-500 hover:from-amber-300 hover:to-amber-400 text-slate-950 font-black text-xs py-2.5 px-3 rounded-xl shadow-md transition-all active:scale-95 text-center cursor-pointer"
+          >
+            <span class="lang-en">Install / OK</span>
+            <span class="lang-bn">ইনস্টল / বুঝেছি</span>
+            <span class="lang-hi">इंस्टॉल / समझ गया</span>
+          </button>
+        </div>
+
+      </div>
+    </div>
+
+    <script is:inline>
+      (function() {
+        function checkPlatform() {
+          var ua = navigator.userAgent || '';
+          var isIOS = /iPad|iPhone|iPod/.test(ua) && !window.MSStream;
+          var iosGuide = document.getElementById('pwa-guide-ios');
+          var androidGuide = document.getElementById('pwa-guide-android');
+          if (isIOS) {
+            if (iosGuide) iosGuide.style.display = 'block';
+            if (androidGuide) androidGuide.style.display = 'none';
+          } else {
+            if (iosGuide) iosGuide.style.display = 'none';
+            if (androidGuide) androidGuide.style.display = 'block';
+          }
+        }
+        if (document.readyState === 'loading') {
+          document.addEventListener('DOMContentLoaded', checkPlatform);
+        } else {
+          checkPlatform();
+        }
+      })();
+    </script>
   </body>
 </html>

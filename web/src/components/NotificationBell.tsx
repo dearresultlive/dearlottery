@@ -3,7 +3,12 @@ import { useLanguage } from '../lib/i18n';
 
 export default function NotificationBell() {
   const { lang } = useLanguage();
-  const [isSubscribed, setIsSubscribed] = useState(false);
+  const [isSubscribed, setIsSubscribed] = useState(() => {
+    if (typeof window !== 'undefined' && 'Notification' in window) {
+      return Notification.permission === 'granted';
+    }
+    return false;
+  });
   const [showToast, setShowToast] = useState(false);
   const [toastMsg, setToastMsg] = useState('');
 
@@ -11,6 +16,7 @@ export default function NotificationBell() {
     if (typeof window !== 'undefined' && 'Notification' in window) {
       if (Notification.permission === 'granted') {
         setIsSubscribed(true);
+        document.documentElement.classList.add('notifications-granted');
       }
     }
   }, []);
@@ -37,6 +43,14 @@ export default function NotificationBell() {
             ? 'ड्रॉ होते ही परिणाम सूचनाएं सक्रिय हो गई हैं! ✓'
             : 'Live draw alerts enabled successfully! ✓'
         );
+        setShowToast(true);
+        setTimeout(() => {
+          setShowToast(false);
+          if (typeof document !== 'undefined') {
+            document.documentElement.classList.add('notifications-granted');
+          }
+        }, 3500);
+        return;
       } else if (Notification.permission === 'denied') {
         setToastMsg(
           lang === 'bn'
@@ -78,7 +92,7 @@ export default function NotificationBell() {
   }
 
   return (
-    <div className="relative">
+    <div id="header-notification-bell" className="relative header-notification-bell-wrapper">
       <button
         type="button"
         onClick={handleClick}

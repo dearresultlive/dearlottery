@@ -33,14 +33,28 @@ export default function PwaInstallBanner() {
       setIsIOS(true);
     }
 
+    // Check if global prompt was already captured before component hydrated
+    if ((window as any).deferredPwaPrompt) {
+      setDeferredPrompt((window as any).deferredPwaPrompt);
+    }
+
     // Android/Chrome beforeinstallprompt event
     const handleBeforeInstall = (e: any) => {
       e.preventDefault();
+      (window as any).deferredPwaPrompt = e;
       setDeferredPrompt(e);
     };
 
+    const handlePwaReady = () => {
+      if ((window as any).deferredPwaPrompt) {
+        setDeferredPrompt((window as any).deferredPwaPrompt);
+      }
+    };
+
     window.addEventListener('beforeinstallprompt', handleBeforeInstall);
+    window.addEventListener('dearlottery:pwa_ready', handlePwaReady);
     window.addEventListener('appinstalled', () => {
+      (window as any).deferredPwaPrompt = null;
       setIsVisible(false);
       setDeferredPrompt(null);
     });
@@ -58,8 +72,9 @@ export default function PwaInstallBanner() {
       setIsDismissed(false);
       setIsVisible(true);
       setShowGuide(true);
-      if (deferredPrompt) {
-        deferredPrompt.prompt();
+      const activePrompt = deferredPrompt || (window as any).deferredPwaPrompt;
+      if (activePrompt) {
+        activePrompt.prompt();
       }
     };
 
@@ -68,6 +83,7 @@ export default function PwaInstallBanner() {
     return () => {
       clearTimeout(timer);
       window.removeEventListener('beforeinstallprompt', handleBeforeInstall);
+      window.removeEventListener('dearlottery:pwa_ready', handlePwaReady);
       window.removeEventListener('dearlottery:open_install_pwa', handleManualOpen);
     };
   }, [deferredPrompt]);

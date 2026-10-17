@@ -3,6 +3,8 @@
   "short_name": "Dear Result",
   "description": "Official Nagaland & Sikkim Dear State Lottery Results Live (1PM, 6PM, 8PM)",
   "start_url": "/",
+  "id": "/",
+  "scope": "/",
   "display": "standalone",
   "background_color": "#f8fafc",
   "theme_color": "#1d4ed8",
@@ -10,10 +12,28 @@
   "categories": ["news", "utilities"],
   "icons": [
     {
+      "src": "/pwa-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/pwa-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/pwa-maskable-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    },
+    {
       "src": "/favicon.svg",
-      "sizes": "192x192 512x512",
+      "sizes": "any",
       "type": "image/svg+xml",
-      "purpose": "any maskable"
+      "purpose": "any"
     }
   ],
   "shortcuts": [
@@ -22,28 +42,28 @@
       "short_name": "1PM Result",
       "description": "Dear 1:00 PM Morning draw live result",
       "url": "/#1pm",
-      "icons": [{ "src": "/favicon.svg", "sizes": "192x192" }]
+      "icons": [{ "src": "/pwa-192x192.png", "sizes": "192x192" }]
     },
     {
       "name": "6:00 PM Day Result",
       "short_name": "6PM Result",
       "description": "Dear 6:00 PM Day draw live result",
       "url": "/#6pm",
-      "icons": [{ "src": "/favicon.svg", "sizes": "192x192" }]
+      "icons": [{ "src": "/pwa-192x192.png", "sizes": "192x192" }]
     },
     {
       "name": "8:00 PM Night Result",
       "short_name": "8PM Result",
       "description": "Dear 8:00 PM Night draw live result",
       "url": "/#8pm",
-      "icons": [{ "src": "/favicon.svg", "sizes": "192x192" }]
+      "icons": [{ "src": "/pwa-192x192.png", "sizes": "192x192" }]
     },
     {
       "name": "Instant Ticket Checker",
       "short_name": "Ticket Checker",
       "description": "Search ticket number across all prize tiers",
       "url": "/checker",
-      "icons": [{ "src": "/favicon.svg", "sizes": "192x192" }]
+      "icons": [{ "src": "/pwa-192x192.png", "sizes": "192x192" }]
     }
   ]
 }
