@@ -1,6 +1,7 @@
 ---
 import Layout from '../layouts/Layout.astro';
 import TargetNumbersTool from '../components/TargetNumbersTool';
+import AnalyticsModule from '../components/AnalyticsModule';
 import TicketChecker from '../components/TicketChecker';
 import { fetchFrequencyAnalytics, fetchLatestDraws, fetchDrawsByDate } from '../lib/api';
 import { getISTDateString, getISTNow } from '../lib/lottery-utils';
@@ -19,8 +20,8 @@ const checkerDraws = [...draws, ...yesterdayDraws];
 ---
 
 <Layout
-  title={`Dear Lottery Target Number Today (${todayDateStr}) • Common Numbers | Lottery Sambad`}
-  description={`Dear Lottery target numbers today (${todayDateStr}) for 1:00 PM, 6:00 PM, and 8:00 PM draws. Statistical hot middle pairs, high-frequency 2-digit endings, and 4-digit common numbers for Nagaland & Sikkim state lotteries.`}
+  title={`Dear Lottery Target & Hot Numbers Today (${todayDateStr}) • Common Numbers & Heatmap`}
+  description={`Dear Lottery target numbers and hot repeating numbers today (${todayDateStr}) for 1:00 PM, 6:00 PM, and 8:00 PM draws. Hot middle pairs, high-frequency 2-digit endings, 30-day repeat frequency, and digit heatmaps for Nagaland & Sikkim lotteries.`}
   drawDate={todayDateStr}
 >
   <div class="max-w-[620px] md:max-w-2xl lg:max-w-3xl mx-auto px-2.5 sm:px-4 py-2 sm:py-4 space-y-4">
@@ -29,30 +30,52 @@ const checkerDraws = [...draws, ...yesterdayDraws];
     <nav aria-label="Breadcrumb" class="flex items-center gap-2 text-xs text-slate-500 border-b border-slate-200 pb-2">
       <a href="/" class="hover:text-blue-700 font-medium">Home (হোম)</a>
       <span>/</span>
-      <span class="text-slate-900 font-bold">Target Numbers (টার্গেট নম্বর)</span>
+      <span class="text-slate-900 font-bold">Target & Hot Numbers (টার্গেট ও হট নম্বর)</span>
     </nav>
 
-    {/* Target Numbers Banner Header */}
-    <div class="bg-gradient-to-r from-amber-50 via-white to-amber-50 border border-amber-300 rounded-2xl p-3.5 text-center shadow-xs">
+    {/* Target & Hot Numbers Header Banner */}
+    <div class="bg-gradient-to-r from-amber-50 via-white to-amber-50 border border-amber-300 rounded-2xl p-3.5 sm:p-5 text-center shadow-xs">
       <span class="inline-flex items-center gap-1.5 bg-amber-500 text-white text-[10px] sm:text-xs font-black px-2.5 py-0.5 rounded-full uppercase tracking-wider">
         <span>🎯</span>
-        <span class="lang-en">Daily Analysis • টার্গেট ও কমন নম্বর</span>
-        <span class="lang-bn">টার্গেট ও কমন নম্বর</span>
-        <span class="lang-hi">टारगेट और कॉमन नंबर</span>
+        <span class="lang-en">Daily Analysis • টার্গেট ও হট নম্বর</span>
+        <span class="lang-bn">টার্গেট ও হট নম্বর</span>
+        <span class="lang-hi">टारगेट और हॉट नंबर</span>
       </span>
-      <h1 class="text-base sm:text-xl font-black text-slate-900 mt-1">
-        <span class="lang-en">Dear Lottery Target Number Today ({todayDateStr})</span>
-        <span class="lang-bn">আজকের ডিয়ার লটারি টার্গেট নম্বর ({todayDateStr})</span>
-        <span class="lang-hi">आज का डियर लॉटरी टारगेट नंबर ({todayDateStr})</span>
+      <h1 class="text-base sm:text-2xl font-black text-slate-900 mt-1.5">
+        <span class="lang-en">Dear Lottery Target & Hot Numbers Today ({todayDateStr})</span>
+        <span class="lang-bn">আজকের ডিয়ার লটারি টার্গেট ও হট নম্বর ({todayDateStr})</span>
+        <span class="lang-hi">आज का डियर लॉटरी टारगेट और हॉट नंबर ({todayDateStr})</span>
       </h1>
-      <p class="text-[11px] sm:text-xs text-slate-600 mt-0.5">
-        <span class="lang-en">Hot middle pairs, high-frequency 2-digit endings, and common numbers.</span>
-        <span class="lang-bn">পরিসংখ্যান ভিত্তিক মিডিল নম্বর, শেষ ২-ডিজিট এবং দৈনিক কমন নম্বর।</span>
-        <span class="lang-hi">सांख्यिकी आधारित मिडिल नंबर, अंतिम 2-अंक और दैनिक कॉमन नंबर।</span>
+      <p class="text-[11px] sm:text-xs text-slate-600 mt-1 max-w-xl mx-auto">
+        <span class="lang-en">Statistical hot middle pairs, high-frequency endings, 30-day repeat numbers, and positional digit frequency heatmaps.</span>
+        <span class="lang-bn">পরিসংখ্যান ভিত্তিক মিডিল নম্বর, শেষ ২-ডিজিট, বিগত ৩০ দিনের বেশি বার আসা হট নম্বর ও পজিশনাল ডিজিট হিটম্যাপ।</span>
+        <span class="lang-hi">सांख्यिकी आधारित मिडिल नंबर, अंतिम 2-अंक, पिछले 30 दिनों के हॉट नंबर्स और पोजिशनल डिजिट हीटमैप।</span>
       </p>
+
+      {/* Quick Jump In-Page Navigation Pills */}
+      <div class="flex items-center justify-center gap-2 pt-3 flex-wrap text-xs font-black">
+        <a
+          href="#target-tool"
+          class="bg-amber-100 hover:bg-amber-200 text-amber-900 px-3 py-1.5 rounded-xl border border-amber-300 transition-all active:scale-95"
+        >
+          🎯 <span class="lang-en">Daily Targets</span><span class="lang-bn">আজকের টার্গেট</span><span class="lang-hi">आज के टारगेट</span>
+        </a>
+        <a
+          href="#hot-numbers"
+          class="bg-blue-100 hover:bg-blue-200 text-blue-900 px-3 py-1.5 rounded-xl border border-blue-300 transition-all active:scale-95"
+        >
+          🔥 <span class="lang-en">Hot Numbers & Heatmap</span><span class="lang-bn">হট নম্বর ও হিটম্যাপ</span><span class="lang-hi">हॉट नंबर्स व हीटमैप</span>
+        </a>
+        <a
+          href="/demo"
+          class="bg-emerald-100 hover:bg-emerald-200 text-emerald-900 px-3 py-1.5 rounded-xl border border-emerald-300 transition-all active:scale-95"
+        >
+          🎮 <span class="lang-en">Demo Play</span><span class="lang-bn">ডেমো প্লে</span><span class="lang-hi">डेमो प्ले</span>
+        </a>
+      </div>
     </div>
 
-    {/* Primary Target Numbers Module */}
+    {/* 1. Primary Target Numbers Module (Slot Switcher, Hot Middles, High-Frequency Endings, Generator) */}
     <section id="target-tool">
       <TargetNumbersTool
         client:load
@@ -61,40 +84,58 @@ const checkerDraws = [...draws, ...yesterdayDraws];
       />
     </section>
 
-    {/* Quick Ticket Checker */}
+    {/* 2. 30-Day Hot Numbers, Cold Numbers & Positional Digit Heatmap */}
+    <section id="hot-numbers">
+      <AnalyticsModule
+        client:load
+        initialMatrix={analytics.matrix}
+        initialHot={analytics.hotNumbers}
+        initialCold={analytics.coldNumbers}
+      />
+    </section>
+
+    {/* 3. Quick Ticket Checker */}
     <section id="checker">
       <TicketChecker client:load initialDraws={checkerDraws} variant="slim" />
     </section>
 
-    {/* Comprehensive Guide on Lottery Target Numbers */}
+    {/* 4. Comprehensive Guide on Lottery Target & Hot Numbers */}
     <section class="bg-white border border-slate-200 rounded-2xl p-4 sm:p-6 text-slate-700 space-y-4 shadow-sm text-xs leading-relaxed">
       <h2 class="text-base sm:text-xl font-black text-slate-900">
-        About Dear Lottery Target & Common Numbers (কমন ও টার্গেট নম্বর)
+        About Dear Lottery Target & Hot Numbers (কমন, টার্গেট ও হট নম্বর)
       </h2>
       <p>
-        In Indian state lotteries like Nagaland State Lotteries and Sikkim State Lotteries, lottery ticket buyers analyze past draw frequency patterns before purchasing tickets at authorized retail counters.
+        In Indian state lotteries like Nagaland State Lotteries and Sikkim State Lotteries, lottery ticket buyers analyze past draw frequency patterns and hot repeating digits before purchasing tickets at authorized retail counters.
       </p>
 
       <div class="space-y-2 border-t border-slate-100 pt-3">
-        <h2 class="font-bold text-slate-900 text-xs sm:text-sm">What is a "Middle Number" (মিডিল নম্বর)?</h2>
+        <h3 class="font-bold text-slate-900 text-xs sm:text-sm">What is a "Middle Number" (মিডিল নম্বর)?</h3>
         <p class="text-slate-600">
           Dear Lottery tickets feature a series code and a 5-digit number (e.g., <strong>84D 29813</strong>). The 2nd and 3rd digits (e.g. <strong>98</strong>) are commonly referred to as the <em>Middle Number (মিডিল)</em> by local retailers and players. Retail tickets are bundled and traded by middle sets (e.g. 50-middle, 80-middle).
         </p>
       </div>
 
       <div class="space-y-2 border-t border-slate-100 pt-3">
-        <h2 class="font-bold text-slate-900 text-xs sm:text-sm">How to Choose Tickets Strategically:</h2>
+        <h3 class="font-bold text-slate-900 text-xs sm:text-sm">How to Choose Tickets Strategically:</h3>
         <ul class="list-disc list-inside space-y-1 text-slate-600">
           <li><strong>Study Repeating Endings:</strong> 5th prize winners (₹120) contain 100 winning 4-digit numbers every draw. Certain last 2-digit patterns appear in consecutive cycles.</li>
-          <li><strong>Match Hot Series Trends:</strong> Review our <a href="/analytics" class="text-blue-700 underline font-bold">Hot &amp; Cold Numbers</a> chart to see which positional digits have the highest occurrence counts.</li>
+          <li><strong>Match Hot Positional Trends:</strong> Review the <a href="#hot-numbers" class="text-blue-700 underline font-bold">Digit Frequency Heatmap</a> above to see which digits (0-9) appear most frequently in each position.</li>
+          <li><strong>Practice Risk-Free in Demo Play:</strong> Test your number theories for free in our <a href="/demo" class="text-blue-700 underline font-bold">Dear Lottery Demo Play</a> simulator before buying physical tickets.</li>
           <li><strong>Play Responsibly:</strong> Each lottery draw machine uses independent air-mix balls. No algorithm or person can predict results with 100% certainty. Only spend what you can afford for entertainment.</li>
         </ul>
       </div>
 
-      <div class="border-t border-slate-100 pt-3 text-center">
+      <div class="border-t border-slate-100 pt-3 flex flex-wrap gap-2 justify-center">
+        <a
+          href="/demo"
+          class="inline-flex items-center gap-1.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs px-4 py-2.5 rounded-xl shadow-xs transition-all"
+        >
+          <span>🎮</span>
+          <span>Test Numbers in Demo Play (ডেমো প্লে)</span>
+        </a>
         <a
           href="/"
-          class="inline-flex items-center gap-2 bg-blue-700 hover:bg-blue-800 text-white font-bold text-xs px-5 py-2.5 rounded-xl shadow-xs transition-all"
+          class="inline-flex items-center gap-1.5 bg-blue-700 hover:bg-blue-800 text-white font-bold text-xs px-4 py-2.5 rounded-xl shadow-xs transition-all"
         >
           <span>👈</span>
           <span>View Today's Live Draw Results (আজকের লাইভ রেজাল্ট)</span>

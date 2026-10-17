@@ -75,7 +75,7 @@ const { currentPath = '/' } = Astro.props;
               : 'text-slate-700 hover:text-blue-700 hover:bg-slate-100'
           }`}
         >
-          <span id="nav-target">Target Numbers</span>
+          <span id="nav-target">Target & Hot</span>
         </a>
         <a
           href="/old-results"
@@ -96,16 +96,6 @@ const { currentPath = '/' } = Astro.props;
           }`}
         >
           <span id="nav-checker">Check Ticket</span>
-        </a>
-        <a
-          href="/analytics"
-          class={`px-3.5 py-2 rounded-xl text-xs sm:text-sm font-black transition-colors ${
-            currentPath === '/analytics'
-              ? 'text-blue-700 bg-blue-50 border border-blue-200'
-              : 'text-slate-700 hover:text-blue-700 hover:bg-slate-100'
-          }`}
-        >
-          <span id="nav-analytics">Hot Numbers</span>
         </a>
       </nav>
 
@@ -138,7 +128,6 @@ const { currentPath = '/' } = Astro.props;
     var navTarget = document.getElementById('nav-target');
     var navOld = document.getElementById('nav-old');
     var navChecker = document.getElementById('nav-checker');
-    var navAnalytics = document.getElementById('nav-analytics');
     var btnFull = document.getElementById('header-btn-checker-full');
     var btnShort = document.getElementById('header-btn-checker-short');
 
@@ -147,10 +136,9 @@ const { currentPath = '/' } = Astro.props;
       if (navToday) navToday.textContent = 'আজকের রেজাল্ট';
       if (navDemo) navDemo.textContent = 'ডেমো প্লে';
       if (navYesterday) navYesterday.textContent = 'গতকালকের রেজাল্ট';
-      if (navTarget) navTarget.textContent = 'টার্গেট নম্বর';
+      if (navTarget) navTarget.textContent = 'টার্গেট ও হট নম্বর';
       if (navOld) navOld.textContent = 'পুরনো রেজাল্ট';
       if (navChecker) navChecker.textContent = 'টিকিট মেলান';
-      if (navAnalytics) navAnalytics.textContent = 'হট নম্বর';
       if (btnFull) btnFull.textContent = 'টিকিট মেলান';
       if (btnShort) btnShort.textContent = 'মেলান';
     } else if (lang === 'hi') {
@@ -158,10 +146,9 @@ const { currentPath = '/' } = Astro.props;
       if (navToday) navToday.textContent = 'आज का रिजल्ट';
       if (navDemo) navDemo.textContent = 'डेमो प्ले';
       if (navYesterday) navYesterday.textContent = 'कल का रिजल्ट';
-      if (navTarget) navTarget.textContent = 'टारगेट नंबर';
+      if (navTarget) navTarget.textContent = 'टारगेट और हॉट नंबर';
       if (navOld) navOld.textContent = 'पुराने रिजल्ट';
       if (navChecker) navChecker.textContent = 'टिकट चेक';
-      if (navAnalytics) navAnalytics.textContent = 'हॉट नंबर्स';
       if (btnFull) btnFull.textContent = 'टिकट चेक';
       if (btnShort) btnShort.textContent = 'चेक';
     } else {
@@ -169,10 +156,9 @@ const { currentPath = '/' } = Astro.props;
       if (navToday) navToday.textContent = "Today";
       if (navDemo) navDemo.textContent = "Demo Play";
       if (navYesterday) navYesterday.textContent = "Yesterday";
-      if (navTarget) navTarget.textContent = "Target Numbers";
+      if (navTarget) navTarget.textContent = "Target & Hot";
       if (navOld) navOld.textContent = 'Old Results';
       if (navChecker) navChecker.textContent = 'Check Ticket';
-      if (navAnalytics) navAnalytics.textContent = 'Hot Numbers';
       if (btnFull) btnFull.textContent = 'Check Ticket';
       if (btnShort) btnShort.textContent = 'Check';
     }
