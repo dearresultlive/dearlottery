@@ -63,7 +63,13 @@ export default function DynamicSlotView({
   const fifth = p?.fifth_prize || [];
 
   const pdfUrl = `/pdf/${targetDate}/${slotKey}.pdf`;
-  const jpgUrl = currentDraw?.image_r2_url || `/og-image.jpg?date=${targetDate}&slot=${slotKey}`;
+  const sheetSvgUrl = `/api/gazette-sheet.svg?date=${targetDate}&slot=${slotKey}`;
+  const defaultSheetImg = currentDraw?.image_r2_url || `/results/${targetDate}/${slotKey}.jpg`;
+  const [activeSheetImg, setActiveSheetImg] = useState<string>(defaultSheetImg);
+
+  useEffect(() => {
+    setActiveSheetImg(currentDraw?.image_r2_url || `/results/${targetDate}/${slotKey}.jpg`);
+  }, [currentDraw, targetDate, slotKey]);
 
   const whatsappMessage = `🎯 *Dear Lottery Result Today (${currentDraw?.draw_time || slotHour})*\n📅 তারিখ: ${targetDate}\n\n🏆 *১ম পুরস্কার (₹1 Crore Winner)*: *${first.series} ${first.number}*\n\n👉 সম্পূর্ণ অফিসিয়াল রেজাল্ট শিট ও সব প্রাইজ নম্বর দেখুন:\nhttps://dearresultlive.in/results/${targetDate}/${slotKey}`;
   const whatsappUrl = `https://api.whatsapp.com/send?text=${encodeURIComponent(whatsappMessage)}`;
@@ -279,17 +285,12 @@ export default function DynamicSlotView({
             >
               <div className="w-full sm:w-48 h-32 bg-white rounded-lg overflow-hidden border border-slate-200 flex items-center justify-center relative flex-shrink-0 shadow-inner">
                 <img
-                  src={jpgUrl}
+                  src={activeSheetImg}
                   alt={`Official Sheet ${currentDraw?.draw_name || slotHour}`}
-                  className="w-full h-full object-cover group-hover:scale-105 transition-transform"
-                  onError={(e) => {
-                    (e.target as HTMLElement).style.display = 'none';
-                    const parent = (e.target as HTMLElement).parentElement;
-                    if (parent && !parent.querySelector('.sheet-placeholder')) {
-                      const ph = document.createElement('div');
-                      ph.className = 'sheet-placeholder text-center p-3 text-slate-700 text-xs font-mono';
-                      ph.innerHTML = '<span class="text-2xl block mb-1">📜</span><strong>OFFICIAL GAZETTE</strong><br/><span class="text-[10px] text-slate-500">Tap to view full sheet</span>';
-                      parent.appendChild(ph);
+                  className="w-full h-full object-contain group-hover:scale-105 transition-transform"
+                  onError={() => {
+                    if (activeSheetImg !== sheetSvgUrl) {
+                      setActiveSheetImg(sheetSvgUrl);
                     }
                   }}
                 />
@@ -473,17 +474,12 @@ export default function DynamicSlotView({
 
             <div className="flex-1 overflow-auto bg-slate-100 rounded-xl p-2 border border-slate-200 flex items-center justify-center">
               <img
-                src={jpgUrl}
+                src={activeSheetImg}
                 alt="Official Dear Lottery Gazette Result Sheet"
                 className="max-w-full max-h-[75vh] object-contain rounded shadow-lg"
-                onError={(e) => {
-                  (e.target as HTMLElement).style.display = 'none';
-                  const parent = (e.target as HTMLElement).parentElement;
-                  if (parent && !parent.querySelector('.fallback-msg')) {
-                    const msg = document.createElement('div');
-                    msg.className = 'fallback-msg p-8 text-center text-slate-700';
-                    msg.innerHTML = '<p class="font-bold text-slate-900 mb-2">Official Signed Gazette Document Available</p><p class="text-xs text-slate-500">Please use the Download PDF button below to view the signed publication.</p>';
-                    parent.appendChild(msg);
+                onError={() => {
+                  if (activeSheetImg !== sheetSvgUrl) {
+                    setActiveSheetImg(sheetSvgUrl);
                   }
                 }}
               />
