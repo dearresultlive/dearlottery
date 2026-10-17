@@ -493,7 +493,7 @@ export default function DemoPlayModule({ initialDraws = [] }: DemoPlayModuleProp
       </div>
 
       {/* 4. Ticket Picker & Generator */}
-      <div className="bg-white border border-slate-200 rounded-2xl p-4 shadow-sm space-y-3.5">
+      <div className="bg-white border border-slate-200 rounded-2xl p-3 sm:p-4 shadow-sm space-y-3">
         <div className="flex items-center justify-between border-b border-slate-100 pb-2">
           <span className="text-xs font-black text-slate-900 flex items-center gap-1.5">
             <span>🎟️</span>
@@ -531,28 +531,28 @@ export default function DemoPlayModule({ initialDraws = [] }: DemoPlayModuleProp
             {lang === 'bn' ? 'অথবা আপনার পছন্দের নম্বর টাইপ করুন:' : lang === 'hi' ? 'या अपनी पसंद का नंबर टाइप करें:' : 'Or enter custom ticket numbers:'}
           </div>
 
-          <div className="flex gap-2">
+          <div className="flex items-center gap-1.5 sm:gap-2">
             <input
               type="text"
               placeholder="72B"
               maxLength={4}
               value={manualSeries}
               onChange={e => setManualSeries(e.target.value.toUpperCase())}
-              className="w-20 text-center font-mono font-black text-sm uppercase bg-slate-50 border border-slate-300 rounded-xl px-2 py-2 focus:ring-2 focus:ring-blue-600 focus:bg-white outline-none"
+              className="w-16 sm:w-20 text-center font-mono font-black text-xs sm:text-sm uppercase bg-slate-50 border border-slate-300 rounded-xl px-1.5 py-2.5 focus:ring-2 focus:ring-blue-600 focus:bg-white outline-none flex-shrink-0"
             />
             <input
               type="text"
-              placeholder="28192 (5 digits)"
+              placeholder="28192"
               maxLength={5}
               value={manualNumber}
               onChange={e => setManualNumber(e.target.value.replace(/\D/g, ''))}
-              className="flex-1 font-mono font-black text-base tracking-widest bg-slate-50 border border-slate-300 rounded-xl px-3 py-2 focus:ring-2 focus:ring-blue-600 focus:bg-white outline-none text-center"
+              className="flex-1 min-w-0 font-mono font-black text-sm sm:text-base tracking-wider bg-slate-50 border border-slate-300 rounded-xl px-2.5 py-2.5 focus:ring-2 focus:ring-blue-600 focus:bg-white outline-none text-center"
             />
             <button
               type="submit"
-              className="bg-blue-700 hover:bg-blue-800 text-white font-black text-xs px-4 py-2 rounded-xl shadow-xs transition-all active:scale-95 flex-shrink-0"
+              className="bg-blue-700 hover:bg-blue-800 text-white font-black text-xs sm:text-sm px-3.5 sm:px-4 py-2.5 rounded-xl shadow-xs transition-all active:scale-95 flex-shrink-0 whitespace-nowrap"
             >
-              {lang === 'bn' ? 'যোগ করুন' : lang === 'hi' ? 'जोड़ें' : 'Add'}
+              {lang === 'bn' ? 'যোগ করুন' : lang === 'hi' ? 'जोড়ें' : 'Add'}
             </button>
           </div>
 
