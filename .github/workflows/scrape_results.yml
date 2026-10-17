@@ -2,10 +2,10 @@ name: Scheduled Dear Lottery Ingestion Pipeline
 
 on:
   schedule:
-    # 12:58 PM IST = 07:28 UTC
-    # 5:58 PM IST  = 12:28 UTC
-    # 7:58 PM IST  = 14:28 UTC
-    - cron: '28 7,12,14 * * *'
+    # 1:05 PM to 1:25 PM IST  = 07:35 to 07:55 UTC (every 5 mins)
+    # 6:05 PM to 6:25 PM IST  = 12:35 to 12:55 UTC (every 5 mins)
+    # 8:05 PM to 8:25 PM IST  = 14:35 to 14:55 UTC (every 5 mins)
+    - cron: '35,40,45,50,55 7,12,14 * * *'
   workflow_dispatch:
     inputs:
       slot:
