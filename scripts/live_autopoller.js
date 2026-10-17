@@ -379,29 +379,35 @@ async function main() {
   }
 
   const dateStr = targetDate || getISTDateString();
+  const isCi = Boolean(process.env.CI || process.env.GITHUB_ACTIONS || args.includes('--poll-window') || args.includes('--window'));
+  const modeLabel = isWatch ? 'CONTINUOUS WATCH' : isCi ? 'ACTIVE SURVEILLANCE WINDOW (CI)' : 'SINGLE CHECK';
+
   console.log(`=======================================================`);
   console.log(`  DEAR LOTTERY AUTONOMOUS LIVE POLLER ENGINE`);
-  console.log(`  Date: ${dateStr} | Mode: ${isWatch ? 'WATCH (Continuous)' : 'SINGLE CHECK'}`);
+  console.log(`  Date: ${dateStr} | Mode: ${modeLabel}`);
   console.log(`=======================================================`);
 
-  const runOnce = async () => {
+  const maxAttempts = isWatch ? Infinity : (isCi ? 100 : 1);
+  const sleepMs = 15000; // 15s interval for rapid ~15-second response to official releases
+
+  for (let attempt = 1; attempt <= maxAttempts; attempt++) {
     const slot = targetSlot || getAutoSlot();
-    console.log(`\n[${new Date().toLocaleTimeString('en-US', { timeZone: 'Asia/Kolkata' })} IST] Checking slot: ${slot}...`);
-    await processSlot(dateStr, slot);
-  };
+    const timeLabel = new Date().toLocaleTimeString('en-US', { timeZone: 'Asia/Kolkata' });
+    console.log(`\n[${timeLabel} IST] [Attempt ${attempt}/${maxAttempts}] Checking slot: ${slot}...`);
 
-  await runOnce();
+    const isVerified = await processSlot(dateStr, slot);
+    if (isVerified) {
+      console.log(`[Poller] ✅ Verified result secured for ${dateStr} [${slot}]. Pipeline successfully satisfied.`);
+      process.exit(0);
+    }
 
-  if (isWatch) {
-    console.log(`[Poller] Watch mode active. Polling upstream every 20 seconds...`);
-    setInterval(async () => {
-      try {
-        await runOnce();
-      } catch (err) {
-        console.error('[Poller] Error in watch tick:', err.message);
-      }
-    }, 20000);
+    if (attempt < maxAttempts) {
+      console.log(`[Poller] Official result not yet declared by state. Standing by for next check in ${sleepMs / 1000}s...`);
+      await new Promise(r => setTimeout(r, sleepMs));
+    }
   }
+
+  console.log(`[Poller] Reached max surveillance attempts (${maxAttempts}). Window closed.`);
 }
 
 main().catch(err => {

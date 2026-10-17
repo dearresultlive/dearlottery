@@ -47,8 +47,25 @@ export const GET: APIRoute = async ({ request, locals }) => {
     const rawSlot = (drawingSlot.draw_time?.includes('1:00') ? '1PM' : drawingSlot.draw_time?.includes('6:00') ? '6PM' : '8PM') as '1PM' | '6PM' | '8PM';
     try {
       const check = await checkAndFetchLiveSlot(todayStr, rawSlot, istNow);
-      if (check.status === 'RESULT_OUT') {
-        draws = await fetchLatestDraws();
+      if (check.status === 'RESULT_OUT' && check.first_prize?.number) {
+        const resolvedDraw = {
+          ...drawingSlot,
+          status: 'DECLARED',
+          source_url: check.imageUrl,
+          prizes: check.prizes,
+          parsed_data: {
+            status: 'DECLARED',
+            prizes: check.prizes,
+            image_r2_url: check.imageUrl,
+            source_url: check.imageUrl
+          }
+        };
+        const idx = draws.findIndex(d => d.id === drawingSlot.id);
+        if (idx !== -1) {
+          draws[idx] = resolvedDraw;
+        } else {
+          draws.unshift(resolvedDraw);
+        }
       }
     } catch (e) {}
   }
