@@ -75,25 +75,6 @@ export default function LiveResultsTabs({
   const [slotCountdown, setSlotCountdown] = useState(getSlotCountdown('1PM'));
   const [isSyncing, setIsSyncing] = useState<boolean>(false);
 
-  const handleManualSync = async () => {
-    setIsSyncing(true);
-    try {
-      const res = await fetch('/api/results/latest');
-      if (res.ok) {
-        const data = await res.json();
-        if (data.draws && data.draws.length > 0) {
-          setDrawsList(data.draws);
-        }
-      }
-      if (typeof navigator !== 'undefined' && (navigator as any).vibrate) {
-        (navigator as any).vibrate(12);
-      }
-    } catch (e) {
-    } finally {
-      setTimeout(() => setIsSyncing(false), 600);
-    }
-  };
-
   const handleSlotSelect = (slotKey: '1PM' | '6PM' | '8PM') => {
     setActiveSlot(slotKey);
     if (typeof navigator !== 'undefined' && (navigator as any).vibrate) {
@@ -414,64 +395,7 @@ export default function LiveResultsTabs({
   return (
     <div className="space-y-3 sm:space-y-3.5 max-w-[557px] mx-auto">
       
-      {/* Real-time Gazette Sync Indicator */}
-      <div className="flex items-center justify-between px-1 text-[11px] text-slate-500">
-        <span className="flex items-center gap-1.5 font-bold text-slate-600">
-          <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
-          <span>{lang === 'bn' ? 'অফিসিয়াল ডিরেক্টরেট লাইভ' : lang === 'hi' ? 'आधिकारिक निदेशालय लाइव' : 'Official Directorate Live'}</span>
-        </span>
-        <button
-          type="button"
-          onClick={handleManualSync}
-          disabled={isSyncing}
-          className="inline-flex items-center gap-1 text-[11px] font-bold text-blue-700 hover:text-blue-800 active:scale-95 transition-all"
-        >
-          <span className={`text-xs ${isSyncing ? 'animate-spin' : ''}`}>🔄</span>
-          <span>{isSyncing ? (lang === 'bn' ? 'চেক হচ্ছে...' : lang === 'hi' ? 'चेक हो रहा...' : 'Syncing...') : (lang === 'bn' ? 'রিফ্রেশ' : lang === 'hi' ? 'रिफ्रेश' : 'Refresh')}</span>
-        </button>
-      </div>
 
-      {/* 0. Smart Day Selector (Today vs Yesterday / Previous Dates) */}
-      <div className="flex items-center gap-1.5 bg-slate-200/90 p-1 rounded-2xl text-xs font-black shadow-inner">
-        <button
-          type="button"
-          onClick={() => handleDateChange(todayStr)}
-          className={`flex-1 py-2 px-2.5 sm:px-3 rounded-xl flex items-center justify-center gap-1.5 transition-all ${
-            isToday
-              ? 'bg-blue-700 text-white shadow-sm ring-1 ring-blue-600 scale-[1.01]'
-              : 'text-slate-700 hover:text-slate-900 hover:bg-slate-300/60'
-          }`}
-        >
-          <span>☀️</span>
-          <span>
-            {lang === 'bn' ? 'আজকের ড্র' : lang === 'hi' ? 'आज का ड्रॉ' : "Today's Draws"}
-          </span>
-          <span className={`text-[10px] px-1.5 py-0.2 rounded-full font-bold ${
-            isToday ? 'bg-blue-800 text-blue-100' : 'bg-slate-300 text-slate-700'
-          }`}>
-            {todayStr.split('-').slice(1).reverse().join('/')}
-          </span>
-        </button>
-        <button
-          type="button"
-          onClick={() => { handleDateChange(yesterdayDateStr); handleSlotSelect('8PM'); }}
-          className={`flex-1 py-2 px-2.5 sm:px-3 rounded-xl flex items-center justify-center gap-1.5 transition-all ${
-            isYesterday
-              ? 'bg-blue-700 text-white shadow-sm ring-1 ring-blue-600 scale-[1.01]'
-              : 'text-slate-700 hover:text-slate-900 hover:bg-slate-300/60'
-          }`}
-        >
-          <span>🌙</span>
-          <span>
-            {lang === 'bn' ? 'গতরাতের ৮টা / গতকাল' : lang === 'hi' ? 'कल रात 8 बजे / कल' : "Yesterday's Draws"}
-          </span>
-          <span className={`text-[10px] px-1.5 py-0.2 rounded-full font-bold ${
-            isYesterday ? 'bg-blue-800 text-blue-100' : 'bg-slate-300 text-slate-700'
-          }`}>
-            {yesterdayDateStr.split('-').slice(1).reverse().join('/')}
-          </span>
-        </button>
-      </div>
 
       {/* Yesterday Mode Notice Banner */}
       {isYesterday && (
@@ -642,16 +566,6 @@ export default function LiveResultsTabs({
                 : `Consolation Prize: ₹1,000 • ${firstPrize.number} Remaining Series`}
             </div>
 
-            {/* Tap Hint */}
-            <div className="mt-2 text-xs font-black text-blue-700 hover:underline inline-flex items-center gap-1">
-              <span>
-                {lang === 'bn'
-                  ? '🔍 অফিসিয়াল গেজেট শিট বড় করে দেখতে ট্যাপ করুন'
-                  : lang === 'hi'
-                  ? '🔍 ऑफिशियल गजट शीट बड़ा करके देखने के लिए टैप करें'
-                  : '🔍 Tap to zoom official gazette sheet'}
-              </span>
-            </div>
           </div>
         </div>
       ) : activeStatus === 'DRAWING' ? (
@@ -778,23 +692,7 @@ export default function LiveResultsTabs({
 
       {/* 4. Direct Scanned Gazette Paper Preview (Only when Result is Declared) */}
       {activeStatus === 'RESULT_OUT' && (
-        <div className="bg-white border border-slate-200 rounded-2xl p-2.5 sm:p-3 shadow-sm text-center space-y-2">
-          <div className="flex items-center justify-between px-1.5 pb-1 border-b border-slate-100">
-            <div className="flex items-center gap-1.5 text-left">
-              <span className="text-sm">📜</span>
-              <span className="text-xs font-black text-slate-900">
-                {lang === 'bn' ? `অফিসিয়াল গেজেট শিট (${currentSlotInfo.time})` : lang === 'hi' ? `ऑफिशियल गजट शीट (${currentSlotInfo.time})` : `Official Gazette Sheet (${currentSlotInfo.time})`}
-              </span>
-            </div>
-            <button
-              type="button"
-              onClick={() => openImageLightbox(activeSheetUrl)}
-              className="text-xs font-black text-blue-700 hover:underline flex items-center gap-1"
-            >
-              <span>{lang === 'bn' ? '🔍 ফুল স্ক্রিন জুম' : lang === 'hi' ? '🔍 फुल स्क्रीन ज़ूम' : '🔍 Full Screen Zoom'}</span>
-            </button>
-          </div>
-
+        <div className="bg-white border border-slate-200 rounded-2xl p-2 sm:p-2.5 shadow-sm text-center">
           <div
             onClick={() => openImageLightbox(activeSheetUrl)}
             style={{ minHeight: '360px' }}
@@ -812,11 +710,6 @@ export default function LiveResultsTabs({
                 (e.target as HTMLImageElement).src = sheetSvgUrl;
               }}
             />
-            <div className="absolute inset-0 bg-slate-900/5 group-hover:bg-transparent transition-colors flex items-center justify-center pointer-events-none">
-              <span className="bg-white/95 text-slate-900 text-xs font-black px-3 py-1.5 rounded-full shadow border border-slate-200 opacity-90 group-hover:opacity-100">
-                {lang === 'bn' ? '🔍 ট্যাপ করে ফুল স্ক্রিনে বড় করুন' : lang === 'hi' ? '🔍 टैप करके फुल स्क्रीन में बड़ा करें' : '🔍 Tap to view full screen zoom'}
-              </span>
-            </div>
           </div>
         </div>
       )}
