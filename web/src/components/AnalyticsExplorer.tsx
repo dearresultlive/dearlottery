@@ -5,6 +5,7 @@ import {
   getTopRecurringNumbers,
   getTopFrequentEndings,
   getTopFrequentMiddles,
+  fetchClient5YearArchive,
   type NumberHistoryAnalysis
 } from '../lib/history-analytics';
 import HistoricalIntelligenceCard from './HistoricalIntelligenceCard';
@@ -26,6 +27,14 @@ export default function AnalyticsExplorer({
   const [searchInput, setSearchInput] = useState<string>(initialNumber);
   const [activeNumber, setActiveNumber] = useState<string>(initialNumber || '78866');
   const [rankingsHorizon, setRankingsHorizon] = useState<'1Y' | '3Y' | '5Y'>('3Y');
+  const [isArchiveLoaded, setIsArchiveLoaded] = useState<boolean>(false);
+
+  // Load full 5-Year Archive on client mount asynchronously (zero Cloudflare Worker CPU overhead)
+  useEffect(() => {
+    fetchClient5YearArchive().then(() => {
+      setIsArchiveLoaded(true);
+    });
+  }, []);
 
   // Read URL query parameter on client mount
   useEffect(() => {
@@ -49,22 +58,22 @@ export default function AnalyticsExplorer({
   const currentAnalysis = useMemo<NumberHistoryAnalysis | null>(() => {
     if (!activeNumber || activeNumber.length < 4) return null;
     return analyzeNumberHistory(activeNumber);
-  }, [activeNumber]);
+  }, [activeNumber, isArchiveLoaded]);
 
   // Compute top recurring numbers
   const topRecurring = useMemo(() => {
     return getTopRecurringNumbers(rankingsHorizon, 12);
-  }, [rankingsHorizon]);
+  }, [rankingsHorizon, isArchiveLoaded]);
 
   // Compute top endings
   const topEndings = useMemo(() => {
     return getTopFrequentEndings(10, rankingsHorizon);
-  }, [rankingsHorizon]);
+  }, [rankingsHorizon, isArchiveLoaded]);
 
   // Compute top middles
   const topMiddles = useMemo(() => {
     return getTopFrequentMiddles(10, rankingsHorizon);
-  }, [rankingsHorizon]);
+  }, [rankingsHorizon, isArchiveLoaded]);
 
   const handleSearchSubmit = (e: React.FormEvent) => {
     e.preventDefault();
