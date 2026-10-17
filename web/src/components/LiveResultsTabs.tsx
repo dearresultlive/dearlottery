@@ -42,13 +42,15 @@ interface LiveResultsTabsProps {
   yesterdayDraws?: DrawRecord[];
   todayDateStr?: string;
   isYesterdayPage?: boolean;
+  initialSlot?: '1PM' | '6PM' | '8PM';
 }
 
 export default function LiveResultsTabs({
   draws = [],
   yesterdayDraws = [],
   todayDateStr,
-  isYesterdayPage = false
+  isYesterdayPage = false,
+  initialSlot
 }: LiveResultsTabsProps) {
   const slots = [
     { key: '1PM' as const, time: '1:00 PM', labelEn: 'Morning', labelBn: 'দুপুর ১:০০', labelHi: 'दोपहर 1:00', icon: '☀️' },
@@ -59,7 +61,9 @@ export default function LiveResultsTabs({
   const todayStr = todayDateStr || getISTDateString();
   const { lang, t } = useLanguage();
   const [dateMode, setDateMode] = useState<'TODAY' | 'YESTERDAY'>('TODAY');
-  const [activeSlot, setActiveSlot] = useState<'1PM' | '6PM' | '8PM'>(isYesterdayPage ? '8PM' : '1PM');
+  const [activeSlot, setActiveSlot] = useState<'1PM' | '6PM' | '8PM'>(
+    initialSlot || (isYesterdayPage ? '8PM' : '1PM')
+  );
   const [drawsList, setDrawsList] = useState<DrawRecord[]>(draws);
   const [showImageModal, setShowImageModal] = useState<boolean>(false);
   const [selectedImageUrl, setSelectedImageUrl] = useState<string>('');
@@ -115,6 +119,11 @@ export default function LiveResultsTabs({
 
   // Auto-detect Morning mode: before 1PM, if today has no results yet, default to Last Night 8PM!
   useEffect(() => {
+    if (initialSlot) {
+      setDateMode('TODAY');
+      setActiveSlot(initialSlot);
+      return;
+    }
     if (isYesterdayPage) {
       setDateMode('TODAY');
       setActiveSlot('8PM');
@@ -135,7 +144,7 @@ export default function LiveResultsTabs({
       setDateMode('TODAY');
       setActiveSlot('1PM');
     }
-  }, [hasTodayResults, isYesterdayPage]);
+  }, [hasTodayResults, isYesterdayPage, initialSlot]);
 
   // Listen for auto-polling zero-refresh event from DrawCountdown
   useEffect(() => {

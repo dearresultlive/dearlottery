@@ -1,9 +1,9 @@
 ---
 import Layout from '../../../layouts/Layout.astro';
-import DynamicSlotView from '../../../components/DynamicSlotView';
+import LiveResultsTabs from '../../../components/LiveResultsTabs';
 import TicketChecker from '../../../components/TicketChecker';
 import { fetchDrawsByDate } from '../../../lib/api';
-import { getISTNow, getISTDateString, isDrawSlotUpcoming } from '../../../lib/lottery-utils';
+import { getISTNow, getISTDateString } from '../../../lib/lottery-utils';
 
 const { date, draw_name } = Astro.params;
 const targetDate = date || getISTDateString();
@@ -12,74 +12,42 @@ const rawSlug = (draw_name || '').toLowerCase();
 // Fetch all draws for the target date
 const allDraws = await fetchDrawsByDate(targetDate);
 
-// Resolve slot: 1pm, 6pm, 8pm or full slug
-let selectedDraw = allDraws.find((d) => {
-  const normTime = d.draw_time?.toLowerCase().replace(/[^a-z0-9]/g, '');
-  const normName = d.draw_name?.toLowerCase().replace(/[^a-z0-9]+/g, '-');
-  return (
-    (rawSlug === '1pm' && (d.draw_time?.includes('1') || d.id?.includes('1PM'))) ||
-    (rawSlug === '6pm' && (d.draw_time?.includes('6') || d.id?.includes('6PM'))) ||
-    (rawSlug === '8pm' && (d.draw_time?.includes('8') || d.id?.includes('8PM'))) ||
-    rawSlug.includes(normTime) ||
-    (normName && rawSlug.includes(normName)) ||
-    (normName && normName.includes(rawSlug))
-  );
-});
+const prevDate = new Date(targetDate);
+prevDate.setDate(prevDate.getDate() - 1);
+const prevDateStr = getISTDateString(prevDate);
+const prevDraws = await fetchDrawsByDate(prevDateStr);
 
-// Fallback logic
-if (!selectedDraw && allDraws.length > 0) {
-  if (rawSlug.includes('6pm') || rawSlug.includes('day')) {
-    selectedDraw = allDraws.find(d => d.draw_time?.includes('6')) || allDraws[1] || allDraws[0];
-  } else if (rawSlug.includes('8pm') || rawSlug.includes('night') || rawSlug.includes('evening')) {
-    selectedDraw = allDraws.find(d => d.draw_time?.includes('8')) || allDraws[2] || allDraws[0];
-  } else {
-    selectedDraw = allDraws[0];
-  }
+// Resolve slot: 1PM, 6PM, 8PM
+let activeSlot: '1PM' | '6PM' | '8PM' = '1PM';
+if (rawSlug.includes('6') || rawSlug.includes('day')) {
+  activeSlot = '6PM';
+} else if (rawSlug.includes('8') || rawSlug.includes('night') || rawSlug.includes('eve')) {
+  activeSlot = '8PM';
+} else {
+  activeSlot = '1PM';
 }
 
-const draw = selectedDraw || allDraws[0];
-const prizes = draw?.parsed_data?.prizes || draw?.prizes;
+const slotHour = activeSlot === '6PM' ? '6 PM' : activeSlot === '8PM' ? '8 PM' : '1 PM';
+const slotKey = activeSlot.toLowerCase();
+
+const selectedDraw = allDraws.find(d => 
+  d.draw_time?.includes(activeSlot.replace('PM', '')) || 
+  d.id?.includes(activeSlot)
+) || allDraws[0];
+
+const prizes = selectedDraw?.parsed_data?.prizes || selectedDraw?.prizes;
 const firstPrize = prizes?.first_prize;
 
-const slotHour = draw?.draw_time?.includes('6') || rawSlug.includes('6') ? '6 PM' : draw?.draw_time?.includes('8') || rawSlug.includes('8') ? '8 PM' : '1 PM';
-const slotKey = slotHour === '6 PM' ? '6pm' : slotHour === '8 PM' ? '8pm' : '1pm';
-
-// Determine if results have been extracted by OCR or if the draw is upcoming
 const istNow = getISTNow();
 const todayStr = getISTDateString(istNow);
-
-let isUpcoming = false;
-if (draw?.status === 'UPCOMING' || draw?.status === 'DRAWING' || !firstPrize || !firstPrize.number) {
-  isUpcoming = true;
-} else if (targetDate === todayStr) {
-  const targetHour = slotHour === '6 PM' ? 18 : slotHour === '8 PM' ? 20 : 13;
-  if (istNow.getHours() < targetHour) {
-    isUpcoming = true;
-  }
-} else if (targetDate > todayStr) {
-  isUpcoming = true;
-}
-
 const isToday = targetDate === todayStr;
 
 // Dynamic SEO Meta Tags based on state and temporal context (Today vs Past Date)
 const seoTitle = isToday
-  ? (isUpcoming
-      ? `Dear Lottery Result Today ${slotHour} Live - ${targetDate} | Lottery Sambad (লটারি সংবাদ / डियर लॉटरी)`
-      : `Dear Lottery Result Today ${slotHour} Live - ${targetDate} | 1st Prize Winner | Lottery Sambad`)
+  ? `Dear Lottery Result Today ${slotHour} Live - ${targetDate} | Lottery Sambad (লটারি সংবাদ / डियर लॉटरी)`
   : `Dear Lottery Result ${slotHour} (${targetDate}) Official Gazette • 1st Prize Winner | Lottery Sambad`;
 
-const seoDesc = isToday
-  ? (isUpcoming
-      ? `Dear Lottery Result Today ${slotHour} Live on ${targetDate}. 1st Prize ₹1 Crore winning ticket and official gazette sheet published at ${slotHour}. Watch live countdown timer and instant ticket verify.`
-      : `Dear Lottery Result Today ${slotHour} Live (${targetDate}). 1st Prize ₹1 Crore winning ticket is ${firstPrize ? `${firstPrize.series} ${firstPrize.number}` : 'Official Winner'}. Download official gazette PDF and check all prize tables.`)
-  : `Official Dear Lottery Sambad result for ${slotHour} draw on ${targetDate}. 1st Prize ₹1 Crore winning ticket is ${firstPrize ? `${firstPrize.series} ${firstPrize.number}` : 'Official Winner'}. Complete prize breakdown and official gazette.`;
-
-const slotTabs = [
-  { key: '1pm', time: '1:00 PM', labelEn: '1:00 PM Morning', labelBn: 'দুপুর ১টা', icon: '☀️' },
-  { key: '6pm', time: '6:00 PM', labelEn: '6:00 PM Day', labelBn: 'সন্ধ্যা ৬টা', icon: '🌅' },
-  { key: '8pm', time: '8:00 PM', labelEn: '8:00 PM Night', labelBn: 'রাত ৮টা', icon: '🌙' }
-];
+const seoDesc = `Official Dear Lottery Sambad result for ${slotHour} draw on ${targetDate}. 1st Prize ₹1 Crore winning ticket is ${firstPrize ? `${firstPrize.series} ${firstPrize.number}` : 'Official Winner'}. Download official gazette PDF and check all prize tables.`;
 ---
 
 <Layout
@@ -97,74 +65,23 @@ const slotTabs = [
       <span>/</span>
       <a href={`/results/${targetDate}`} class="hover:text-blue-700 transition-colors">Results {targetDate}</a>
       <span>/</span>
-      <span class="text-slate-900 font-bold">{slotHour} Draw {isUpcoming ? '(Upcoming / আসন্ন)' : ''}</span>
+      <span class="text-slate-900 font-bold">{slotHour} Draw</span>
     </nav>
 
-    {/* 1. Draw Navigation Tabs */}
-    <section aria-label="Draw Slot Switcher" class="bg-white p-2 rounded-2xl border border-slate-200 shadow-sm">
-      <div class="grid grid-cols-3 gap-2">
-        {slotTabs.map((tab) => {
-          const isCurrent = slotKey === tab.key;
-          const tabSlot = tab.key.toUpperCase() as '1PM' | '6PM' | '8PM';
-          const isTabUpcoming = isDrawSlotUpcoming(targetDate, tabSlot);
-          return (
-            <a
-              href={`/results/${targetDate}/${tab.key}`}
-              class={`py-2.5 sm:py-3.5 px-2 sm:px-4 rounded-xl flex flex-col items-center justify-center transition-all ${
-                isCurrent
-                  ? 'bg-blue-700 text-white font-black shadow-md ring-2 ring-blue-600 scale-[1.01]'
-                  : 'bg-slate-50 hover:bg-slate-100 border border-slate-200 text-slate-700 hover:text-slate-900'
-              }`}
-            >
-              <div class="flex items-center gap-1.5 sm:gap-2">
-                <span class="text-base sm:text-lg">{tab.icon}</span>
-                <span class="text-xs sm:text-base font-black tracking-tight">
-                  {tab.time}
-                </span>
-              </div>
-              <span class={`text-[10px] sm:text-xs font-bold mt-0.5 ${isCurrent ? 'text-blue-100' : 'text-blue-700'}`}>
-                {tab.labelBn}
-              </span>
-              <div class="mt-1">
-                <span class={`inline-block text-[9px] sm:text-[10px] font-black px-2 py-0.2 rounded-full uppercase tracking-wider ${
-                  isCurrent
-                    ? isTabUpcoming ? 'bg-amber-300 text-amber-950 shadow-xs' : 'bg-white text-blue-900 shadow-xs'
-                    : isTabUpcoming
-                    ? 'bg-slate-200 text-slate-700'
-                    : 'bg-emerald-100 text-emerald-800 border border-emerald-300'
-                }`}>
-                  {isTabUpcoming ? 'UPCOMING' : 'RESULT OUT'}
-                </span>
-              </div>
-            </a>
-          );
-        })}
-      </div>
-    </section>
-
-    {/* Primary Dynamic Slot View */}
-    <section>
-      <DynamicSlotView
+    {/* Live Results Viewport - Exact Image 2 experience with initial slot pre-selected */}
+    <section id="results">
+      <LiveResultsTabs
         client:load
-        targetDate={targetDate}
-        slotKey={slotKey}
-        slotHour={slotHour}
-        initialDraw={draw}
-        isInitiallyUpcoming={isUpcoming}
+        draws={allDraws}
+        yesterdayDraws={prevDraws}
+        todayDateStr={targetDate}
+        initialSlot={activeSlot}
       />
     </section>
 
     {/* Scoped Ticket Checker */}
-    <section class="space-y-4">
-      <div class="border-t border-slate-200 pt-6">
-        <h2 class="text-xl sm:text-2xl font-black text-slate-900 mb-1">
-          Verify Your Ticket in {draw?.draw_name || `${slotHour} Draw`}
-        </h2>
-        <p class="text-slate-600 text-xs">
-          Instantly search your ticket number against this exact {slotHour} draw across all prize tiers.
-        </p>
-      </div>
-      <TicketChecker client:load initialDraws={draw ? [draw] : []} />
+    <section id="checker">
+      <TicketChecker client:load initialDraws={allDraws} variant="slim" />
     </section>
 
     {/* Prize Claim Information */}
