@@ -234,7 +234,7 @@ export default function DynamicSlotView({
 
           {/* Official Gazette Sheet Preview & Utility Bar */}
           <div className="bg-white border border-slate-200 rounded-2xl p-4 sm:p-5 shadow-sm space-y-4">
-            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 border-b border-slate-100 pb-3">
+            <div className="border-b border-slate-100 pb-3.5 space-y-3">
               <div>
                 <h3 className="text-base sm:text-lg font-black text-slate-900 flex items-center gap-2">
                   <span>📄</span>
@@ -245,30 +245,30 @@ export default function DynamicSlotView({
                 </p>
               </div>
 
-              <div className="flex items-center gap-2 w-full sm:w-auto">
+              <div className="grid grid-cols-3 gap-2">
                 <button
                   type="button"
                   onClick={() => setShowImageModal(true)}
-                  className="flex-1 sm:flex-none flex items-center justify-center gap-1.5 bg-blue-700 hover:bg-blue-800 text-white font-black text-xs sm:text-sm py-2 px-3.5 rounded-xl transition-all shadow-sm active:scale-95"
+                  className="flex items-center justify-center gap-1 sm:gap-1.5 bg-blue-700 hover:bg-blue-800 text-white font-black text-xs sm:text-sm py-2.5 px-2 rounded-xl transition-all shadow-sm active:scale-95 text-center"
                 >
-                  <span>{t('btn_open_sheet')}</span>
+                  <span className="truncate">{t('btn_open_sheet')}</span>
                 </button>
                 <a
                   href={pdfUrl}
                   target="_blank"
                   rel="noopener noreferrer"
                   download={`Dear_Lottery_${targetDate}_${slotKey}.pdf`}
-                  className="flex-1 sm:flex-none flex items-center justify-center gap-1.5 bg-slate-100 hover:bg-slate-200 text-slate-800 font-bold text-xs sm:text-sm py-2 px-3.5 rounded-xl transition-all border border-slate-300"
+                  className="flex items-center justify-center gap-1 sm:gap-1.5 bg-slate-100 hover:bg-slate-200 text-slate-800 font-bold text-xs sm:text-sm py-2.5 px-2 rounded-xl transition-all border border-slate-300 text-center"
                 >
-                  <span>{t('btn_download_pdf')}</span>
+                  <span className="truncate">{t('btn_download_pdf')}</span>
                 </a>
                 <a
                   href={whatsappUrl}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="flex-1 sm:flex-none flex items-center justify-center gap-1.5 bg-emerald-600 hover:bg-emerald-700 text-white font-black text-xs sm:text-sm py-2 px-3.5 rounded-xl transition-all shadow-sm active:scale-95"
+                  className="flex items-center justify-center gap-1 sm:gap-1.5 bg-[#25D366] hover:bg-[#20bd5a] text-white font-black text-xs sm:text-sm py-2.5 px-2 rounded-xl transition-all shadow-sm active:scale-95 text-center"
                 >
-                  <span>{t('btn_share_whatsapp')}</span>
+                  <span className="truncate">{t('btn_share_whatsapp')}</span>
                 </a>
               </div>
             </div>

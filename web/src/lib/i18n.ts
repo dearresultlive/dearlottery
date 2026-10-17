@@ -114,9 +114,9 @@ export const translations = {
     hi: '📥 पीडीएफ डाउनलोड'
   },
   btn_share_whatsapp: {
-    en: 'Share Result on WhatsApp',
-    bn: 'হোয়াটসঅ্যাপে রেজাল্ট শেয়ার করুন',
-    hi: 'व्हाट्सएप पर रिजल्ट शेयर करें'
+    en: '💬 WhatsApp Share',
+    bn: '💬 হোয়াটসঅ্যাপ',
+    hi: '💬 व्हाट्सएप'
   },
   btn_print: {
     en: 'Print Sheet',
