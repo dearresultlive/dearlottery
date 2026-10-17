@@ -88,6 +88,16 @@ const { currentPath = '/' } = Astro.props;
           <span id="nav-old">Old Results</span>
         </a>
         <a
+          href="/analytics"
+          class={`px-3 py-2 rounded-xl text-xs sm:text-sm font-black transition-colors ${
+            currentPath === '/analytics'
+              ? 'text-blue-700 bg-blue-50 border border-blue-200'
+              : 'text-slate-700 hover:text-blue-700 hover:bg-slate-100'
+          }`}
+        >
+          <span id="nav-analytics">5Y Analytics</span>
+        </a>
+        <a
           href="/checker"
           class={`px-3.5 py-2 rounded-xl text-xs sm:text-sm font-black transition-colors ${
             currentPath === '/checker'

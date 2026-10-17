@@ -1,4 +1,141 @@
 ---
-// Permanent 301 redirect to unified Target & Hot Numbers page
-return Astro.redirect('/target-numbers#hot-numbers', 301);
+import Layout from '../layouts/Layout.astro';
+import AnalyticsExplorer from '../components/AnalyticsExplorer';
+import { fetchLatestDraws } from '../lib/api';
+import { getISTNow, getISTDateString } from '../lib/lottery-utils';
+
+const istNow = getISTNow();
+const todayDateStr = getISTDateString(istNow);
+
+const draws = await fetchLatestDraws();
+const initialNumber = Astro.url.searchParams.get('number') || '';
+
+// Schema.org FAQ structured data for SEO
+const faqSchema = {
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  "mainEntity": [
+    {
+      "@type": "Question",
+      "name": "How many years of Dear Lottery historical results are analyzed?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Our database analyzes 5 full years (5,478+ official draws from 2021 to 2026) across all 1:00 PM, 6:00 PM, and 8:00 PM draws for 1st prize, 2nd prize, and 5th prize numbers."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "Do same ticket numbers repeat in Dear Lottery?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Yes, historical state gazette records confirm that certain 5-digit numbers and recurring 4-digit sequences have won 1st, 2nd, and consolation prizes multiple times across multi-year spans."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "What is the difference between 1-Year, 3-Year, and 5-Year analysis?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "1-Year analysis shows current short-term momentum and recent repeating trends. 3-Year and 5-Year analyses provide statistically significant long-term frequency rankings and historical win dates."
+      }
+    }
+  ]
+};
 ---
+
+<Layout
+  title={`Dear Lottery 5-Year Historical Intelligence & Number Analytics (1Y, 3Y, 5Y) • Repeating Numbers`}
+  description={`Search 5-year official Dear Lottery winning history (2021-2026). Find repeating numbers, past winning dates, draw times (1PM, 6PM, 8PM), and multi-year frequency analytics with zero latency.`}
+  drawDate={todayDateStr}
+>
+  <script type="application/ld+json" set:html={JSON.stringify(faqSchema)} />
+
+  <div class="max-w-[620px] md:max-w-2xl lg:max-w-3xl mx-auto px-2.5 sm:px-4 py-2 sm:py-4 space-y-4">
+    
+    {/* Breadcrumbs Navigation */}
+    <nav aria-label="Breadcrumb" class="flex items-center gap-2 text-xs text-slate-500 border-b border-slate-200 pb-2">
+      <a href="/" class="hover:text-blue-700 font-medium">Home (হোম)</a>
+      <span>/</span>
+      <span class="text-slate-900 font-bold">5-Year Historical Analytics (৫ বছরের অ্যানালিটিক্স)</span>
+    </nav>
+
+    {/* Header Banner */}
+    <div class="bg-gradient-to-r from-blue-900 via-indigo-900 to-slate-900 text-white rounded-2xl p-4 sm:p-6 text-center shadow-sm space-y-2">
+      <span class="inline-flex items-center gap-1.5 bg-blue-500/30 border border-blue-400/40 text-blue-200 text-[10px] sm:text-xs font-black px-3 py-1 rounded-full uppercase tracking-wider">
+        <span>📊</span>
+        <span>5-Year Big Data Archive (2021–2026)</span>
+      </span>
+      <h1 class="text-lg sm:text-2xl font-black text-white">
+        <span class="lang-en">Dear Lottery 5-Year Winning History & Repeating Numbers</span>
+        <span class="lang-bn">ডিয়ার লটারি ৫ বছরের অতীতের রেকর্ড ও রিপিট নম্বর অ্যানালিটিক্স</span>
+        <span class="lang-hi">डियर लॉटरी 5 साल का पिछला रिकॉर्ड और रिपीट नंबर एनालिटिक्स</span>
+      </h1>
+      <p class="text-xs sm:text-sm text-slate-300 max-w-xl mx-auto font-medium">
+        <span class="lang-en">Official historical database of 5,478+ draws. Discover exact past winning dates, draw times (1PM, 6PM, 8PM), and multi-year repeating number trends.</span>
+        <span class="lang-bn">৫,৪৭৮টি সরকারি ড্র-এর ঐতিহাসিক তথ্যভাণ্ডার। কোনো নম্বর আগে কবে জিতেছিল, তার তারিখ, সময় ও অনুরূপ সংখ্যার নির্ভুল পরিসংখ্যান।</span>
+        <span class="lang-hi">5,478 सरकारी ड्रॉ का ऐतिहासिक डेटाबेस। कोई नंबर पहले कब जीता था, उसकी तारीख, समय और सटीक आंकड़े।</span>
+      </p>
+    </div>
+
+    {/* Interactive Search & Full 5-Year Analytics Explorer */}
+    <AnalyticsExplorer client:load todayDraws={draws} initialNumber={initialNumber} />
+
+    {/* Static SEO Rich Content & Explanations */}
+    <section class="bg-white border border-slate-200 rounded-2xl p-4 sm:p-6 shadow-xs space-y-4 text-left text-slate-800">
+      <h2 class="text-base sm:text-lg font-black text-slate-900 border-b border-slate-100 pb-2">
+        ডিয়ার লটারি ৫ বছরের ঐতিহাসিক বিশ্লেষণ কীভাবে কাজ করে? (How It Works)
+      </h2>
+      <p class="text-xs sm:text-sm text-slate-600 leading-relaxed">
+        নাগাল্যান্ড স্টেট ডিয়ার লটারি (Nagaland State Dear Lottery) প্রতিদিন ৩টি সময়ে ড্র হয়—দুপুর ১:০০টা, সন্ধ্যা ৬:০০টা এবং রাত ৮:০০টা। 
+        প্রতি বছরে ১,০৯৫টির বেশি এবং বিগত ৫ বছরে প্রায় <strong>৫,৪৭৮টি ড্র</strong> অনুষ্ঠিত হয়েছে। এই দীর্ঘ ঐতিহাসিক তথ্যের মধ্যে কোন কোন নম্বর 
+        ১ম পুরস্কার বা সান্ত্বনা পুরস্কারে একাধিকবার পুনরাবৃত্তি (repeat) হয়েছে, তা আমাদের বিগ-ডেটা ইঞ্জিন ১ সেকেন্ডের মধ্যে নিখুঁতভাবে বের করে দেয়।
+      </p>
+
+      <div class="grid sm:grid-cols-3 gap-2.5 pt-1">
+        <div class="bg-slate-50 border border-slate-200 rounded-xl p-3">
+          <span class="text-xs font-black text-blue-700 block mb-1">📅 ১ বছরের ট্রেন্ড (1-Year)</span>
+          <p class="text-[11px] text-slate-600 leading-normal">
+            সাম্প্রতিক ড্র-এর গতিপ্রকৃতি এবং সাম্প্রতিক মাসে বারবার আসা হট নম্বরসমূহ চিহ্নিত করে।
+          </p>
+        </div>
+        <div class="bg-slate-50 border border-slate-200 rounded-xl p-3">
+          <span class="text-xs font-black text-emerald-700 block mb-1">📈 ৩ বছরের অ্যানালিটিক্স (3-Years)</span>
+          <p class="text-[11px] text-slate-600 leading-normal">
+            মধ্যম মেয়াদী ডেটাবেজ যা কাকতালীয় নয় বরং পরিসংখ্যানগতভাবে শক্তিশালী প্যাটার্ন নির্দেশ করে।
+          </p>
+        </div>
+        <div class="bg-slate-50 border border-slate-200 rounded-xl p-3">
+          <span class="text-xs font-black text-amber-700 block mb-1">🏛️ ৫ বছরের বিগ-ডেটা (5-Years)</span>
+          <p class="text-[11px] text-slate-600 leading-normal">
+            ৫,৪৭৮টি সম্পূর্ণ ড্র-এর ঐতিহাসিক রেকর্ড—কোন নম্বর আগে কোন তারিখে ১ম পুরস্কার এনে দিয়েছিল তার হুবহু তালিকা।
+          </p>
+        </div>
+      </div>
+
+      <h2 class="text-base sm:text-lg font-black text-slate-900 border-b border-slate-100 pb-2 pt-2">
+        সচরাচর জিজ্ঞাসিত প্রশ্নাবলী (Frequently Asked Questions)
+      </h2>
+      <div class="space-y-3 text-xs sm:text-sm">
+        <div>
+          <h3 class="font-black text-slate-900">প্রশ্ন: একই নম্বর কি ডিয়ার লটারিতে আবার জিততে পারে?</h3>
+          <p class="text-slate-600 mt-0.5 text-xs">
+            উত্তর: হ্যাঁ, সরকারি গেজেট রেকর্ড অনুযায়ী একই ৫-সংখ্যার কম্বিনেশন এবং শেষ ৪-ডিজিটের সংখ্যা অতীতে বিভিন্ন ড্র-তে একাধিকবার প্রথম ও দ্বিতীয় পুরস্কার জিতেছে।
+          </p>
+        </div>
+        <div>
+          <h3 class="font-black text-slate-900">প্রশ্ন: শেষ ২-ডিজিট ও মিডিল পেয়ারের গুরুত্ব কী?</h3>
+          <p class="text-slate-600 mt-0.5 text-xs">
+            উত্তর: ডিয়ার লটারিতে ৫ম পুরস্কার (₹১২০) ৯০০ থেকে ১,০০০টি টিকিটে দেওয়া হয় যা মূলত শেষ ৪-ডিজিটের উপর ভিত্তি করে। তাই শেষ ২-ডিজিট ও মিডিলের ফ্রিকোয়েন্সি অত্যন্ত গুরুত্বপূর্ণ।
+          </p>
+        </div>
+        <div>
+          <h3 class="font-black text-slate-900">প্রশ্ন: এই ডেটা কতটুকু নির্ভুল?</h3>
+          <p class="text-slate-600 mt-0.5 text-xs">
+            উত্তর: এটি সরাসরি নাগাল্যান্ড ও সিকিম স্টেট গভর্নমেন্ট লটারির অফিসিয়াল গেজেট ও রেজাল্ট শিট থেকে স্ক্র্যাপ ও যাচাইকৃত ১০০% নির্ভুল ডেটাবেজ।
+          </p>
+        </div>
+      </div>
+    </section>
+
+  </div>
+</Layout>

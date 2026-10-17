@@ -6,16 +6,20 @@ import type { NumberHistoryAnalysis } from '../lib/history-analytics';
 interface HistoricalIntelligenceCardProps {
   history: NumberHistoryAnalysis;
   titlePrefix?: string;
+  variant?: 'compact' | 'full';
 }
 
 export default function HistoricalIntelligenceCard({
   history,
-  titlePrefix
+  titlePrefix,
+  variant = 'compact'
 }: HistoricalIntelligenceCardProps) {
   const { lang } = useLanguage();
   const [historyHorizon, setHistoryHorizon] = useState<'1Y' | '3Y' | '5Y'>('3Y');
   const [showAllPastWins, setShowAllPastWins] = useState<boolean>(false);
   const [showSimilarNumbers, setShowSimilarNumbers] = useState<boolean>(false);
+
+  const isFull = variant === 'full';
 
   const currentStats = useMemo(() => {
     if (historyHorizon === '1Y') return history.stats1Y;
@@ -40,40 +44,42 @@ export default function HistoricalIntelligenceCard({
         </div>
         <div className="flex items-center gap-1.5">
           <span className="text-[10px] font-black uppercase px-2 py-0.5 rounded-md bg-amber-100 text-amber-900 border border-amber-300">
-            🔥 {lang === 'bn' ? 'হট স্কোর' : lang === 'hi' ? 'हॉट स्कोर' : 'Hot Score'}: {history.hotScore}/100
+            🔥 {lang === 'bn' ? 'হট স্কোর' : lang === 'hi' ? 'হॉट स्कोर' : 'Hot Score'}: {history.hotScore}/100
           </span>
         </div>
       </div>
 
-      {/* 2. Interactive Time Horizon Switcher: 1 Year | 3 Years | 5 Years */}
-      <div className="flex items-center justify-between bg-slate-50 border border-slate-200 p-1.5 rounded-xl">
-        <span className="text-[11px] font-bold text-slate-600 pl-1">
-          {lang === 'bn' ? 'সময়কাল ফিল্টার:' : lang === 'hi' ? 'समय अवधि:' : 'Time Horizon:'}
-        </span>
-        <div className="flex items-center gap-1 text-xs font-black">
-          {(['1Y', '3Y', '5Y'] as const).map(h => {
-            const isActive = historyHorizon === h;
-            return (
-              <button
-                key={h}
-                type="button"
-                onClick={() => setHistoryHorizon(h)}
-                className={`px-2.5 sm:px-3 py-1 rounded-lg transition-all active:scale-95 ${
-                  isActive
-                    ? 'bg-blue-700 text-white shadow-xs'
-                    : 'text-slate-600 hover:text-slate-900 hover:bg-slate-200/60'
-                }`}
-              >
-                {h === '1Y' 
-                  ? (lang === 'bn' ? '১ বছর' : lang === 'hi' ? '1 वर्ष' : '1 Year')
-                  : h === '3Y'
-                  ? (lang === 'bn' ? '৩ বছর' : lang === 'hi' ? '3 वर्ष' : '3 Years')
-                  : (lang === 'bn' ? '৫ বছর' : lang === 'hi' ? '5 वर्ष' : '5 Years')}
-              </button>
-            );
-          })}
+      {/* 2. Interactive Time Horizon Switcher: Shown in Full variant */}
+      {isFull ? (
+        <div className="flex items-center justify-between bg-slate-50 border border-slate-200 p-1.5 rounded-xl">
+          <span className="text-[11px] font-bold text-slate-600 pl-1">
+            {lang === 'bn' ? 'সময়কাল ফিল্টার:' : lang === 'hi' ? 'समय अवधि:' : 'Time Horizon:'}
+          </span>
+          <div className="flex items-center gap-1 text-xs font-black">
+            {(['1Y', '3Y', '5Y'] as const).map(h => {
+              const isActive = historyHorizon === h;
+              return (
+                <button
+                  key={h}
+                  type="button"
+                  onClick={() => setHistoryHorizon(h)}
+                  className={`px-2.5 sm:px-3 py-1 rounded-lg transition-all active:scale-95 ${
+                    isActive
+                      ? 'bg-blue-700 text-white shadow-xs'
+                      : 'text-slate-600 hover:text-slate-900 hover:bg-slate-200/60'
+                  }`}
+                >
+                  {h === '1Y' 
+                    ? (lang === 'bn' ? '১ বছর' : lang === 'hi' ? '1 वर्ष' : '1 Year')
+                    : h === '3Y'
+                    ? (lang === 'bn' ? '৩ বছর' : lang === 'hi' ? '3 वर्ष' : '3 Years')
+                    : (lang === 'bn' ? '৫ বছর' : lang === 'hi' ? '5 वर्ष' : '5 Years')}
+                </button>
+              );
+            })}
+          </div>
         </div>
-      </div>
+      ) : null}
 
       {/* 3. Localized Dynamic Summary */}
       <p className="text-xs text-slate-700 leading-snug font-medium">
@@ -88,7 +94,7 @@ export default function HistoricalIntelligenceCard({
       <div className="grid grid-cols-3 gap-1.5 sm:gap-2">
         <div className="bg-slate-50 border border-slate-200 rounded-lg p-2 text-center">
           <span className="text-[9px] font-bold text-slate-500 uppercase block">
-            {lang === 'bn' ? 'হুবহু জয়' : lang === 'hi' ? 'सटीक जीत' : 'Exact Wins'} ({historyHorizon})
+            {lang === 'bn' ? 'হুবহু জয়' : lang === 'hi' ? 'सटीक जीत' : 'Exact Wins'} {isFull ? `(${historyHorizon})` : ''}
           </span>
           <span className="font-mono font-black text-sm sm:text-base text-emerald-700 block">
             {currentStats.exactWinsCount} {lang === 'bn' ? 'বার' : 'times'}
@@ -102,7 +108,7 @@ export default function HistoricalIntelligenceCard({
 
         <div className="bg-slate-50 border border-slate-200 rounded-lg p-2 text-center">
           <span className="text-[9px] font-bold text-slate-500 uppercase block">
-            {lang === 'bn' ? 'অনুরূপ শেষ ৪-ডিজিট' : lang === 'hi' ? 'अंतिम 4-अंक मैच' : 'Last 4 Matches'} ({historyHorizon})
+            {lang === 'bn' ? 'অনুরূপ শেষ ৪-ডিজিট' : lang === 'hi' ? 'अंतिम 4-अंक मैच' : 'Last 4 Matches'} {isFull ? `(${historyHorizon})` : ''}
           </span>
           <span className="font-mono font-black text-sm sm:text-base text-blue-700 block">
             {currentStats.last4MatchesCount} {lang === 'bn' ? 'বার' : 'times'}
@@ -125,7 +131,7 @@ export default function HistoricalIntelligenceCard({
         </div>
       </div>
 
-      {/* 5. Exact Past Winning Dates & Times Table */}
+      {/* 5. Exact Past Winning Dates & Times (Top 3 in Compact, All in Full) */}
       {history.exactWins.length > 0 && (
         <div className="bg-emerald-50/80 border border-emerald-300 rounded-xl p-3 space-y-2">
           <div className="flex items-center justify-between">
@@ -145,7 +151,7 @@ export default function HistoricalIntelligenceCard({
           </div>
 
           <div className="space-y-1.5 pt-0.5">
-            {(showAllPastWins ? history.exactWins : history.exactWins.slice(0, 3)).map((win, idx) => (
+            {(isFull && showAllPastWins ? history.exactWins : history.exactWins.slice(0, 3)).map((win, idx) => (
               <div
                 key={idx}
                 className="bg-white border border-emerald-200 rounded-lg p-2 flex flex-col sm:flex-row sm:items-center justify-between text-xs gap-1 shadow-2xs"
@@ -172,7 +178,7 @@ export default function HistoricalIntelligenceCard({
               </div>
             ))}
 
-            {history.exactWins.length > 3 && (
+            {isFull && history.exactWins.length > 3 && (
               <button
                 type="button"
                 onClick={() => setShowAllPastWins(prev => !prev)}
@@ -187,8 +193,8 @@ export default function HistoricalIntelligenceCard({
         </div>
       )}
 
-      {/* 6. Similar Winning Numbers (Identical Last-4 Digits & Middles) */}
-      {history.similarNumbers.length > 0 && (
+      {/* 6. Similar Winning Numbers: Shown in Full Variant */}
+      {isFull && history.similarNumbers.length > 0 && (
         <div className="border border-slate-200 rounded-xl p-3 space-y-2 bg-slate-50/60">
           <div className="flex items-center justify-between">
             <span className="text-xs font-black text-slate-800 flex items-center gap-1.5">
@@ -240,7 +246,24 @@ export default function HistoricalIntelligenceCard({
         </div>
       )}
 
-      {/* 7. Footer Status */}
+      {/* 7. SEO-Friendly CTA Button for Compact Variant (Redirects to Full Hub) */}
+      {!isFull && (
+        <a
+          href={`/analytics?number=${history.cleanNumber}`}
+          className="w-full flex items-center justify-center gap-2 bg-gradient-to-r from-blue-700 to-indigo-700 hover:from-blue-800 hover:to-indigo-800 text-white font-black text-xs sm:text-sm py-2.5 px-4 rounded-xl shadow-xs transition-all active:scale-95 text-center"
+        >
+          <span>📊</span>
+          <span>
+            {lang === 'bn'
+              ? `৫ বছরের সম্পূর্ণ রেকর্ড, ১Y/৩Y/৫Y ট্রেন্ড ও অ্যানালিটিক্স দেখুন →`
+              : lang === 'hi'
+              ? `5 साल का पूरा रिकॉर्ड, 1Y/3Y/5Y ट्रेंड और एनालिटिक्स देखें →`
+              : `Explore Full 5-Year History, Multi-Year Trends & Similar Numbers →`}
+          </span>
+        </a>
+      )}
+
+      {/* 8. Footer Status */}
       <div className="border-t border-slate-100 pt-2 flex items-center justify-between text-[11px] text-slate-500">
         <span>
           {lang === 'bn' 
