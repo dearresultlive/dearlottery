@@ -237,6 +237,19 @@ const speakableSchema = {
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@500;700;800&display=swap" />
   </noscript>
 
+  <!-- Google tag (gtag.js) - Asynchronous GA4 Tracking -->
+  <link rel="preconnect" href="https://www.googletagmanager.com" />
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-XK8RJKN6ZP"></script>
+  <script is:inline>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-XK8RJKN6ZP', {
+      page_path: window.location.pathname,
+      send_page_view: true
+    });
+  </script>
+
   <!-- OneSignal Web Push SDK - Deferred to Idle Time for High Mobile PageSpeed -->
   <script is:inline>
     window.addEventListener('load', function() {
