@@ -72,6 +72,11 @@ export default function NotificationBell() {
     ? (lang === 'bn' ? 'নোটিফিকেশন চালু আছে' : lang === 'hi' ? 'सूचनाएं सक्रिय हैं' : 'Notifications are active')
     : (lang === 'bn' ? 'ফলাফলের নোটিফিকেশন পেতে ক্লিক করুন' : lang === 'hi' ? 'रिजल्ट अलर्ट पाने के लिए क्लिक करें' : 'Click to enable live result alerts');
 
+  // Once notifications are granted and active, hide the bell to save header space
+  if (isSubscribed && !showToast) {
+    return null;
+  }
+
   return (
     <div className="relative">
       <button
