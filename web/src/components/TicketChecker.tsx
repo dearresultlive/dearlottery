@@ -237,7 +237,13 @@ export default function TicketChecker({ initialDraws = [], variant = 'slim' }: T
           <div className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 text-sm">
             🔍
           </div>
+          <label htmlFor="ticket-search-input" className="sr-only">
+            Enter Dear Lottery Ticket Number
+          </label>
           <input
+            id="ticket-search-input"
+            name="ticket-search"
+            aria-label="Enter ticket number to check"
             type="text"
             value={ticketInput}
             onChange={(e) => handleInputChange(e.target.value)}

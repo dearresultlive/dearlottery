@@ -92,7 +92,8 @@ const isCheckerActive = currentPath === '/checker';
     <nav aria-label="Mobile Quick Dock" style="padding-bottom: max(0.4rem, env(safe-area-inset-bottom));" class="md:hidden fixed bottom-0 inset-x-0 z-40 bg-white/95 backdrop-blur-md border-t border-slate-200/90 shadow-[0_-4px_16px_rgba(0,0,0,0.06)] px-2 pt-1.5 flex items-center justify-around text-center select-none notranslate" translate="no">
       <a
         href="/"
-        class={`flex flex-col items-center justify-center flex-1 py-1 transition-all active:scale-95 ${
+        aria-label="Today Live Results"
+        class={`flex flex-col items-center justify-center flex-1 min-h-[48px] py-1 transition-all active:scale-95 ${
           isHomeActive ? 'text-blue-700 font-black' : 'text-slate-600 font-semibold hover:text-slate-900'
         }`}
       >
@@ -106,7 +107,8 @@ const isCheckerActive = currentPath === '/checker';
 
       <a
         href="/yesterday"
-        class={`flex flex-col items-center justify-center flex-1 py-1 transition-all active:scale-95 ${
+        aria-label="Yesterday Results"
+        class={`flex flex-col items-center justify-center flex-1 min-h-[48px] py-1 transition-all active:scale-95 ${
           isYesterdayActive ? 'text-blue-700 font-black' : 'text-slate-600 font-semibold hover:text-slate-900'
         }`}
       >
@@ -120,7 +122,8 @@ const isCheckerActive = currentPath === '/checker';
 
       <a
         href="/target-numbers"
-        class={`flex flex-col items-center justify-center flex-1 py-1 transition-all active:scale-95 ${
+        aria-label="Target and Common Numbers"
+        class={`flex flex-col items-center justify-center flex-1 min-h-[48px] py-1 transition-all active:scale-95 ${
           isTargetsActive ? 'text-blue-700 font-black' : 'text-slate-600 font-semibold hover:text-slate-900'
         }`}
       >
@@ -134,7 +137,8 @@ const isCheckerActive = currentPath === '/checker';
 
       <a
         href="/checker"
-        class={`flex flex-col items-center justify-center flex-1 py-1 transition-all active:scale-95 ${
+        aria-label="Check Lottery Ticket"
+        class={`flex flex-col items-center justify-center flex-1 min-h-[48px] py-1 transition-all active:scale-95 ${
           isCheckerActive ? 'text-blue-700 font-black' : 'text-slate-600 font-semibold hover:text-slate-900'
         }`}
       >

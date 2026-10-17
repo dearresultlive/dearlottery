@@ -33,16 +33,16 @@ const analytics = await fetchFrequencyAnalytics();
       <LiveResultsTabs client:load draws={draws} yesterdayDraws={yesterdayDraws} todayDateStr={todayDateStr} />
     </section>
 
-    {/* 2. Instant Slim Ticket Checker */}
+    {/* 2. Instant Slim Ticket Checker (Hydrated When Scrolled Into View) */}
     <section id="checker">
-      <TicketChecker client:load initialDraws={checkerDraws} variant="slim" />
+      <TicketChecker client:visible initialDraws={checkerDraws} variant="slim" />
     </section>
 
-    {/* OneSignal Push Notification Opt-in Prompt */}
-    <PushNotifyBanner client:load />
+    {/* OneSignal Push Notification Opt-in Prompt (Hydrated When Idle) */}
+    <PushNotifyBanner client:idle />
 
-    {/* PWA 1-Tap Mobile Install Banner */}
-    <PwaInstallBanner client:load />
+    {/* PWA 1-Tap Mobile Install Banner (Hydrated When Idle) */}
+    <PwaInstallBanner client:idle />
 
     {/* Quick Target Numbers / Common Middle Prediction Teaser */}
     <a
@@ -52,12 +52,12 @@ const analytics = await fetchFrequencyAnalytics();
       <div class="flex items-center gap-2.5">
         <span class="text-2xl group-hover:scale-110 transition-transform">🎯</span>
         <div>
-          <span class="text-xs font-black uppercase tracking-wider block">
+          <span class="text-xs font-black uppercase tracking-wider block text-white drop-shadow-xs">
             <span class="lang-en">Today's Target &amp; Common Numbers</span>
             <span class="lang-bn">আজকের টার্গেট ও কমন নম্বর (মিডিল তালিকা)</span>
             <span class="lang-hi">आज का टारगेट और कॉमन नंबर (मिडिल सूची)</span>
           </span>
-          <span class="text-[11px] text-amber-100 font-medium block">
+          <span class="text-[11px] text-amber-950 font-bold bg-amber-100/90 px-1.5 py-0.5 rounded-md inline-block mt-0.5">
             <span class="lang-en">Hot middle pairs &amp; high-frequency ticket numbers</span>
             <span class="lang-bn">জনপ্রিয় মিডিল নম্বর ও লাকি কম্বিনেশন দেখুন</span>
             <span class="lang-hi">पॉपुलर मिडिल नंबर्स और लकी टिकट देखें</span>

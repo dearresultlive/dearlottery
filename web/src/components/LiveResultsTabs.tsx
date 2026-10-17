@@ -557,6 +557,7 @@ export default function LiveResultsTabs({
         <div className="relative">
           <select
             value={activeSlot}
+            aria-label="Select Draw Time Slot"
             onChange={(e) => setActiveSlot(e.target.value as any)}
             className="w-full bg-slate-100 hover:bg-slate-200 border border-slate-300 text-slate-800 rounded-xl py-2 px-1.5 sm:px-2.5 font-bold appearance-none text-center cursor-pointer shadow-2xs"
           >
@@ -570,6 +571,7 @@ export default function LiveResultsTabs({
         <div className="relative">
           <select
             value={todayStr}
+            aria-label="Select Draw Date"
             onChange={(e) => {
               window.location.href = `/results/${e.target.value}/${activeSlot.toLowerCase()}`;
             }}
@@ -777,6 +779,7 @@ export default function LiveResultsTabs({
             <button
               type="button"
               onClick={() => setShowImageModal(false)}
+              aria-label="Close gazette preview modal"
               className="w-9 h-9 rounded-full bg-white/20 hover:bg-white/30 text-white font-bold text-base flex items-center justify-center transition-colors"
             >
               ✕
@@ -813,6 +816,7 @@ export default function LiveResultsTabs({
                 type="button"
                 onClick={handleZoomOut}
                 disabled={zoomScale <= 1}
+                aria-label="Zoom out"
                 className="w-7 h-7 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center font-black text-base disabled:opacity-40"
               >
                 −
@@ -820,6 +824,7 @@ export default function LiveResultsTabs({
               <button
                 type="button"
                 onClick={handleResetZoom}
+                aria-label="Reset zoom level"
                 className="px-2 font-mono font-bold text-xs"
               >
                 {Math.round(zoomScale * 100)}%
@@ -828,6 +833,7 @@ export default function LiveResultsTabs({
                 type="button"
                 onClick={handleZoomIn}
                 disabled={zoomScale >= 3}
+                aria-label="Zoom in"
                 className="w-7 h-7 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center font-black text-base disabled:opacity-40"
               >
                 +

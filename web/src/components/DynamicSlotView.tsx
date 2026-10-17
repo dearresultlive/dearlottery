@@ -464,6 +464,7 @@ export default function DynamicSlotView({
               <button
                 type="button"
                 onClick={() => setShowImageModal(false)}
+                aria-label="Close modal"
                 className="w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold flex items-center justify-center transition-colors"
               >
                 ✕

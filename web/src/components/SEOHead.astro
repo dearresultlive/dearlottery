@@ -228,21 +228,39 @@ const speakableSchema = {
   <meta name="twitter:description" content={description} />
   <meta name="twitter:image" content="https://dearresultlive.in/og-image.jpg" />
 
-  <!-- High-Performance Web Font Preconnects -->
+  <!-- High-Performance Asynchronous Web Fonts (Zero Render Blocking) -->
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@500;700;800&display=swap" rel="stylesheet" />
+  <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@500;700;800&display=swap" />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@500;700;800&display=swap" media="print" onload="this.media='all'" />
+  <noscript>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@500;700;800&display=swap" />
+  </noscript>
 
-  <!-- OneSignal Web Push SDK -->
-  <script src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js" defer></script>
+  <!-- OneSignal Web Push SDK - Deferred to Idle Time for High Mobile PageSpeed -->
   <script is:inline>
-    window.OneSignalDeferred = window.OneSignalDeferred || [];
-    OneSignalDeferred.push(async function(OneSignal) {
-      await OneSignal.init({
-        appId: "7ede11f8-0188-4e67-88b0-d3947320982a",
-        notifyButton: { enable: false },
-        allowLocalhostAsSecureOrigin: true
-      });
+    window.addEventListener('load', function() {
+      function initOneSignal() {
+        if (window._oneSignalInitialized) return;
+        window._oneSignalInitialized = true;
+        var s = document.createElement('script');
+        s.src = "https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js";
+        s.defer = true;
+        document.head.appendChild(s);
+        window.OneSignalDeferred = window.OneSignalDeferred || [];
+        window.OneSignalDeferred.push(async function(OneSignal) {
+          await OneSignal.init({
+            appId: "7ede11f8-0188-4e67-88b0-d3947320982a",
+            notifyButton: { enable: false },
+            allowLocalhostAsSecureOrigin: true
+          });
+        });
+      }
+      if ('requestIdleCallback' in window) {
+        requestIdleCallback(initOneSignal, { timeout: 3000 });
+      } else {
+        setTimeout(initOneSignal, 2000);
+      }
     });
   </script>
 
