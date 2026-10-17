@@ -24,7 +24,7 @@ export interface DemoTicket {
 interface DemoStats {
   totalSimulated: number;
   totalWins: number;
-  simulatedSpend: number; // ₹6 per ticket
+  simulatedSpend: number; // ₹7 per ticket
   simulatedReturns: number; // Sum of prize money won
 }
 
@@ -293,26 +293,21 @@ export default function DemoPlayModule({ initialDraws = [] }: DemoPlayModuleProp
     const nextTickets = [newTicket, ...myTickets];
     saveTickets(nextTickets);
 
-    // Update simulation stats (simulated ₹6 cost per ticket)
+    // Update simulation stats (simulated ₹7 cost per ticket)
+    const evalRes = evaluateTicket(newTicket);
     updateStats({
       ...stats,
       totalSimulated: stats.totalSimulated + 1,
-      simulatedSpend: stats.simulatedSpend + 6
+      simulatedSpend: stats.simulatedSpend + 7,
+      totalWins: evalRes.isWin ? stats.totalWins + 1 : stats.totalWins,
+      simulatedReturns: evalRes.isWin ? stats.simulatedReturns + evalRes.prizeAmount : stats.simulatedReturns
     });
 
     setManualNumber('');
     setManualSeries('');
 
     // Trigger celebration if it wins immediately (for declared past slot)
-    const evalRes = evaluateTicket(newTicket);
     if (evalRes.isWin) {
-      updateStats({
-        ...stats,
-        totalSimulated: stats.totalSimulated + 1,
-        totalWins: stats.totalWins + 1,
-        simulatedSpend: stats.simulatedSpend + 6,
-        simulatedReturns: stats.simulatedReturns + evalRes.prizeAmount
-      });
       triggerConfetti();
     }
   };
@@ -500,7 +495,7 @@ export default function DemoPlayModule({ initialDraws = [] }: DemoPlayModuleProp
             <span>{lang === 'bn' ? 'টিকিট কাউন্টার (ভার্চুয়াল)' : lang === 'hi' ? 'टिकट काउंटर (वर्चुअल)' : 'Simulated Ticket Counter'}</span>
           </span>
           <span className="text-[10px] text-amber-900 font-black bg-amber-100 border border-amber-300 px-2 py-0.5 rounded-full">
-            {lang === 'bn' ? 'অফিশিয়াল MRP ₹৬ / টিকিট' : 'Official MRP: ₹6 / ticket'}
+            {lang === 'bn' ? 'অফিশিয়াল MRP ₹৭ / টিকিট' : lang === 'hi' ? 'आधिकारिक MRP: ₹7 / टिकट' : 'Official MRP: ₹7 / ticket'}
           </span>
         </div>
 
@@ -645,7 +640,7 @@ export default function DemoPlayModule({ initialDraws = [] }: DemoPlayModuleProp
 
                     <div className="flex items-center gap-2 flex-shrink-0">
                       <span className="bg-amber-400 text-slate-950 font-black text-[9px] sm:text-[10px] px-2 py-0.5 rounded shadow-2xs">
-                        MRP ₹6.00
+                        MRP ₹7.00
                       </span>
                       <button
                         type="button"

@@ -39,7 +39,7 @@ export default function LotteryTicketVoucher({
           <span>নাগাল্যান্ড ও সিকিম রাজ্য লটারি • অফিশিয়াল রেজাল্ট ভাউচার</span>
         </div>
         <div className="bg-amber-400 text-slate-950 font-black text-[10px] sm:text-xs px-2.5 py-0.5 rounded shadow-xs">
-          MRP ₹6
+          MRP ₹7
         </div>
       </div>
 
