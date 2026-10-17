@@ -1,12 +1,13 @@
 /**
- * Historical Number Intelligence & Pattern Analytics Engine.
+ * Historical Number Intelligence & Pattern Analytics Engine (5-Year Big Data Archive).
  * Analyzes historical win occurrences, ending frequency, and middle pair patterns
- * across official Dear Lottery gazette archives.
+ * across 5,475+ official Dear Lottery gazette archives (2021-2026).
  * 
  * 100% Client/Edge Compatible - Runs in sub-millisecond with zero server cost.
  */
 
 import liveDrawsData from '../data/live_draws.json';
+import archive5yData from '../data/historical_archive_5y.json';
 import { VERIFIED_DRAWS_DB } from './verified-draws';
 
 export interface PastWinRecord {
@@ -16,7 +17,27 @@ export interface PastWinRecord {
   prizeRank: string;
   prizeAmount: number;
   ticketNumber: string;
-  matchedPart: 'exact_5' | 'last_4' | 'last_3' | 'last_2';
+  matchedPart: 'exact_5' | 'last_4' | 'last_3' | 'last_2' | 'middle_pair';
+}
+
+export interface HorizonBreakdown {
+  exactWinsCount: number;
+  last4MatchesCount: number;
+  last3MatchesCount: number;
+  totalHits: number;
+  periodLabel: string;
+}
+
+export interface SimilarWinningNumber {
+  ticketNumber: string;
+  similarityType: string;
+  similarityTypeBn: string;
+  similarityTypeHi: string;
+  drawDate: string;
+  drawTime: string;
+  drawName: string;
+  prizeRank: string;
+  prizeAmount: number;
 }
 
 export interface NumberHistoryAnalysis {
@@ -24,6 +45,11 @@ export interface NumberHistoryAnalysis {
   hasExactWin: boolean;
   exactWins: PastWinRecord[];
   last4Wins: PastWinRecord[];
+  last3Wins: PastWinRecord[];
+  similarNumbers: SimilarWinningNumber[];
+  stats1Y: HorizonBreakdown;
+  stats3Y: HorizonBreakdown;
+  stats5Y: HorizonBreakdown;
   last2Digits: string;
   last2Frequency: number;
   last2Rank: number; // e.g. Rank 4 out of 100 endings
@@ -50,26 +76,63 @@ export interface MiddleFrequencyStat {
   lastSeenDate: string;
 }
 
+export interface RecurringNumberStat {
+  number: string;
+  count: number;
+  lastDate: string;
+  lastTime: string;
+  lastRank: string;
+}
+
 /**
- * Consolidates all known draws from live_draws.json and VERIFIED_DRAWS_DB
+ * Consolidates all known draws from 5-Year Archive, live_draws.json and VERIFIED_DRAWS_DB
  */
-function getAllHistoricalDraws(): Array<{ date: string; slot: string; prizes: any }> {
+function getAllHistoricalDraws(): Array<{ date: string; slot: string; prizes: any; schemeName?: string }> {
   const map = new Map<string, any>();
 
-  // 1. Load from VERIFIED_DRAWS_DB
+  // 1. Load from 5-Year Historical Archive (5,475+ official draws)
+  if (Array.isArray(archive5yData)) {
+    for (const row of archive5yData as any[]) {
+      const [date, slot, fNum, fSeries, sec, third, schemeName] = row;
+      map.set(`${date}-${slot}`, {
+        date,
+        slot,
+        schemeName: schemeName || `DEAR ${slot}`,
+        prizes: {
+          first_prize: { series: fSeries, number: fNum },
+          second_prize: sec || [],
+          third_prize: third || [],
+          fourth_prize: [],
+          fifth_prize: []
+        }
+      });
+    }
+  }
+
+  // 2. Load from VERIFIED_DRAWS_DB (overwrites if present)
   for (const [date, slots] of Object.entries(VERIFIED_DRAWS_DB)) {
     for (const [slot, prizes] of Object.entries(slots || {})) {
       if (prizes && prizes.first_prize?.number) {
-        map.set(`${date}-${slot}`, { date, slot, prizes });
+        map.set(`${date}-${slot}`, {
+          date,
+          slot,
+          schemeName: (prizes as any).draw_name || `DEAR ${slot}`,
+          prizes
+        });
       }
     }
   }
 
-  // 2. Load from live_draws.json (overwrites with fresh gazette sheets)
+  // 3. Load from live_draws.json (fresh scanned gazette sheets)
   for (const [date, slots] of Object.entries(liveDrawsData as Record<string, any>)) {
     for (const [slot, prizes] of Object.entries(slots || {})) {
       if (prizes && prizes.first_prize?.number) {
-        map.set(`${date}-${slot}`, { date, slot, prizes });
+        map.set(`${date}-${slot}`, {
+          date,
+          slot,
+          schemeName: prizes.draw_name || `DEAR ${slot}`,
+          prizes
+        });
       }
     }
   }
@@ -78,31 +141,61 @@ function getAllHistoricalDraws(): Array<{ date: string; slot: string; prizes: an
 }
 
 /**
- * Analyzes full history and patterns for any ticket or prize number
+ * Computes exact cutoff date strings for 1Y, 3Y, 5Y
+ */
+function getCutoffDates(baseDateStr?: string) {
+  const base = baseDateStr ? new Date(baseDateStr) : new Date();
+  
+  const d1Y = new Date(base);
+  d1Y.setFullYear(d1Y.getFullYear() - 1);
+  const cutoff1Y = d1Y.toISOString().split('T')[0];
+
+  const d3Y = new Date(base);
+  d3Y.setFullYear(d3Y.getFullYear() - 3);
+  const cutoff3Y = d3Y.toISOString().split('T')[0];
+
+  const d5Y = new Date(base);
+  d5Y.setFullYear(d5Y.getFullYear() - 5);
+  const cutoff5Y = d5Y.toISOString().split('T')[0];
+
+  return { cutoff1Y, cutoff3Y, cutoff5Y };
+}
+
+/**
+ * Analyzes full 5-year history and patterns for any ticket or prize number
  */
 export function analyzeNumberHistory(inputNumber: string, currentDateStr?: string): NumberHistoryAnalysis {
   const clean = inputNumber.replace(/\D/g, '');
   const draws = getAllHistoricalDraws();
+  const { cutoff1Y, cutoff3Y, cutoff5Y } = getCutoffDates(currentDateStr);
 
   const exactWins: PastWinRecord[] = [];
   const last4Wins: PastWinRecord[] = [];
+  const last3Wins: PastWinRecord[] = [];
+  const similarNumbersMap = new Map<string, SimilarWinningNumber>();
+
   const last4 = clean.length >= 4 ? clean.slice(-4) : clean;
+  const last3 = clean.length >= 3 ? clean.slice(-3) : clean;
   const last2 = clean.length >= 2 ? clean.slice(-2) : clean;
 
   // Middle pair: 2nd and 3rd digit of 5-digit ticket, or first 2 digits of 4-digit
   const middle = clean.length === 5 ? clean.slice(1, 3) : clean.slice(0, 2);
+
+  // Time horizon counters
+  const stats1Y: HorizonBreakdown = { exactWinsCount: 0, last4MatchesCount: 0, last3MatchesCount: 0, totalHits: 0, periodLabel: '1 Year' };
+  const stats3Y: HorizonBreakdown = { exactWinsCount: 0, last4MatchesCount: 0, last3MatchesCount: 0, totalHits: 0, periodLabel: '3 Years' };
+  const stats5Y: HorizonBreakdown = { exactWinsCount: 0, last4MatchesCount: 0, last3MatchesCount: 0, totalHits: 0, periodLabel: '5 Years' };
 
   // Frequency accumulators across all historical records
   const ending2Counts: Record<string, { count: number; lastDate: string }> = {};
   const middleCounts: Record<string, { count: number; lastDate: string }> = {};
 
   for (const item of draws) {
-    const { date, slot, prizes } = item;
-    // Skip today's current draw when looking for *past* occurrences
+    const { date, slot, prizes, schemeName } = item;
     const isCurrentDraw = currentDateStr && date === currentDateStr;
 
     const slotLabel = slot === '1PM' ? '1:00 PM' : slot === '6PM' ? '6:00 PM' : '8:00 PM';
-    const drawName = `DEAR ${slot}`;
+    const drawName = schemeName || `DEAR ${slot}`;
 
     // 1st Prize
     if (prizes.first_prize?.number) {
@@ -128,6 +221,10 @@ export function analyzeNumberHistory(inputNumber: string, currentDateStr?: strin
             ticketNumber: `${fSeries} ${fNum}`.trim(),
             matchedPart: 'exact_5'
           });
+
+          if (date >= cutoff1Y) stats1Y.exactWinsCount++;
+          if (date >= cutoff3Y) stats3Y.exactWinsCount++;
+          if (date >= cutoff5Y) stats5Y.exactWinsCount++;
         } else if (last4 && fNum.endsWith(last4)) {
           last4Wins.push({
             drawDate: date,
@@ -138,6 +235,38 @@ export function analyzeNumberHistory(inputNumber: string, currentDateStr?: strin
             ticketNumber: `${fSeries} ${fNum}`.trim(),
             matchedPart: 'last_4'
           });
+
+          if (date >= cutoff1Y) stats1Y.last4MatchesCount++;
+          if (date >= cutoff3Y) stats3Y.last4MatchesCount++;
+          if (date >= cutoff5Y) stats5Y.last4MatchesCount++;
+
+          if (!similarNumbersMap.has(fNum) && similarNumbersMap.size < 6) {
+            similarNumbersMap.set(fNum, {
+              ticketNumber: `${fSeries} ${fNum}`.trim(),
+              similarityType: `Same Last 4 Digits (${last4})`,
+              similarityTypeBn: `একই শেষ ৪ সংখ্যা (${last4})`,
+              similarityTypeHi: `समान अंतिम 4 अंक (${last4})`,
+              drawDate: date,
+              drawTime: slotLabel,
+              drawName,
+              prizeRank: '1st Prize Winner',
+              prizeAmount: 10000000
+            });
+          }
+        } else if (last3 && fNum.endsWith(last3)) {
+          last3Wins.push({
+            drawDate: date,
+            drawTime: slotLabel,
+            drawName,
+            prizeRank: '1st Prize Ending Match',
+            prizeAmount: 1000,
+            ticketNumber: `${fSeries} ${fNum}`.trim(),
+            matchedPart: 'last_3'
+          });
+
+          if (date >= cutoff1Y) stats1Y.last3MatchesCount++;
+          if (date >= cutoff3Y) stats3Y.last3MatchesCount++;
+          if (date >= cutoff5Y) stats5Y.last3MatchesCount++;
         }
       }
     }
@@ -166,6 +295,10 @@ export function analyzeNumberHistory(inputNumber: string, currentDateStr?: strin
               ticketNumber: sStr,
               matchedPart: 'exact_5'
             });
+
+            if (date >= cutoff1Y) stats1Y.exactWinsCount++;
+            if (date >= cutoff3Y) stats3Y.exactWinsCount++;
+            if (date >= cutoff5Y) stats5Y.exactWinsCount++;
           } else if (last4 && sStr.endsWith(last4)) {
             last4Wins.push({
               drawDate: date,
@@ -176,12 +309,30 @@ export function analyzeNumberHistory(inputNumber: string, currentDateStr?: strin
               ticketNumber: sStr,
               matchedPart: 'last_4'
             });
+
+            if (date >= cutoff1Y) stats1Y.last4MatchesCount++;
+            if (date >= cutoff3Y) stats3Y.last4MatchesCount++;
+            if (date >= cutoff5Y) stats5Y.last4MatchesCount++;
+
+            if (!similarNumbersMap.has(sStr) && similarNumbersMap.size < 6) {
+              similarNumbersMap.set(sStr, {
+                ticketNumber: sStr,
+                similarityType: `Same Last 4 Digits (${last4})`,
+                similarityTypeBn: `একই শেষ ৪ সংখ্যা (${last4})`,
+                similarityTypeHi: `समान अंतिम 4 अंक (${last4})`,
+                drawDate: date,
+                drawTime: slotLabel,
+                drawName,
+                prizeRank: '2nd Prize Winner',
+                prizeAmount: 9000
+              });
+            }
           }
         }
       }
     }
 
-    // 3rd & 4th Prize (4-digit numbers)
+    // 3rd Prize (4-digit numbers)
     if (Array.isArray(prizes.third_prize) && !isCurrentDraw) {
       for (const tNum of prizes.third_prize) {
         if (last4 && String(tNum) === last4) {
@@ -194,51 +345,21 @@ export function analyzeNumberHistory(inputNumber: string, currentDateStr?: strin
             ticketNumber: String(tNum),
             matchedPart: 'last_4'
           });
-        }
-      }
-    }
 
-    if (Array.isArray(prizes.fourth_prize) && !isCurrentDraw) {
-      for (const foNum of prizes.fourth_prize) {
-        if (last4 && String(foNum) === last4) {
-          last4Wins.push({
-            drawDate: date,
-            drawTime: slotLabel,
-            drawName,
-            prizeRank: '4th Prize (৪র্থ পুরস্কার)',
-            prizeAmount: 250,
-            ticketNumber: String(foNum),
-            matchedPart: 'last_4'
-          });
-        }
-      }
-    }
-
-    // 5th Prize (100 four-digit numbers)
-    if (Array.isArray(prizes.fifth_prize)) {
-      for (const fiNum of prizes.fifth_prize) {
-        const fiStr = String(fiNum);
-        const fiEnd2 = fiStr.slice(-2);
-
-        if (!ending2Counts[fiEnd2]) ending2Counts[fiEnd2] = { count: 0, lastDate: date };
-        ending2Counts[fiEnd2].count += 1;
-
-        if (!isCurrentDraw && last4 && fiStr === last4) {
-          last4Wins.push({
-            drawDate: date,
-            drawTime: slotLabel,
-            drawName,
-            prizeRank: '5th Prize (৫ম পুরস্কার)',
-            prizeAmount: 120,
-            ticketNumber: fiStr,
-            matchedPart: 'last_4'
-          });
+          if (date >= cutoff1Y) stats1Y.last4MatchesCount++;
+          if (date >= cutoff3Y) stats3Y.last4MatchesCount++;
+          if (date >= cutoff5Y) stats5Y.last4MatchesCount++;
         }
       }
     }
   }
 
-  // Calculate Ranks
+  // Aggregate total hits per horizon
+  stats1Y.totalHits = stats1Y.exactWinsCount + stats1Y.last4MatchesCount;
+  stats3Y.totalHits = stats3Y.exactWinsCount + stats3Y.last4MatchesCount;
+  stats5Y.totalHits = stats5Y.exactWinsCount + stats5Y.last4MatchesCount;
+
+  // Calculate Ranks across all 5,475 draws
   const sortedEndings = Object.entries(ending2Counts).sort((a, b) => b[1].count - a[1].count);
   const endingRankIndex = sortedEndings.findIndex(([e]) => e === last2);
   const last2Rank = endingRankIndex !== -1 ? endingRankIndex + 1 : 50;
@@ -252,9 +373,9 @@ export function analyzeNumberHistory(inputNumber: string, currentDateStr?: strin
   const totalHits = exactWins.length + last4Wins.length;
   const lastSeenDate = exactWins[0]?.drawDate || last4Wins[0]?.drawDate || null;
 
-  // Hot Score algorithm (0-100) based on ranking and total win frequency
+  // Hot Score algorithm (0-100) based on ranking and 5-year win frequency
   const rankFactor = Math.max(0, 100 - last2Rank);
-  const hitsFactor = Math.min(30, totalHits * 6);
+  const hitsFactor = Math.min(30, totalHits * 4);
   const hotScore = Math.min(99, Math.max(35, Math.round(rankFactor * 0.7 + hitsFactor)));
 
   // Generate localized summaries
@@ -264,18 +385,18 @@ export function analyzeNumberHistory(inputNumber: string, currentDateStr?: strin
 
   if (exactWins.length > 0) {
     const firstHit = exactWins[0];
-    summaryEn = `Exact number ${clean} won ${firstHit.prizeRank} previously on ${firstHit.drawDate} (${firstHit.drawTime}).`;
-    summaryBn = `এই হুবহু নম্বর ${clean} এর আগে ${firstHit.drawDate} তারিখে (${firstHit.drawTime} ড্র)-এ ${firstHit.prizeRank} জিতেছিল!`;
-    summaryHi = `यह सटीक नंबर ${clean} पहले ${firstHit.drawDate} को (${firstHit.drawTime} ड्रॉ) में ${firstHit.prizeRank} जीत चुका है!`;
+    summaryEn = `Exact ticket ${clean} won ${exactWins.length} times in past 5 years (most recently ${firstHit.prizeRank} on ${firstHit.drawDate} at ${firstHit.drawTime}).`;
+    summaryBn = `এই হুবহু নম্বর ${clean} বিগত ৫ বছরে ${exactWins.length} বার জিতেছে (সর্বশেষ ${firstHit.drawDate} তারিখে ${firstHit.drawTime} ড্র-এ ${firstHit.prizeRank})!`;
+    summaryHi = `यह सटीक नंबर ${clean} पिछले 5 वर्षों में ${exactWins.length} बार जीत चुका है (हाल ही में ${firstHit.drawDate} को ${firstHit.drawTime} पर)।`;
   } else if (last4Wins.length > 0) {
     const firstHit = last4Wins[0];
-    summaryEn = `Ending ${last4} appeared in ${last4Wins.length} past draws, most recently on ${firstHit.drawDate} (${firstHit.prizeRank}).`;
-    summaryBn = `শেষ ৪-ডিজিট '${last4}' এর আগে ${last4Wins.length}টি ড্র-এ এসেছিল (সর্বশেষ ${firstHit.drawDate} তারিখে ${firstHit.prizeRank})।`;
-    summaryHi = `अंतिम 4-अंक '${last4}' पहले ${last4Wins.length} ड्रॉ में आ चुका है (हाल ही में ${firstHit.drawDate} को)।`;
+    summaryEn = `Ending '${last4}' won in ${last4Wins.length} draws across 5 years (last seen ${firstHit.drawDate} in ${firstHit.prizeRank}).`;
+    summaryBn = `শেষ ৪-ডিজিট '${last4}' বিগত ৫ বছরে ${last4Wins.length}টি ড্র-এ প্রাইজ জিতেছে (সর্বশেষ ${firstHit.drawDate} তারিখে ${firstHit.prizeRank})।`;
+    summaryHi = `अंतिम 4-अंक '${last4}' 5 वर्षों में ${last4Wins.length} ड्रॉ में आ चुका है (हाल ही में ${firstHit.drawDate} को)।`;
   } else {
-    summaryEn = `Ending '${last2}' ranked #${last2Rank} in frequency (${last2Frequency} hits in official gazettes). Middle '${middle}' ranked #${middleRank}.`;
-    summaryBn = `শেষ ২-ডিজিট '${last2}' ফ্রিকোয়েন্সিতে #${last2Rank} নম্বরে আছে (মোট ${last2Frequency} বার এসেছে)। মিডিল '${middle}' র‍্যাংক #${middleRank}।`;
-    summaryHi = `अंतिम 2-अंक '${last2}' फ्रीक्वेंसी में #${last2Rank} पर है (कुल ${last2Frequency} बार)। मिडिल '${middle}' रैंक #${middleRank}।`;
+    summaryEn = `Ending '${last2}' ranked #${last2Rank} in 5-year frequency (${last2Frequency} official gazette hits). Middle '${middle}' ranked #${middleRank}.`;
+    summaryBn = `শেষ ২-ডিজিট '${last2}' ৫ বছরের ফ্রিকোয়েন্সিতে #${last2Rank} নম্বরে আছে (মোট ${last2Frequency} বার এসেছে)। মিডিল '${middle}' #${middleRank}।`;
+    summaryHi = `अंतिम 2-अंक '${last2}' 5-वर्षीय फ्रीक्वेंसी में #${last2Rank} पर है (कुल ${last2Frequency} बार)। মিডিল '${middle}' #${middleRank}।`;
   }
 
   return {
@@ -283,6 +404,11 @@ export function analyzeNumberHistory(inputNumber: string, currentDateStr?: strin
     hasExactWin: exactWins.length > 0,
     exactWins,
     last4Wins,
+    last3Wins,
+    similarNumbers: Array.from(similarNumbersMap.values()),
+    stats1Y,
+    stats3Y,
+    stats5Y,
     last2Digits: last2,
     last2Frequency,
     last2Rank,
@@ -299,13 +425,59 @@ export function analyzeNumberHistory(inputNumber: string, currentDateStr?: strin
 }
 
 /**
+ * Returns Top Recurring 5-digit Winning Numbers over 1Y, 3Y, or 5Y
+ */
+export function getTopRecurringNumbers(horizon: '1Y' | '3Y' | '5Y' = '3Y', limit: number = 8): RecurringNumberStat[] {
+  const draws = getAllHistoricalDraws();
+  const { cutoff1Y, cutoff3Y, cutoff5Y } = getCutoffDates();
+  const cutoff = horizon === '1Y' ? cutoff1Y : horizon === '3Y' ? cutoff3Y : cutoff5Y;
+
+  const counts: Record<string, { count: number; lastDate: string; lastTime: string; lastRank: string }> = {};
+
+  for (const item of draws) {
+    if (item.date < cutoff) continue;
+    const { date, slot, prizes } = item;
+    const slotLabel = slot === '1PM' ? '1:00 PM' : slot === '6PM' ? '6:00 PM' : '8:00 PM';
+
+    if (prizes.first_prize?.number) {
+      const fNum = String(prizes.first_prize.number);
+      if (!counts[fNum]) counts[fNum] = { count: 0, lastDate: date, lastTime: slotLabel, lastRank: '1st Prize' };
+      counts[fNum].count += 1;
+    }
+
+    if (Array.isArray(prizes.second_prize)) {
+      for (const sNum of prizes.second_prize) {
+        const sStr = String(sNum);
+        if (!counts[sStr]) counts[sStr] = { count: 0, lastDate: date, lastTime: slotLabel, lastRank: '2nd Prize' };
+        counts[sStr].count += 1;
+      }
+    }
+  }
+
+  return Object.entries(counts)
+    .filter(([_, val]) => val.count > 1)
+    .sort((a, b) => b[1].count - a[1].count)
+    .slice(0, limit)
+    .map(([number, val]) => ({
+      number,
+      count: val.count,
+      lastDate: val.lastDate,
+      lastTime: val.lastTime,
+      lastRank: val.lastRank
+    }));
+}
+
+/**
  * Returns Top N Most Frequent 2-digit Endings (00-99)
  */
-export function getTopFrequentEndings(limit: number = 10): EndingFrequencyStat[] {
+export function getTopFrequentEndings(limit: number = 10, horizon: '1Y' | '3Y' | '5Y' = '3Y'): EndingFrequencyStat[] {
   const draws = getAllHistoricalDraws();
+  const { cutoff1Y, cutoff3Y, cutoff5Y } = getCutoffDates();
+  const cutoff = horizon === '1Y' ? cutoff1Y : horizon === '3Y' ? cutoff3Y : cutoff5Y;
   const counts: Record<string, { count: number; lastDate: string }> = {};
 
   for (const item of draws) {
+    if (item.date < cutoff) continue;
     const { date, prizes } = item;
     const addEnding = (num: any, weight: number = 1) => {
       if (!num) return;
@@ -334,11 +506,14 @@ export function getTopFrequentEndings(limit: number = 10): EndingFrequencyStat[]
 /**
  * Returns Top N Most Frequent Middle Pairs (00-99)
  */
-export function getTopFrequentMiddles(limit: number = 10): MiddleFrequencyStat[] {
+export function getTopFrequentMiddles(limit: number = 10, horizon: '1Y' | '3Y' | '5Y' = '3Y'): MiddleFrequencyStat[] {
   const draws = getAllHistoricalDraws();
+  const { cutoff1Y, cutoff3Y, cutoff5Y } = getCutoffDates();
+  const cutoff = horizon === '1Y' ? cutoff1Y : horizon === '3Y' ? cutoff3Y : cutoff5Y;
   const counts: Record<string, { count: number; lastDate: string }> = {};
 
   for (const item of draws) {
+    if (item.date < cutoff) continue;
     const { date, prizes } = item;
     const addMiddle = (num: any, weight: number = 1) => {
       if (!num) return;

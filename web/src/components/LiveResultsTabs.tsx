@@ -7,7 +7,8 @@ import {
   getSlotCountdown
 } from '../lib/lottery-utils';
 import { useLanguage } from '../lib/i18n';
-import { analyzeNumberHistory } from '../lib/history-analytics';
+import HistoricalIntelligenceCard from './HistoricalIntelligenceCard';
+import { analyzeNumberHistory, getTopRecurringNumbers } from '../lib/history-analytics';
 
 interface PrizeData {
   first_prize?: { series: string; number: string };
@@ -833,87 +834,7 @@ export default function LiveResultsTabs({
         
           {/* 7. Historical Win & Pattern Intelligence Card (Below All Results) */}
           {firstPrizeHistory && (
-            <div className="bg-white border border-slate-200 rounded-xl sm:rounded-2xl p-3 sm:p-3.5 text-left shadow-2xs space-y-2.5">
-              <div className="flex items-center justify-between border-b border-slate-100 pb-1.5 flex-wrap gap-1.5">
-                <div className="flex items-center gap-1.5 text-xs font-black text-slate-900">
-                  <span className="text-sm">📜</span>
-                  <span>
-                    {lang === 'bn'
-                      ? 'ঐতিহাসিক জয় ও ফ্রিকোয়েন্সি বিশ্লেষণ'
-                      : lang === 'hi'
-                      ? 'ऐतिहासिक जीत और फ्रीक्वेंसी विश्लेषण'
-                      : 'Historical Win & Frequency Intelligence'}
-                  </span>
-                </div>
-                <div className="flex items-center gap-1">
-                  <span className="text-[10px] font-black uppercase px-2 py-0.5 rounded-md bg-amber-100 text-amber-900 border border-amber-300">
-                    🔥 {lang === 'bn' ? 'হট স্কোর' : lang === 'hi' ? 'हॉट स्कोर' : 'Hot Score'}: {firstPrizeHistory.hotScore}/100
-                  </span>
-                </div>
-              </div>
-
-              {/* Main Insight Summary */}
-              <p className="text-xs text-slate-700 leading-snug font-medium">
-                {lang === 'bn'
-                  ? firstPrizeHistory.summaryBn
-                  : lang === 'hi'
-                  ? firstPrizeHistory.summaryHi
-                  : firstPrizeHistory.summaryEn}
-              </p>
-
-              {/* 3-Pill Stat Badges */}
-              <div className="grid grid-cols-3 gap-1.5">
-                <div className="bg-slate-50 border border-slate-200 rounded-lg p-2 text-center">
-                  <span className="text-[9px] font-bold text-slate-500 uppercase block">
-                    {lang === 'bn' ? 'শেষ ২-ডিজিট' : lang === 'hi' ? 'अंतिम 2-अंक' : 'Last 2 Digits'}
-                  </span>
-                  <span className="font-mono font-black text-xs sm:text-sm text-blue-700 block">
-                    ..{firstPrizeHistory.last2Digits}
-                  </span>
-                  <span className="text-[9px] font-medium text-slate-500 block truncate">
-                    #{firstPrizeHistory.last2Rank} {lang === 'bn' ? 'র‍্যাংক' : lang === 'hi' ? 'रैंक' : 'Rank'} ({firstPrizeHistory.last2Frequency})
-                  </span>
-                </div>
-
-                <div className="bg-slate-50 border border-slate-200 rounded-lg p-2 text-center">
-                  <span className="text-[9px] font-bold text-slate-500 uppercase block">
-                    {lang === 'bn' ? 'মিডিল পেয়ার' : lang === 'hi' ? 'मिडिल पेयर' : 'Middle Pair'}
-                  </span>
-                  <span className="font-mono font-black text-xs sm:text-sm text-emerald-700 block">
-                    {firstPrizeHistory.middlePair}xx
-                  </span>
-                  <span className="text-[9px] font-medium text-slate-500 block truncate">
-                    #{firstPrizeHistory.middleRank} {lang === 'bn' ? 'র‍্যাংক' : lang === 'hi' ? 'रैंक' : 'Rank'} ({firstPrizeHistory.middleFrequency})
-                  </span>
-                </div>
-
-                <div className="bg-slate-50 border border-slate-200 rounded-lg p-2 text-center">
-                  <span className="text-[9px] font-bold text-slate-500 uppercase block">
-                    {lang === 'bn' ? 'মোট অতীত জয়' : lang === 'hi' ? 'कुल पिछली जीत' : 'Past Gazette Wins'}
-                  </span>
-                  <span className="font-mono font-black text-xs sm:text-sm text-amber-700 block">
-                    {firstPrizeHistory.totalHistoricalHits}
-                  </span>
-                  <span className="text-[9px] font-medium text-slate-500 block truncate">
-                    {firstPrizeHistory.lastSeenDate ? firstPrizeHistory.lastSeenDate.split('-').reverse().join('/') : (lang === 'bn' ? 'নতুন নম্বর' : 'New Pattern')}
-                  </span>
-                </div>
-              </div>
-
-              {/* If exact wins in previous draws */}
-              {firstPrizeHistory.exactWins.length > 0 && (
-                <div className="bg-emerald-50 border border-emerald-200 rounded-lg p-2 text-[11px] text-emerald-950 font-medium flex items-center gap-1.5">
-                  <span>🏆</span>
-                  <span>
-                    {lang === 'bn'
-                      ? `হুবহু এই নম্বর ${firstPrizeHistory.cleanNumber} এর আগে ${firstPrizeHistory.exactWins[0].drawDate.split('-').reverse().join('/')} তারিখে (${firstPrizeHistory.exactWins[0].drawTime}) ${firstPrizeHistory.exactWins[0].prizeRank} জিতেছিল!`
-                      : lang === 'hi'
-                      ? `यह सटीक नंबर ${firstPrizeHistory.cleanNumber} पहले ${firstPrizeHistory.exactWins[0].drawDate.split('-').reverse().join('/')} को (${firstPrizeHistory.exactWins[0].drawTime}) ${firstPrizeHistory.exactWins[0].prizeRank} जीत चुका है!`
-                      : `Exact ticket ${firstPrizeHistory.cleanNumber} previously won ${firstPrizeHistory.exactWins[0].prizeRank} on ${firstPrizeHistory.exactWins[0].drawDate.split('-').reverse().join('/')} (${firstPrizeHistory.exactWins[0].drawTime})!`}
-                  </span>
-                </div>
-              )}
-            </div>
+            <HistoricalIntelligenceCard history={firstPrizeHistory} />
           )}
         </>
       )}
