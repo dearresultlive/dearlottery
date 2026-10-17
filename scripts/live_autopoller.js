@@ -15,6 +15,7 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import { createWorker } from 'tesseract.js';
 import { pingSearchEngines } from './seo_pinger.js';
+import { sendOneSignalResultPush } from './onesignal_notifier.js';
 
 dns.setDefaultResultOrder('ipv4first');
 
@@ -347,6 +348,13 @@ async function processSlot(dateStr, slot) {
     await pingSearchEngines(dateStr, slot);
   } catch (pingErr) {
     console.warn('[Poller] SEO Ping warning:', pingErr.message);
+  }
+
+  // Automatically broadcast push notification to all subscribed users via OneSignal
+  try {
+    await sendOneSignalResultPush({ dateStr, slot, prizeData });
+  } catch (pushErr) {
+    console.warn('[Poller] OneSignal push warning:', pushErr.message);
   }
   return true;
 }
