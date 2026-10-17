@@ -1,6 +1,7 @@
 import React, { useState, useMemo } from 'react';
 import { useLanguage } from '../lib/i18n';
 import { getISTDateString, getISTNow, getNextUpcomingDraw } from '../lib/lottery-utils';
+import { getTopFrequentEndings, getTopFrequentMiddles } from '../lib/history-analytics';
 
 interface TargetNumbersToolProps {
   initialMatrix?: any[];
@@ -18,6 +19,10 @@ export default function TargetNumbersTool({
   const [copiedText, setCopiedText] = useState<string | null>(null);
   const [isGenerating, setIsGenerating] = useState(false);
   const todayStr = getISTDateString();
+
+  // Top 10 frequency stats from official gazette database
+  const topEndings = useMemo(() => getTopFrequentEndings(10), []);
+  const topMiddles = useMemo(() => getTopFrequentMiddles(10), []);
 
   // Statistical patterns derived from recent draws
   const slotData = useMemo(() => {
@@ -282,6 +287,93 @@ export default function TargetNumbersTool({
               {lang === 'bn' ? 'হোয়াটসঅ্যাপে শেয়ার করুন' : lang === 'hi' ? 'व्हाट्सएप पर शेयर करें' : 'Share on WhatsApp'}
             </span>
           </a>
+        </div>
+      </div>
+
+      {/* Historical Gazette Frequency Leaderboard (Top 10 Endings & Middles) */}
+      <div className="border border-slate-200 rounded-xl p-3.5 sm:p-4 space-y-3 bg-white">
+        <div className="flex items-center justify-between border-b border-slate-100 pb-2">
+          <div>
+            <span className="text-xs font-black text-slate-900 flex items-center gap-1.5">
+              <span>🏆</span>
+              <span>
+                {lang === 'bn'
+                  ? 'অফিসিয়াল রেকর্ড: সর্বাধিক বিজয়ী এন্ডিং ও মিডিল'
+                  : lang === 'hi'
+                  ? 'आधिकारिक रिकॉर्ड: सर्वाधिक जीतने वाले एंडिंग्स और मिडिल्स'
+                  : 'Gazette Archive: Top Winning Endings & Middles'}
+              </span>
+            </span>
+            <span className="text-[10px] text-slate-500 font-medium block">
+              {lang === 'bn'
+                ? 'বিগত সব অফিশিয়াল গেজেট থেকে সংকলিত ফ্রিকোয়েন্সি পরিসংখ্যান'
+                : lang === 'hi'
+                ? 'पिछले सभी आधिकारिक गजट से संकलित फ्रीक्वेंसी आंकड़े'
+                : 'Aggregated frequency from all official state gazette draws'}
+            </span>
+          </div>
+        </div>
+
+        <div className="grid sm:grid-cols-2 gap-3.5">
+          {/* Top 10 Endings */}
+          <div className="space-y-1.5">
+            <span className="text-[11px] font-black uppercase text-blue-900 tracking-wider flex items-center justify-between">
+              <span>⭐ {lang === 'bn' ? 'শীর্ষ ১০ লাস্ট ২ ডিজিট' : lang === 'hi' ? 'टॉप 10 अंतिम 2 अंक' : 'Top 10 Endings (00-99)'}</span>
+              <span className="text-[10px] text-blue-600 font-normal font-sans">{lang === 'bn' ? 'ক্লিক করে কপি' : 'Click to copy'}</span>
+            </span>
+            <div className="grid grid-cols-2 gap-1.5">
+              {topEndings.map((item, idx) => (
+                <button
+                  key={item.ending}
+                  type="button"
+                  onClick={() => handleCopy(item.ending)}
+                  className="bg-blue-50/60 hover:bg-blue-100 border border-blue-200 rounded-lg p-2 text-left transition-all active:scale-95 flex items-center justify-between group"
+                >
+                  <div className="flex items-center gap-1.5">
+                    <span className="text-[10px] font-black text-blue-800 bg-white px-1.5 py-0.2 rounded border border-blue-200">
+                      #{idx + 1}
+                    </span>
+                    <span className="font-mono font-black text-sm text-slate-900">
+                      ..{item.ending}
+                    </span>
+                  </div>
+                  <span className="text-[10px] font-bold text-blue-700 font-mono">
+                    {item.count} {lang === 'bn' ? 'বার' : 'hits'}
+                  </span>
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Top 10 Middles */}
+          <div className="space-y-1.5">
+            <span className="text-[11px] font-black uppercase text-amber-900 tracking-wider flex items-center justify-between">
+              <span>🔥 {lang === 'bn' ? 'শীর্ষ ১০ মিডিল পেয়ার' : lang === 'hi' ? 'टॉप 10 मिडिल पेयर' : 'Top 10 Middle Pairs'}</span>
+              <span className="text-[10px] text-amber-600 font-normal font-sans">{lang === 'bn' ? 'ক্লিক করে কপি' : 'Click to copy'}</span>
+            </span>
+            <div className="grid grid-cols-2 gap-1.5">
+              {topMiddles.map((item, idx) => (
+                <button
+                  key={item.middle}
+                  type="button"
+                  onClick={() => handleCopy(item.middle)}
+                  className="bg-amber-50/60 hover:bg-amber-100 border border-amber-200 rounded-lg p-2 text-left transition-all active:scale-95 flex items-center justify-between group"
+                >
+                  <div className="flex items-center gap-1.5">
+                    <span className="text-[10px] font-black text-amber-800 bg-white px-1.5 py-0.2 rounded border border-amber-200">
+                      #{idx + 1}
+                    </span>
+                    <span className="font-mono font-black text-sm text-slate-900">
+                      {item.middle}xx
+                    </span>
+                  </div>
+                  <span className="text-[10px] font-bold text-amber-800 font-mono">
+                    {item.count} {lang === 'bn' ? 'বার' : 'hits'}
+                  </span>
+                </button>
+              ))}
+            </div>
+          </div>
         </div>
       </div>
 

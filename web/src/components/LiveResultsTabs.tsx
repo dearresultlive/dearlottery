@@ -7,6 +7,7 @@ import {
   getSlotCountdown
 } from '../lib/lottery-utils';
 import { useLanguage } from '../lib/i18n';
+import { analyzeNumberHistory } from '../lib/history-analytics';
 
 interface PrizeData {
   first_prize?: { series: string; number: string };
@@ -287,6 +288,11 @@ export default function LiveResultsTabs({
   const fourthPrizes = declaredPrizes.fourth_prize || [];
   const fifthPrizes = declaredPrizes.fifth_prize || [];
 
+  const firstPrizeHistory = useMemo(() => {
+    if (!firstPrize.number) return null;
+    return analyzeNumberHistory(firstPrize.number, activeDateStr);
+  }, [firstPrize.number, activeDateStr]);
+
   const pdfUrl = `/pdf/${activeDateStr}/${activeSlot.toLowerCase()}.pdf`;
   const sheetSvgUrl = `/api/gazette-sheet.svg?date=${activeDateStr}&slot=${activeSlot.toLowerCase()}`;
   const activeSheetUrl = hasPrizes
@@ -492,84 +498,171 @@ export default function LiveResultsTabs({
 
       {/* 2. Lottery Sambad Winning Result Card (.rcard) */}
       {activeStatus === 'RESULT_OUT' ? (
-        <div
-          onClick={() => openImageLightbox(activeSheetUrl)}
-          className={`cursor-pointer relative overflow-hidden rounded-2xl border p-4 sm:p-5 text-center transition-all hover:shadow-md ${
-            activeSlot === '1PM'
-              ? 'bg-[#e9f5db] border-emerald-300'
-              : activeSlot === '6PM'
-              ? 'bg-[#e3eefb] border-blue-300'
-              : 'bg-[#fbe8e8] border-red-300'
-          }`}
-        >
-          {/* Vertical Side Band */}
+        <div className="space-y-2.5">
           <div
-            className={`absolute top-0 right-0 bottom-0 w-8 sm:w-10 flex items-center justify-center overflow-hidden ${
+            onClick={() => openImageLightbox(activeSheetUrl)}
+            className={`cursor-pointer relative overflow-hidden rounded-2xl border p-4 sm:p-5 text-center transition-all hover:shadow-md ${
               activeSlot === '1PM'
-                ? 'bg-[#16a34a] text-[#ffdd00]'
+                ? 'bg-[#e9f5db] border-emerald-300'
                 : activeSlot === '6PM'
-                ? 'bg-[#f5c518] text-[#dc2626]'
-                : 'bg-[#dc2626] text-[#ffdd00]'
+                ? 'bg-[#e3eefb] border-blue-300'
+                : 'bg-[#fbe8e8] border-red-300'
             }`}
           >
-            <span className="font-black text-xs sm:text-sm tracking-wider uppercase -rotate-90 whitespace-nowrap">
-              DEAR {activeSlot.replace('PM', ' PM')}
-            </span>
-          </div>
+            {/* Vertical Side Band */}
+            <div
+              className={`absolute top-0 right-0 bottom-0 w-8 sm:w-10 flex items-center justify-center overflow-hidden ${
+                activeSlot === '1PM'
+                  ? 'bg-[#16a34a] text-[#ffdd00]'
+                  : activeSlot === '6PM'
+                  ? 'bg-[#f5c518] text-[#dc2626]'
+                  : 'bg-[#dc2626] text-[#ffdd00]'
+              }`}
+            >
+              <span className="font-black text-xs sm:text-sm tracking-wider uppercase -rotate-90 whitespace-nowrap">
+                DEAR {activeSlot.replace('PM', ' PM')}
+              </span>
+            </div>
 
-          <div className="pr-8 sm:pr-10">
-            {/* Top Date Header */}
-            <div className="flex items-center justify-between mb-1.5 gap-2">
-              <div className="flex items-center gap-1.5 flex-wrap">
-                <span className="bg-[#e93323] text-white font-extrabold text-xs px-2.5 py-0.5 rounded-md shadow-2xs">
-                  {activeDateStr.split('-').reverse().join('/')}
+            <div className="pr-8 sm:pr-10">
+              {/* Top Date Header */}
+              <div className="flex items-center justify-between mb-1.5 gap-2">
+                <div className="flex items-center gap-1.5 flex-wrap">
+                  <span className="bg-[#e93323] text-white font-extrabold text-xs px-2.5 py-0.5 rounded-md shadow-2xs">
+                    {activeDateStr.split('-').reverse().join('/')}
+                  </span>
+                  <span className={`text-[10px] font-black uppercase px-2 py-0.5 rounded-md ${
+                    isYesterday
+                      ? 'bg-amber-100 text-amber-900 border border-amber-300' 
+                      : isPastDate
+                      ? 'bg-blue-100 text-blue-900 border border-blue-300'
+                      : 'bg-emerald-100 text-emerald-900 border border-emerald-300'
+                  }`}>
+                    {isYesterday
+                      ? (activeSlot === '8PM'
+                          ? (lang === 'bn' ? 'গতরাতের ৮টা' : lang === 'hi' ? 'कल रात 8 बजे' : 'LAST NIGHT 8PM')
+                          : (lang === 'bn' ? 'গতকাল' : lang === 'hi' ? 'कल' : 'YESTERDAY'))
+                      : isPastDate
+                      ? (lang === 'bn' ? 'পুরনো রেকর্ড' : lang === 'hi' ? 'पुराना रिकॉर्ड' : 'ARCHIVE')
+                      : (lang === 'bn' ? 'আজকের' : lang === 'hi' ? 'आज' : 'TODAY')}
+                  </span>
+                </div>
+                <span className="text-xs text-slate-600 font-bold truncate">
+                  {currentDraw?.draw_name || 'DEAR LOTTERY'} • #{currentDraw?.draw_number || '74'}
                 </span>
-                <span className={`text-[10px] font-black uppercase px-2 py-0.5 rounded-md ${
-                  isYesterday
-                    ? 'bg-amber-100 text-amber-900 border border-amber-300' 
-                    : isPastDate
-                    ? 'bg-blue-100 text-blue-900 border border-blue-300'
-                    : 'bg-emerald-100 text-emerald-900 border border-emerald-300'
+              </div>
+
+              {/* Massive 1st Prize Number */}
+              <div className="py-2">
+                <span className="text-[11px] font-black uppercase tracking-wider text-slate-600 block mb-0.5">
+                  {lang === 'bn' ? '১ম পুরস্কার • 1st Prize ₹1 Crore Winner' : lang === 'hi' ? 'प्रथम पुरस्कार • 1st Prize ₹1 Crore Winner' : '1st Prize • ₹1 Crore Winner'}
+                </span>
+                <div className={`first-prize-num font-mono font-black text-4xl sm:text-6xl tracking-widest ${
+                  activeSlot === '1PM' ? 'text-[#2c65c5]' : activeSlot === '6PM' ? 'text-[#dc2626]' : 'text-[#32733b]'
                 }`}>
-                  {isYesterday
-                    ? (activeSlot === '8PM'
-                        ? (lang === 'bn' ? 'গতরাতের ৮টা' : lang === 'hi' ? 'कल रात 8 बजे' : 'LAST NIGHT 8PM')
-                        : (lang === 'bn' ? 'গতকাল' : lang === 'hi' ? 'कल' : 'YESTERDAY'))
-                    : isPastDate
-                    ? (lang === 'bn' ? 'পুরনো রেকর্ড' : lang === 'hi' ? 'पुराना रिकॉर्ड' : 'ARCHIVE')
-                    : (lang === 'bn' ? 'আজকের' : lang === 'hi' ? 'আজ' : 'TODAY')}
+                  {firstPrize.series} {firstPrize.number}
+                </div>
+                <span className="sr-only speakable-summary">
+                  Dear Lottery {activeSlot} 1st prize 1 crore winning ticket number is {firstPrize.series} {firstPrize.number} for draw date {activeDateStr}.
                 </span>
               </div>
-              <span className="text-xs text-slate-600 font-bold truncate">
-                {currentDraw?.draw_name || 'DEAR LOTTERY'} • #{currentDraw?.draw_number || '74'}
-              </span>
-            </div>
 
-            {/* Massive 1st Prize Number */}
-            <div className="py-2">
-              <span className="text-[11px] font-black uppercase tracking-wider text-slate-600 block mb-0.5">
-                {lang === 'bn' ? '১ম পুরস্কার • 1st Prize ₹1 Crore Winner' : lang === 'hi' ? 'प्रथम पुरस्कार • 1st Prize ₹1 Crore Winner' : '1st Prize • ₹1 Crore Winner'}
-              </span>
-              <div className={`first-prize-num font-mono font-black text-4xl sm:text-6xl tracking-widest ${
-                activeSlot === '1PM' ? 'text-[#2c65c5]' : activeSlot === '6PM' ? 'text-[#dc2626]' : 'text-[#32733b]'
-              }`}>
-                {firstPrize.series} {firstPrize.number}
+              {/* Consolation info */}
+              <div className="text-[11px] font-bold text-slate-500">
+                {lang === 'bn'
+                  ? `সান্ত্বনা পুরস্কার: ₹১,০০০ • ${firstPrize.number} অন্য সব সিরিজ`
+                  : lang === 'hi'
+                  ? `सांत्वना पुरस्कार: ₹1,000 • ${firstPrize.number} अन्य सभी सीरीज`
+                  : `Consolation Prize: ₹1,000 • ${firstPrize.number} Remaining Series`}
               </div>
-              <span className="sr-only speakable-summary">
-                Dear Lottery {activeSlot} 1st prize 1 crore winning ticket number is {firstPrize.series} {firstPrize.number} for draw date {activeDateStr}.
-              </span>
-            </div>
 
-            {/* Consolation info */}
-            <div className="text-[11px] font-bold text-slate-500">
-              {lang === 'bn'
-                ? `সান্ত্বনা পুরস্কার: ₹১,০০০ • ${firstPrize.number} অন্য সব সিরিজ`
-                : lang === 'hi'
-                ? `सांत्वना पुरस्कार: ₹1,000 • ${firstPrize.number} अन्य सभी सीरीज`
-                : `Consolation Prize: ₹1,000 • ${firstPrize.number} Remaining Series`}
             </div>
-
           </div>
+
+          {/* Historical Win & Pattern Intelligence Card */}
+          {firstPrizeHistory && (
+            <div className="bg-white border border-slate-200 rounded-xl sm:rounded-2xl p-3 sm:p-3.5 text-left shadow-2xs space-y-2.5">
+              <div className="flex items-center justify-between border-b border-slate-100 pb-1.5 flex-wrap gap-1.5">
+                <div className="flex items-center gap-1.5 text-xs font-black text-slate-900">
+                  <span className="text-sm">📜</span>
+                  <span>
+                    {lang === 'bn'
+                      ? 'ঐতিহাসিক জয় ও ফ্রিকোয়েন্সি বিশ্লেষণ'
+                      : lang === 'hi'
+                      ? 'ऐतिहासिक जीत और फ्रीक्वेंसी विश्लेषण'
+                      : 'Historical Win & Frequency Intelligence'}
+                  </span>
+                </div>
+                <div className="flex items-center gap-1">
+                  <span className="text-[10px] font-black uppercase px-2 py-0.5 rounded-md bg-amber-100 text-amber-900 border border-amber-300">
+                    🔥 {lang === 'bn' ? 'হট স্কোর' : lang === 'hi' ? 'हॉट स्कोर' : 'Hot Score'}: {firstPrizeHistory.hotScore}/100
+                  </span>
+                </div>
+              </div>
+
+              {/* Main Insight Summary */}
+              <p className="text-xs text-slate-700 leading-snug font-medium">
+                {lang === 'bn'
+                  ? firstPrizeHistory.summaryBn
+                  : lang === 'hi'
+                  ? firstPrizeHistory.summaryHi
+                  : firstPrizeHistory.summaryEn}
+              </p>
+
+              {/* 3-Pill Stat Badges */}
+              <div className="grid grid-cols-3 gap-1.5">
+                <div className="bg-slate-50 border border-slate-200 rounded-lg p-2 text-center">
+                  <span className="text-[9px] font-bold text-slate-500 uppercase block">
+                    {lang === 'bn' ? 'শেষ ২-ডিজিট' : lang === 'hi' ? 'अंतिम 2-अंक' : 'Last 2 Digits'}
+                  </span>
+                  <span className="font-mono font-black text-xs sm:text-sm text-blue-700 block">
+                    ..{firstPrizeHistory.last2Digits}
+                  </span>
+                  <span className="text-[9px] font-medium text-slate-500 block truncate">
+                    #{firstPrizeHistory.last2Rank} {lang === 'bn' ? 'র‍্যাংক' : lang === 'hi' ? 'रैंक' : 'Rank'} ({firstPrizeHistory.last2Frequency})
+                  </span>
+                </div>
+
+                <div className="bg-slate-50 border border-slate-200 rounded-lg p-2 text-center">
+                  <span className="text-[9px] font-bold text-slate-500 uppercase block">
+                    {lang === 'bn' ? 'মিডিল পেয়ার' : lang === 'hi' ? 'मिडिल पेयर' : 'Middle Pair'}
+                  </span>
+                  <span className="font-mono font-black text-xs sm:text-sm text-emerald-700 block">
+                    {firstPrizeHistory.middlePair}xx
+                  </span>
+                  <span className="text-[9px] font-medium text-slate-500 block truncate">
+                    #{firstPrizeHistory.middleRank} {lang === 'bn' ? 'র‍্যাংক' : lang === 'hi' ? 'रैंक' : 'Rank'} ({firstPrizeHistory.middleFrequency})
+                  </span>
+                </div>
+
+                <div className="bg-slate-50 border border-slate-200 rounded-lg p-2 text-center">
+                  <span className="text-[9px] font-bold text-slate-500 uppercase block">
+                    {lang === 'bn' ? 'মোট অতীত জয়' : lang === 'hi' ? 'कुल पिछली जीत' : 'Past Gazette Wins'}
+                  </span>
+                  <span className="font-mono font-black text-xs sm:text-sm text-amber-700 block">
+                    {firstPrizeHistory.totalHistoricalHits}
+                  </span>
+                  <span className="text-[9px] font-medium text-slate-500 block truncate">
+                    {firstPrizeHistory.lastSeenDate ? firstPrizeHistory.lastSeenDate.split('-').reverse().join('/') : (lang === 'bn' ? 'নতুন নম্বর' : 'New Pattern')}
+                  </span>
+                </div>
+              </div>
+
+              {/* If exact wins in previous draws */}
+              {firstPrizeHistory.exactWins.length > 0 && (
+                <div className="bg-emerald-50 border border-emerald-200 rounded-lg p-2 text-[11px] text-emerald-950 font-medium flex items-center gap-1.5">
+                  <span>🏆</span>
+                  <span>
+                    {lang === 'bn'
+                      ? `হুবহু এই নম্বর ${firstPrizeHistory.cleanNumber} এর আগে ${firstPrizeHistory.exactWins[0].drawDate.split('-').reverse().join('/')} তারিখে (${firstPrizeHistory.exactWins[0].drawTime}) ${firstPrizeHistory.exactWins[0].prizeRank} জিতেছিল!`
+                      : lang === 'hi'
+                      ? `यह सटीक नंबर ${firstPrizeHistory.cleanNumber} पहले ${firstPrizeHistory.exactWins[0].drawDate.split('-').reverse().join('/')} को (${firstPrizeHistory.exactWins[0].drawTime}) ${firstPrizeHistory.exactWins[0].prizeRank} जीत चुका है!`
+                      : `Exact ticket ${firstPrizeHistory.cleanNumber} previously won ${firstPrizeHistory.exactWins[0].prizeRank} on ${firstPrizeHistory.exactWins[0].drawDate.split('-').reverse().join('/')} (${firstPrizeHistory.exactWins[0].drawTime})!`}
+                  </span>
+                </div>
+              )}
+            </div>
+          )}
         </div>
       ) : activeStatus === 'DRAWING' ? (
         <div className="bg-white border-2 border-red-300 rounded-2xl p-6 text-center space-y-3 shadow-sm">

@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { parseTicketInput, formatINR } from '../lib/lottery-utils';
 import { useLanguage } from '../lib/i18n';
 import confetti from 'canvas-confetti';
+import { analyzeNumberHistory, type NumberHistoryAnalysis } from '../lib/history-analytics';
 
 interface MatchResult {
   drawName: string;
@@ -25,6 +26,7 @@ export default function TicketChecker({ initialDraws = [], variant = 'slim' }: T
   const [isSearching, setIsSearching] = useState(false);
   const [hasSearched, setHasSearched] = useState(false);
   const [matches, setMatches] = useState<MatchResult[]>([]);
+  const [historyAnalysis, setHistoryAnalysis] = useState<NumberHistoryAnalysis | null>(null);
   const debounceRef = useRef<any>(null);
 
   const triggerConfetti = () => {
@@ -43,12 +45,17 @@ export default function TicketChecker({ initialDraws = [], variant = 'slim' }: T
     if (cleanNumOnly.length < 4) {
       setHasSearched(false);
       setMatches([]);
+      setHistoryAnalysis(null);
       return;
     }
 
     setIsSearching(true);
     setHasSearched(true);
     setMatches([]);
+
+    // Sub-millisecond historical analytics calculation
+    const history = analyzeNumberHistory(cleanNumOnly);
+    setHistoryAnalysis(history);
 
     const { series, number } = parseTicketInput(raw);
     const clientMatches: MatchResult[] = [];
@@ -217,6 +224,7 @@ export default function TicketChecker({ initialDraws = [], variant = 'slim' }: T
     } else {
       setHasSearched(false);
       setMatches([]);
+      setHistoryAnalysis(null);
     }
   };
 
@@ -266,6 +274,7 @@ export default function TicketChecker({ initialDraws = [], variant = 'slim' }: T
                 setTicketInput('');
                 setHasSearched(false);
                 setMatches([]);
+                setHistoryAnalysis(null);
               }}
               className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-700 font-bold p-1 text-xs"
               aria-label="Clear input"
@@ -368,6 +377,101 @@ export default function TicketChecker({ initialDraws = [], variant = 'slim' }: T
                 <span><span className="font-mono font-bold text-slate-900">{ticketInput}</span> नंबर पर कोई पुरस्कार नहीं मिला। अन्य ड्रा या नंबर जांचें।</span>
               ) : (
                 <span>No winning match found for ticket <span className="font-mono font-bold text-slate-900">{ticketInput}</span>. Try checking another draw.</span>
+              )}
+            </div>
+          )}
+
+          {/* Historical Record & Pattern Intelligence Card */}
+          {historyAnalysis && (
+            <div className="mt-3 bg-slate-50 border border-slate-200/90 rounded-xl p-3 sm:p-3.5 space-y-2.5 text-left shadow-2xs animate-in fade-in duration-200">
+              <div className="flex items-center justify-between border-b border-slate-200 pb-1.5 flex-wrap gap-1">
+                <div className="flex items-center gap-1.5 text-xs font-black text-slate-900">
+                  <span>📜</span>
+                  <span>
+                    {lang === 'bn'
+                      ? `ঐতিহাসিক রেকর্ড ও ফ্রিকোয়েন্সি (${historyAnalysis.cleanNumber})`
+                      : lang === 'hi'
+                      ? `ऐतिहासिक रिकॉर्ड और फ्रीक्वेंसी (${historyAnalysis.cleanNumber})`
+                      : `Historical Record & Pattern Stats (${historyAnalysis.cleanNumber})`}
+                  </span>
+                </div>
+                <span className="text-[10px] font-black uppercase px-2 py-0.5 rounded-md bg-amber-100 text-amber-900 border border-amber-300">
+                  🔥 {lang === 'bn' ? 'হট স্কোর' : lang === 'hi' ? 'हॉट स्कोर' : 'Hot Score'}: {historyAnalysis.hotScore}/100
+                </span>
+              </div>
+
+              <p className="text-xs text-slate-700 leading-snug font-medium">
+                {lang === 'bn' ? historyAnalysis.summaryBn : lang === 'hi' ? historyAnalysis.summaryHi : historyAnalysis.summaryEn}
+              </p>
+
+              {/* Stats Badges */}
+              <div className="grid grid-cols-3 gap-2">
+                <div className="bg-white border border-slate-200 rounded-lg p-2 text-center">
+                  <span className="text-[9px] font-bold text-slate-500 uppercase block">
+                    {lang === 'bn' ? 'শেষ ২-ডিজিট' : lang === 'hi' ? 'अंतिम 2-अंक' : 'Ending Rank'}
+                  </span>
+                  <span className="font-mono font-black text-xs sm:text-sm text-blue-700 block">
+                    ..{historyAnalysis.last2Digits}
+                  </span>
+                  <span className="text-[9px] font-medium text-slate-500 block truncate">
+                    #{historyAnalysis.last2Rank} / 100 ({historyAnalysis.last2Frequency} {lang === 'bn' ? 'বার' : 'hits'})
+                  </span>
+                </div>
+
+                <div className="bg-white border border-slate-200 rounded-lg p-2 text-center">
+                  <span className="text-[9px] font-bold text-slate-500 uppercase block">
+                    {lang === 'bn' ? 'মিডিল পেয়ার' : lang === 'hi' ? 'मिडिल पेयर' : 'Middle Rank'}
+                  </span>
+                  <span className="font-mono font-black text-xs sm:text-sm text-emerald-700 block">
+                    {historyAnalysis.middlePair}xx
+                  </span>
+                  <span className="text-[9px] font-medium text-slate-500 block truncate">
+                    #{historyAnalysis.middleRank} / 100 ({historyAnalysis.middleFrequency} {lang === 'bn' ? 'বার' : 'hits'})
+                  </span>
+                </div>
+
+                <div className="bg-white border border-slate-200 rounded-lg p-2 text-center">
+                  <span className="text-[9px] font-bold text-slate-500 uppercase block">
+                    {lang === 'bn' ? 'অতীত গেজেট জয়' : lang === 'hi' ? 'पिछली जीत' : 'Past Wins'}
+                  </span>
+                  <span className="font-mono font-black text-xs sm:text-sm text-amber-700 block">
+                    {historyAnalysis.totalHistoricalHits}
+                  </span>
+                  <span className="text-[9px] font-medium text-slate-500 block truncate">
+                    {historyAnalysis.lastSeenDate ? historyAnalysis.lastSeenDate.split('-').reverse().join('/') : (lang === 'bn' ? 'নতুন নম্বর' : 'New Combo')}
+                  </span>
+                </div>
+              </div>
+
+              {/* Past Exact Wins List */}
+              {historyAnalysis.exactWins.length > 0 && (
+                <div className="bg-emerald-50 border border-emerald-300 rounded-lg p-2 space-y-1">
+                  <span className="text-[10px] font-black text-emerald-900 uppercase block">
+                    🏆 {lang === 'bn' ? 'বিগত ড্র-তে হুবহু জয়:' : lang === 'hi' ? 'पिछले ड्रॉ में सटीक जीत:' : 'Past Exact Wins in Gazette Archive:'}
+                  </span>
+                  {historyAnalysis.exactWins.slice(0, 3).map((win, idx) => (
+                    <div key={idx} className="flex items-center justify-between text-xs text-emerald-950 font-bold border-t border-emerald-200/60 pt-1 first:border-0 first:pt-0">
+                      <span>📅 {win.drawDate.split('-').reverse().join('/')} ({win.drawTime})</span>
+                      <span className="text-emerald-800">{win.prizeRank} • {formatINR(win.prizeAmount)}</span>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              {/* Past 4-digit Wins List */}
+              {historyAnalysis.exactWins.length === 0 && historyAnalysis.last4Wins.length > 0 && (
+                <div className="bg-blue-50 border border-blue-200 rounded-lg p-2 space-y-1">
+                  <span className="text-[10px] font-black text-blue-900 uppercase block">
+                    🎯 {lang === 'bn' ? 'বিগত ড্র-তে শেষ ৪ সংখ্যার জয়:' : lang === 'hi' ? 'पिछले ड्रॉ में अंतिम 4 अंकों की जीत:' : 'Past 4-Digit Matches:'}
+                  </span>
+                  <div className="text-[11px] text-blue-950 font-medium">
+                    {lang === 'bn' 
+                      ? `শেষ ৪ ডিজিট '${historyAnalysis.cleanNumber.slice(-4)}' এর আগে ${historyAnalysis.last4Wins.length} বার প্রাইজ পেয়েছে (সর্বশেষ ${historyAnalysis.last4Wins[0].drawDate.split('-').reverse().join('/')} তারিখে ${historyAnalysis.last4Wins[0].prizeRank})।`
+                      : lang === 'hi'
+                      ? `अंतिम 4 अंक '${historyAnalysis.cleanNumber.slice(-4)}' पहले ${historyAnalysis.last4Wins.length} बार पुरस्कार जीत चुका है (हाल ही में ${historyAnalysis.last4Wins[0].drawDate.split('-').reverse().join('/')})।`
+                      : `Last 4 digits '${historyAnalysis.cleanNumber.slice(-4)}' won in ${historyAnalysis.last4Wins.length} previous draws (last seen ${historyAnalysis.last4Wins[0].drawDate.split('-').reverse().join('/')}).`}
+                  </div>
+                </div>
               )}
             </div>
           )}
