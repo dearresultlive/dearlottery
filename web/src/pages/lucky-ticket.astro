@@ -14,12 +14,29 @@ const yesterdayDateStr = getISTDateString(yesterday);
 const todayDraws = await fetchLatestDraws();
 const yesterdayDraws = await fetchDrawsByDate(yesterdayDateStr);
 const allDraws = [...todayDraws, ...yesterdayDraws];
+
+// FAQ Items for Google Rich Snippets & Search Engine Discovery
+const luckyTicketFaqItems = [
+  {
+    question: "ডিয়ার লটারিতে ৫ সেম (5 Sem) টিকিট কী এবং এর দাম কত?",
+    answer: "ডিয়ার লটারিতে রিটেইল কাউন্টারে সাধারণত ১টি টিকিট বিক্রি হয় না, ন্যূনতম ৫ সেম (5 Sem) কেনা হয়। ৫ সেম মানে একই ৫-সংখ্যার ৫টি টিকিট ৫টি ভিন্ন সিরিজে। সরকারি MRP ₹৭ অনুযায়ী ৫ সেমের মোট মূল্য ৩৫ টাকা (৫ × ৭ = ₹৩৫)।"
+  },
+  {
+    question: "৫ সেম টিকিটে ৫ম পুরস্কার বা অন্যান্য পুরস্কার জিতলে কত টাকা পাওয়া যায়?",
+    answer: "সেম টিকিটে যেকোনো পুরস্কার জিতলে মূল পুরস্কারের অর্থ সেম সংখ্যা দিয়ে গুণ হয়। যেমন: ৫ম পুরস্কারের মূল অর্থ ₹১২০। ৫ সেম কাটলে আপনি পাবেন ৫ × ₹১২০ = ₹৬০০। ৩৫ টাকা টিকিটের দাম বাদ দিলে মোট নিট লাভ হয় ₹৫৬৫।"
+  },
+  {
+    question: "লাকি টিকিট সিমুলেটর কি সম্পূর্ণ ফ্রি?",
+    answer: "হ্যাঁ, এটি সম্পূর্ণ বিনামূল্যে শিক্ষামূলক পেপার টিকিট সিমুলেটর। আসল টাকা কাউন্টারে খরচ করার আগে আপনার পছন্দের নম্বর বা হিট ম্যাপ নম্বর টেস্ট করার জন্য এটি তৈরি।"
+  }
+];
 ---
 
 <Layout
-  title={`Dear Lottery Lucky Ticket • Live Paper Simulator (${todayDateStr}) | Lottery Sambad`}
-  description={`Generate and test your Dear Lottery Lucky Tickets for 1:00 PM, 6:00 PM, and 8:00 PM draws. Real-world paper ticket styling, heat map hot numbers, and live profit/loss tracking.`}
+  title={`Dear Lottery Lucky Ticket (লাকি টিকিট) • 5 Sem Simulator (${todayDateStr}) | Lottery Sambad`}
+  description={`Generate and test your Dear Lottery Lucky Tickets for 1:00 PM, 6:00 PM, and 8:00 PM draws. Real 5 Sem booklet simulator, heat map hot numbers, and live profit/loss tracking.`}
   drawDate={todayDateStr}
+  faqItems={luckyTicketFaqItems}
 >
   <div class="max-w-[620px] md:max-w-2xl mx-auto px-2.5 sm:px-4 py-3 space-y-4">
     
@@ -61,6 +78,44 @@ const allDraws = [...todayDraws, ...yesterdayDraws];
         <span>5Y Analytics</span>
       </a>
     </div>
+
+    {/* SEO Rich Educational & FAQ Section */}
+    <section class="bg-white border border-slate-200 rounded-2xl p-4 sm:p-5 text-slate-700 space-y-3.5 shadow-sm text-xs leading-relaxed">
+      <h2 class="text-sm sm:text-base font-black text-slate-900 border-b border-slate-100 pb-2 flex items-center gap-1.5">
+        <span>📖</span>
+        <span>ডিয়ার লটারি সেম ও লাকি টিকিট গাইড (Sem & Prize Rules)</span>
+      </h2>
+
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+        <div class="bg-amber-50/60 border border-amber-200/80 rounded-xl p-3 space-y-1">
+          <span class="font-black text-amber-900 text-xs block">📚 ৫ সেম (5 Sem) টিকিট কী?</span>
+          <p class="text-[11px] text-slate-600">
+            কাউন্টারে ১টি টিকিট সাধারণত বিক্রি হয় না। একই ৫-ডিজিটের ৫টি সিরিজের সেটকে ৫ সেম বলা হয়। অফিসিয়াল দাম: ৫ × ₹৭ = <strong>₹৩৫</strong>।
+          </p>
+        </div>
+
+        <div class="bg-emerald-50/60 border border-emerald-200/80 rounded-xl p-3 space-y-1">
+          <span class="font-black text-emerald-900 text-xs block">💰 ৫ সেম-এ পুরস্কার লাভ কেমন?</span>
+          <p class="text-[11px] text-slate-600">
+            যেকোনো প্রাইজ জিতলে তা ৫ গুণ হয়। যেমন ৫ম প্রাইজ (₹১২০) জিতলে পাওয়া যায় <strong>₹৬০০</strong>। টিকিটের দাম বাদ দিলে লাভ থাকে <strong>₹৫৬৫</strong>।
+          </p>
+        </div>
+      </div>
+
+      <div class="space-y-2 pt-1 border-t border-slate-100">
+        <h3 class="font-bold text-slate-900 text-xs">সচরাচর জিজ্ঞাসিত প্রশ্নাবলী (FAQ):</h3>
+        <div class="space-y-1.5 text-[11px] text-slate-600">
+          <p>
+            <strong>প্র: ১০ সেম বা ২৫ সেম টিকিট কীভাবে হিসাব হয়?</strong><br />
+            উ: ১০ সেম-এর দাম ১০ × ₹৭ = ₹৭০, ৫ম প্রাইজ জিতলে পাওয়া যায় ₹১,২০০। ২৫ সেমের দাম ₹১৭৫, ৫ম প্রাইজ জিতলে পাওয়া যায় ₹৩,০০০।
+          </p>
+          <p>
+            <strong>প্র: খেলা শেষ হওয়ার পর কি টিকিট দেখা যায়?</strong><br />
+            উ: হ্যাঁ, প্রতিটি খেলার ফলাফল প্রকাশিত হওয়ার পরও আপনার কেনা টিকিট তারিখ ও সময় নির্বাচন করে দেখা যায় এবং এতে লাভ-ক্ষতির নিট হিসাব প্রদর্শিত হয়।
+          </p>
+        </div>
+      </div>
+    </section>
 
   </div>
 </Layout>

@@ -9,21 +9,31 @@ interface Props {
     firstPrize?: string;
     secondPrize?: string[];
   };
+  faqItems?: Array<{
+    question: string;
+    answer: string;
+  }>;
 }
 
 const {
   title = "Dear Lottery Result Today 1 PM 6 PM 8 PM Live | Lottery Sambad লটারি সংবাদ",
   description = "Check official Dear Lottery Sambad results today for 1:00 PM, 6:00 PM, and 8:00 PM draws live. Fast sub-300ms ticket checker, 1st prize ₹1 Crore winning numbers, and hot/cold number frequency.",
-  canonicalUrl = Astro.url.href,
+  canonicalUrl,
   drawDate = new Date().toISOString().slice(0, 10),
   drawTime,
-  winningNumbers
+  winningNumbers,
+  faqItems
 } = Astro.props;
 
 const currentPath = Astro.url.pathname;
 const cleanPath = currentPath === '/' ? '/' : currentPath.replace(/\/+$/, '');
 const host = Astro.url.origin.includes('localhost') ? Astro.url.origin : 'https://dearresultlive.in';
 const cleanCanonical = canonicalUrl ? canonicalUrl.split('?')[0] : `${host}${cleanPath}`;
+
+// Granular page classification for precision Schema.org structured data
+const isResultPage = currentPath === '/' || currentPath.startsWith('/results') || currentPath === '/yesterday';
+const isLuckyTicketPage = currentPath === '/lucky-ticket' || currentPath === '/demo';
+const isCheckerPage = currentPath === '/checker';
 
 // Determine exact publication timestamp based on slot in IST (+05:30)
 const pubHour = drawTime?.includes('6') ? '18:00:00+05:30' : drawTime?.includes('8') ? '20:00:00+05:30' : '13:00:00+05:30';
@@ -96,35 +106,66 @@ const breadcrumbSchema = {
 };
 
 // 4. FAQ Schema for Rich Snippets
+const defaultFaqItems = [
+  {
+    question: "What time are Dear Lottery results published today?",
+    answer: "Dear Lottery draws are conducted three times daily at 1:00 PM (Morning), 6:00 PM (Day), and 8:00 PM (Evening/Night) under the authority of the Nagaland & Sikkim State Lotteries."
+  },
+  {
+    question: "How much is the 1st prize in Dear Lottery Sambad?",
+    answer: "The first prize for Dear Lottery is ₹1 Crore (₹10,000,000) including super prize amount, awarded to the ticket matching the exact series (e.g., 84D) and 5-digit number."
+  },
+  {
+    question: "How to check Dear Lottery ticket online?",
+    answer: "Visit https://dearresultlive.in/checker and enter your ticket number or just the last 4-5 digits to verify against 1st, 2nd, 3rd, 4th, 5th, and Consolation prizes instantly."
+  }
+];
+
+const effectiveFaqItems = faqItems && faqItems.length > 0 ? faqItems : defaultFaqItems;
+
 const faqSchema = {
   "@context": "https://schema.org",
   "@type": "FAQPage",
-  "mainEntity": [
-    {
-      "@type": "Question",
-      "name": "What time are Dear Lottery results published today?",
-      "acceptedAnswer": {
-        "@type": "Answer",
-        "text": "Dear Lottery draws are conducted three times daily at 1:00 PM (Morning), 6:00 PM (Day), and 8:00 PM (Evening/Night) under the authority of the Nagaland & Sikkim State Lotteries."
-      }
-    },
-    {
-      "@type": "Question",
-      "name": "How much is the 1st prize in Dear Lottery Sambad?",
-      "acceptedAnswer": {
-        "@type": "Answer",
-        "text": "The first prize for Dear Lottery is ₹1 Crore (₹10,000,000) including super prize amount, awarded to the ticket matching the exact series (e.g., 84D) and 5-digit number."
-      }
-    },
-    {
-      "@type": "Question",
-      "name": "How to check Dear Lottery ticket online?",
-      "acceptedAnswer": {
-        "@type": "Answer",
-        "text": "Visit https://dearresultlive.in/checker and enter your ticket number or just the last 4-5 digits to verify against 1st, 2nd, 3rd, 4th, 5th, and Consolation prizes instantly."
-      }
+  "mainEntity": effectiveFaqItems.map(item => ({
+    "@type": "Question",
+    "name": item.question,
+    "acceptedAnswer": {
+      "@type": "Answer",
+      "text": item.answer
     }
-  ]
+  }))
+};
+
+// WebApplication Schema for Lucky Ticket Simulator
+const webAppSchema = {
+  "@context": "https://schema.org",
+  "@type": "WebApplication",
+  "name": "Dear Lottery Lucky Ticket (লাকি টিকিট) • 5 Sem Simulator",
+  "url": cleanCanonical,
+  "description": description,
+  "applicationCategory": "EducationalApplication",
+  "operatingSystem": "All",
+  "offers": {
+    "@type": "Offer",
+    "price": "0",
+    "priceCurrency": "INR"
+  }
+};
+
+// WebApplication Schema for Ticket Checker
+const checkerAppSchema = {
+  "@context": "https://schema.org",
+  "@type": "WebApplication",
+  "name": "Dear Lottery Instant Ticket Checker",
+  "url": cleanCanonical,
+  "description": description,
+  "applicationCategory": "UtilityApplication",
+  "operatingSystem": "All",
+  "offers": {
+    "@type": "Offer",
+    "price": "0",
+    "priceCurrency": "INR"
+  }
 };
 
 // 5. JSON-LD Table & Dataset Schema
@@ -279,11 +320,13 @@ const speakableSchema = {
     });
   </script>
 
-  <!-- Complete Structured Data Schemas -->
+  <!-- Precision Structured Data Schemas -->
   <script type="application/ld+json" set:html={JSON.stringify(websiteSchema)} />
   <script type="application/ld+json" set:html={JSON.stringify(breadcrumbSchema)} />
-  <script type="application/ld+json" set:html={JSON.stringify(lotterySchema)} />
+  {isResultPage && <script type="application/ld+json" set:html={JSON.stringify(lotterySchema)} />}
+  {isResultPage && <script type="application/ld+json" set:html={JSON.stringify(tableDatasetSchema)} />}
+  {isResultPage && <script type="application/ld+json" set:html={JSON.stringify(speakableSchema)} />}
+  {isLuckyTicketPage && <script type="application/ld+json" set:html={JSON.stringify(webAppSchema)} />}
+  {isCheckerPage && <script type="application/ld+json" set:html={JSON.stringify(checkerAppSchema)} />}
   <script type="application/ld+json" set:html={JSON.stringify(faqSchema)} />
-  <script type="application/ld+json" set:html={JSON.stringify(tableDatasetSchema)} />
-  <script type="application/ld+json" set:html={JSON.stringify(speakableSchema)} />
 </head>

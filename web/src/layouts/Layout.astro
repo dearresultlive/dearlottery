@@ -13,9 +13,13 @@ interface Props {
     firstPrize?: string;
     secondPrize?: string[];
   };
+  faqItems?: Array<{
+    question: string;
+    answer: string;
+  }>;
 }
 
-const { title, description, drawDate, drawTime, winningNumbers } = Astro.props;
+const { title, description, drawDate, drawTime, winningNumbers, faqItems } = Astro.props;
 const currentPath = Astro.url.pathname;
 const isHomeActive = currentPath === '/' || currentPath.startsWith('/results');
 const isLuckyActive = currentPath === '/lucky-ticket' || currentPath === '/demo';
@@ -31,6 +35,7 @@ const isCheckerActive = currentPath === '/checker';
     drawDate={drawDate}
     drawTime={drawTime}
     winningNumbers={winningNumbers}
+    faqItems={faqItems}
   />
   <script is:inline>
     try {

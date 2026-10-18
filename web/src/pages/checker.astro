@@ -11,11 +11,27 @@ yesterday.setDate(yesterday.getDate() - 1);
 const draws = await fetchLatestDraws();
 const yesterdayDraws = await fetchDrawsByDate(getISTDateString(yesterday));
 const checkerDraws = [...draws, ...yesterdayDraws];
+
+const checkerFaqItems = [
+  {
+    question: "How to check Dear Lottery ticket online?",
+    answer: "Enter your 5-digit ticket number or the last 4 digits in the checker tool above. The checker instantly scans 1st prize ₹1 Crore, 2nd, 3rd, 4th, 5th, and consolation prize lists across today and yesterday's draws."
+  },
+  {
+    question: "Do I need to enter the series letter to check my ticket?",
+    answer: "No, entering just the 5 digits or last 4 digits will check all 3rd, 4th, and 5th prizes. The series letter (e.g., 84D) is only required to verify the 1st prize ₹1 Crore match."
+  },
+  {
+    question: "How much is the consolation prize and how to qualify?",
+    answer: "The consolation prize is ₹1,000. It is awarded when your ticket matches all 5 digits of the 1st prize winning ticket, but under a different series."
+  }
+];
 ---
 
 <Layout
   title="Dear Lottery Instant Ticket Checker Online | Check 1st to 5th Prize"
   description="Check your Dear Lottery ticket number online instantly. Search by last 4-5 digits or full ticket number to see if you won 1st prize ₹1 Crore, 2nd, 3rd, 4th, or 5th prize."
+  faqItems={checkerFaqItems}
 >
   <div class="max-w-[620px] md:max-w-2xl lg:max-w-3xl mx-auto px-2.5 sm:px-4 py-2 sm:py-4 space-y-3 sm:space-y-4">
     

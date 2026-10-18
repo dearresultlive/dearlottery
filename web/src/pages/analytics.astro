@@ -10,43 +10,28 @@ const todayDateStr = getISTDateString(istNow);
 const draws = await fetchLatestDraws();
 const initialNumber = Astro.url.searchParams.get('number') || '';
 
-// Schema.org FAQ structured data for SEO
-const faqSchema = {
-  "@context": "https://schema.org",
-  "@type": "FAQPage",
-  "mainEntity": [
-    {
-      "@type": "Question",
-      "name": "How many years of Dear Lottery historical results are analyzed?",
-      "acceptedAnswer": {
-        "@type": "Answer",
-        "text": "Our database analyzes 5 full years (5,478+ official draws from 2021 to 2026) across all 1:00 PM, 6:00 PM, and 8:00 PM draws for 1st prize, 2nd prize, and 5th prize numbers."
-      }
-    },
-    {
-      "@type": "Question",
-      "name": "Do same ticket numbers repeat in Dear Lottery?",
-      "acceptedAnswer": {
-        "@type": "Answer",
-        "text": "Yes, historical state gazette records confirm that certain 5-digit numbers and recurring 4-digit sequences have won 1st, 2nd, and consolation prizes multiple times across multi-year spans."
-      }
-    },
-    {
-      "@type": "Question",
-      "name": "What is the difference between 1-Year, 3-Year, and 5-Year analysis?",
-      "acceptedAnswer": {
-        "@type": "Answer",
-        "text": "1-Year analysis shows current short-term momentum and recent repeating trends. 3-Year and 5-Year analyses provide statistically significant long-term frequency rankings and historical win dates."
-      }
-    }
-  ]
-};
+// Schema.org FAQ items for SEO Rich Snippets
+const analyticsFaqItems = [
+  {
+    question: "How many years of Dear Lottery historical results are analyzed?",
+    answer: "Our database analyzes 5 full years (5,478+ official draws from 2021 to 2026) across all 1:00 PM, 6:00 PM, and 8:00 PM draws for 1st prize, 2nd prize, and 5th prize numbers."
+  },
+  {
+    question: "Do same ticket numbers repeat in Dear Lottery?",
+    answer: "Yes, historical state gazette records confirm that certain 5-digit numbers and recurring 4-digit sequences have won 1st, 2nd, and consolation prizes multiple times across multi-year spans."
+  },
+  {
+    question: "What is the difference between 1-Year, 3-Year, and 5-Year analysis?",
+    answer: "1-Year analysis shows current short-term momentum and recent repeating trends. 3-Year and 5-Year analyses provide statistically significant long-term frequency rankings and historical win dates."
+  }
+];
 ---
 
 <Layout
   title={`Dear Lottery 5-Year Historical Intelligence & Number Analytics (1Y, 3Y, 5Y) • Repeating Numbers`}
   description={`Search 5-year official Dear Lottery winning history (2021-2026). Find repeating numbers, past winning dates, draw times (1PM, 6PM, 8PM), and multi-year frequency analytics with zero latency.`}
   drawDate={todayDateStr}
+  faqItems={analyticsFaqItems}
 >
   <script type="application/ld+json" set:html={JSON.stringify(faqSchema)} />
 

@@ -16,13 +16,27 @@ const yesterdayDateStr = getISTDateString(yesterday);
 const analytics = await fetchFrequencyAnalytics();
 const draws = await fetchLatestDraws();
 const yesterdayDraws = await fetchDrawsByDate(yesterdayDateStr);
-const checkerDraws = [...draws, ...yesterdayDraws];
+const targetFaqItems = [
+  {
+    question: "What is a Middle Number (মিডিল) in Dear Lottery?",
+    answer: "In Dear Lottery 5-digit numbers (e.g. 29813), the middle two digits (e.g. 98) are known as the Middle Number. Retailers classify tickets by middle sets such as 50-middle or 80-middle."
+  },
+  {
+    question: "Can Dear Lottery winning numbers be predicted accurately?",
+    answer: "No system can predict numbers with 100% certainty as draws use mechanical air-mix machines. However, statistical tracking of repeat middle numbers, digit heatmaps, and high-frequency endings helps players identify historical momentum."
+  },
+  {
+    question: "How do 5th prize numbers work?",
+    answer: "Every Dear Lottery draw awards 1,000 fifth prizes of ₹120 each based on the last 4 digits of tickets across all active series."
+  }
+];
 ---
 
 <Layout
   title={`Dear Lottery Target & Hot Numbers Today (${todayDateStr}) • Common Numbers & Heatmap`}
   description={`Dear Lottery target numbers and hot repeating numbers today (${todayDateStr}) for 1:00 PM, 6:00 PM, and 8:00 PM draws. Hot middle pairs, high-frequency 2-digit endings, 30-day repeat frequency, and digit heatmaps for Nagaland & Sikkim lotteries.`}
   drawDate={todayDateStr}
+  faqItems={targetFaqItems}
 >
   <div class="max-w-[620px] md:max-w-2xl lg:max-w-3xl mx-auto px-2.5 sm:px-4 py-2 sm:py-4 space-y-4">
     
