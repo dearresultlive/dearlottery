@@ -1,0 +1,49 @@
+---
+interface Props {
+  variant?: 'banner' | 'card' | 'compact';
+}
+
+const { variant = 'banner' } = Astro.props;
+---
+
+<div class="relative overflow-hidden bg-gradient-to-r from-[#1785BC] via-[#229ED9] to-[#2BA8E8] text-white p-3 sm:p-3.5 rounded-2xl shadow-sm border border-sky-300/30 flex flex-col sm:flex-row sm:items-center justify-between gap-3 group">
+  {/* Background decorative glow */}
+  <div class="absolute -right-8 -bottom-8 w-32 h-32 bg-white/10 rounded-full blur-xl pointer-events-none group-hover:scale-125 transition-transform"></div>
+
+  <div class="flex items-center gap-3 min-w-0 z-10">
+    <div class="w-10 h-10 sm:w-11 sm:h-11 rounded-xl bg-white/20 backdrop-blur-xs flex items-center justify-center flex-shrink-0 shadow-inner group-hover:scale-105 transition-transform">
+      <svg class="w-6 h-6 fill-white" viewBox="0 0 24 24">
+        <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm4.64 6.8c-.15 1.58-.8 5.42-1.13 7.19-.14.75-.42 1-.68 1.03-.58.05-1.02-.38-1.58-.75-.88-.58-1.38-.94-2.23-1.5-.99-.65-.35-1.01.22-1.59.15-.15 2.71-2.48 2.76-2.69a.2.2 0 00-.05-.18c-.06-.05-.14-.03-.21-.02-.09.02-1.49.95-4.22 2.79-.4.27-.76.41-1.08.4-.36-.01-1.04-.2-1.55-.37-.63-.2-1.12-.31-1.08-.66.02-.18.27-.36.75-.55 2.92-1.27 4.86-2.11 5.83-2.51 2.78-1.16 3.35-1.36 3.73-1.36.08 0 .27.02.39.12.1.08.13.19.14.27-.01.06.01.24 0 .38z"/>
+      </svg>
+    </div>
+    
+    <div class="min-w-0">
+      <div class="flex items-center gap-1.5">
+        <span class="text-xs sm:text-sm font-black uppercase tracking-wider block text-white drop-shadow-xs">
+          <span class="lang-en">Official Telegram Channel</span>
+          <span class="lang-bn">অফিসিয়াল টেলিগ্রাম চ্যানেল</span>
+          <span class="lang-hi">ऑफिशियल टेलीग्राम चैनल</span>
+        </span>
+        <span class="bg-amber-400 text-slate-950 text-[9px] font-black px-1.5 py-0.2 rounded-full uppercase tracking-wider flex-shrink-0 animate-pulse">
+          ⚡ 1-MIN FASTER
+        </span>
+      </div>
+      <p class="text-[11px] sm:text-xs text-sky-100 font-medium">
+        <span class="lang-en">Join <strong>@dearresultlive</strong> for 1st prize ₹1 Cr &amp; gazette PDF alerts!</span>
+        <span class="lang-bn">ড্র হওয়া মাত্র ১ মিনিট আগে রেজাল্ট ও গেজেট PDF পেতে জয়েন করুন!</span>
+        <span class="lang-hi">ड्रॉ होते ही सबसे पहले रिजल्ट और पीडीएफ पाने के लिए जॉइन करें!</span>
+      </p>
+    </div>
+  </div>
+
+  <a
+    href="https://t.me/dearresultlive"
+    target="_blank"
+    rel="noopener noreferrer"
+    class="z-10 bg-white hover:bg-sky-50 text-[#1785BC] font-black text-xs sm:text-sm px-4 py-2 sm:py-2.5 rounded-xl shadow-xs transition-all active:scale-95 flex items-center justify-center gap-1.5 flex-shrink-0 self-stretch sm:self-auto cursor-pointer"
+  >
+    <svg class="w-4 h-4 fill-current" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm4.64 6.8c-.15 1.58-.8 5.42-1.13 7.19-.14.75-.42 1-.68 1.03-.58.05-1.02-.38-1.58-.75-.88-.58-1.38-.94-2.23-1.5-.99-.65-.35-1.01.22-1.59.15-.15 2.71-2.48 2.76-2.69a.2.2 0 00-.05-.18c-.06-.05-.14-.03-.21-.02-.09.02-1.49.95-4.22 2.79-.4.27-.76.41-1.08.4-.36-.01-1.04-.2-1.55-.37-.63-.2-1.12-.31-1.08-.66.02-.18.27-.36.75-.55 2.92-1.27 4.86-2.11 5.83-2.51 2.78-1.16 3.35-1.36 3.73-1.36.08 0 .27.02.39.12.1.08.13.19.14.27-.01.06.01.24 0 .38z"/></svg>
+    <span>Join Channel</span>
+    <span>➔</span>
+  </a>
+</div>

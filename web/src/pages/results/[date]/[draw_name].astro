@@ -2,6 +2,7 @@
 import Layout from '../../../layouts/Layout.astro';
 import LiveResultsTabs from '../../../components/LiveResultsTabs';
 import TicketChecker from '../../../components/TicketChecker';
+import TelegramBanner from '../../../components/TelegramBanner.astro';
 import { fetchDrawsByDate } from '../../../lib/api';
 import { getISTNow, getISTDateString } from '../../../lib/lottery-utils';
 
@@ -83,6 +84,9 @@ const seoDesc = `Official Dear Lottery Sambad result for ${slotHour} draw on ${t
     <section id="checker">
       <TicketChecker client:load initialDraws={allDraws} variant="slim" />
     </section>
+
+    {/* Official Telegram Channel Join CTA */}
+    <TelegramBanner />
 
     {/* Prize Claim Information */}
     <div class="bg-white border border-slate-200 rounded-2xl p-5 sm:p-7 space-y-4 text-slate-700 text-sm shadow-sm">

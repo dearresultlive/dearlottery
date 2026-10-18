@@ -4,6 +4,7 @@ import DrawCountdown from '../components/DrawCountdown';
 import TicketChecker from '../components/TicketChecker';
 import LiveResultsTabs from '../components/LiveResultsTabs';
 import PushNotifyBanner from '../components/PushNotifyBanner';
+import TelegramBanner from '../components/TelegramBanner.astro';
 import { fetchLatestDraws, fetchDrawsByDate, fetchFrequencyAnalytics } from '../lib/api';
 import { getISTNow, getISTDateString } from '../lib/lottery-utils';
 
@@ -36,6 +37,9 @@ const analytics = await fetchFrequencyAnalytics();
     <section id="checker">
       <TicketChecker client:visible initialDraws={checkerDraws} variant="slim" />
     </section>
+
+    {/* Official Telegram Channel Join CTA */}
+    <TelegramBanner />
 
     {/* OneSignal Push Notification Opt-in Prompt (Hydrated When Idle) */}
     <PushNotifyBanner client:idle />
