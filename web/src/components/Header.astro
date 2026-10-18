@@ -89,7 +89,7 @@ const { currentPath = '/' } = Astro.props;
         </a>
         <a
           href="/analytics"
-          class={`px-2 xl:px-3 py-1.5 rounded-xl text-xs xl:text-sm font-black whitespace-nowrap transition-colors ${
+          class={`hidden xl:inline-flex px-2 xl:px-3 py-1.5 rounded-xl text-xs xl:text-sm font-black whitespace-nowrap transition-colors ${
             currentPath === '/analytics'
               ? 'text-blue-700 bg-blue-50 border border-blue-200'
               : 'text-slate-700 hover:text-blue-700 hover:bg-slate-100'
@@ -99,7 +99,7 @@ const { currentPath = '/' } = Astro.props;
         </a>
         <a
           href="/checker"
-          class={`px-2.5 xl:px-3.5 py-1.5 rounded-xl text-xs xl:text-sm font-black whitespace-nowrap transition-colors ${
+          class={`hidden 2xl:inline-flex px-2.5 xl:px-3.5 py-1.5 rounded-xl text-xs xl:text-sm font-black whitespace-nowrap transition-colors ${
             currentPath === '/checker'
               ? 'text-blue-700 bg-blue-50 border border-blue-200'
               : 'text-slate-700 hover:text-blue-700 hover:bg-slate-100'
@@ -109,7 +109,7 @@ const { currentPath = '/' } = Astro.props;
         </a>
       </nav>
 
-      {/* Controls: Notification Bell + Compact App Pill + Telegram (Desktop Only) + Language Toggle */}
+      {/* Controls: Notification Bell + Compact App Pill + Language Toggle */}
       <div class="flex items-center gap-1 sm:gap-2 flex-shrink-0">
         <div id="header-bell-wrapper" class="header-notification-bell-wrapper flex items-center">
           <NotificationBell client:idle />
@@ -126,18 +126,6 @@ const { currentPath = '/' } = Astro.props;
           <span>App</span>
         </button>
 
-        {/* Telegram Pill: Desktop Only (Hidden on Mobile) */}
-        <a
-          href="https://t.me/dearresultlive"
-          target="_blank"
-          rel="noopener noreferrer"
-          class="hidden md:inline-flex items-center gap-1 bg-[#229ED9] hover:bg-[#1E88E5] text-white font-black text-[11px] sm:text-xs px-2 sm:px-2.5 py-1.5 rounded-lg sm:rounded-xl shadow-2xs active:scale-95 transition-all cursor-pointer leading-none"
-          title="Join Dear Result Live Telegram Channel"
-        >
-          <svg class="w-3.5 h-3.5 fill-current" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm4.64 6.8c-.15 1.58-.8 5.42-1.13 7.19-.14.75-.42 1-.68 1.03-.58.05-1.02-.38-1.58-.75-.88-.58-1.38-.94-2.23-1.5-.99-.65-.35-1.01.22-1.59.15-.15 2.71-2.48 2.76-2.69a.2.2 0 00-.05-.18c-.06-.05-.14-.03-.21-.02-.09.02-1.49.95-4.22 2.79-.4.27-.76.41-1.08.4-.36-.01-1.04-.2-1.55-.37-.63-.2-1.12-.31-1.08-.66.02-.18.27-.36.75-.55 2.92-1.27 4.86-2.11 5.83-2.51 2.78-1.16 3.35-1.36 3.73-1.36.08 0 .27.02.39.12.1.08.13.19.14.27-.01.06.01.24 0 .38z"/></svg>
-          <span>Telegram</span>
-        </a>
-
         <LanguageToggle client:idle />
       </div>
 
@@ -153,40 +141,36 @@ const { currentPath = '/' } = Astro.props;
     var navYesterday = document.getElementById('nav-yesterday');
     var navTarget = document.getElementById('nav-target');
     var navOld = document.getElementById('nav-old');
+    var navAnalytics = document.getElementById('nav-analytics');
     var navChecker = document.getElementById('nav-checker');
-    var btnFull = document.getElementById('header-btn-checker-full');
-    var btnShort = document.getElementById('header-btn-checker-short');
 
     if (lang === 'bn') {
-      if (brand) brand.textContent = 'লটারি সংবাদ • আজকের তাজা রেজাল্ট';
-      if (navToday) navToday.textContent = 'আজকের রেজাল্ট';
+      if (brand) brand.textContent = 'লটারি সংবাদ • লাইভ রেজাল্ট';
+      if (navToday) navToday.textContent = 'আজকের';
       if (navLucky) navLucky.textContent = 'লাকি টিকিট';
-      if (navYesterday) navYesterday.textContent = 'গতকালকের রেজাল্ট';
-      if (navTarget) navTarget.textContent = 'টার্গেট ও হট নম্বর';
-      if (navOld) navOld.textContent = 'পুরনো রেজাল্ট';
+      if (navYesterday) navYesterday.textContent = 'গতকালকের';
+      if (navTarget) navTarget.textContent = 'টার্গেট নম্বর';
+      if (navOld) navOld.textContent = 'পুরনো রেকর্ড';
+      if (navAnalytics) navAnalytics.textContent = 'অ্যানালিটিক্স';
       if (navChecker) navChecker.textContent = 'টিকিট মেলান';
-      if (btnFull) btnFull.textContent = 'টিকিট মেলান';
-      if (btnShort) btnShort.textContent = 'মেলান';
     } else if (lang === 'hi') {
-      if (brand) brand.textContent = 'लॉटरी संबाद • आज का ताजा रिजल्ट';
-      if (navToday) navToday.textContent = 'आज का रिजल्ट';
+      if (brand) brand.textContent = 'लॉटरी संबाद • लाइव रिजल्ट';
+      if (navToday) navToday.textContent = 'आज का';
       if (navLucky) navLucky.textContent = 'लकी टिकट';
-      if (navYesterday) navYesterday.textContent = 'कल का रिजल्ट';
-      if (navTarget) navTarget.textContent = 'टारगेट और हॉट नंबर';
-      if (navOld) navOld.textContent = 'पुराने रिजल्ट';
+      if (navYesterday) navYesterday.textContent = 'कल का';
+      if (navTarget) navTarget.textContent = 'टारगेट';
+      if (navOld) navOld.textContent = 'पुराने रिकॉर्ड';
+      if (navAnalytics) navAnalytics.textContent = 'एनालिटिक्स';
       if (navChecker) navChecker.textContent = 'टिकट चेक';
-      if (btnFull) btnFull.textContent = 'टिकट चेक';
-      if (btnShort) btnShort.textContent = 'चेक';
     } else {
       if (brand) brand.textContent = 'Lottery Sambad • Live Result Portal';
       if (navToday) navToday.textContent = "Today";
       if (navLucky) navLucky.textContent = "Lucky Ticket";
       if (navYesterday) navYesterday.textContent = "Yesterday";
-      if (navTarget) navTarget.textContent = "Target & Hot";
+      if (navTarget) navTarget.textContent = "Target Numbers";
       if (navOld) navOld.textContent = 'Old Results';
+      if (navAnalytics) navAnalytics.textContent = '5Y Analytics';
       if (navChecker) navChecker.textContent = 'Check Ticket';
-      if (btnFull) btnFull.textContent = 'Check Ticket';
-      if (btnShort) btnShort.textContent = 'Check';
     }
   }
 
