@@ -139,7 +139,7 @@ function RealPaperTicket({
         stubBg: 'bg-purple-500/10'
       };
 
-  const netTicketPnl = evalRes.isWin ? evalRes.prizeAmount - 6 : -6;
+  const netTicketPnl = evalRes.isWin ? evalRes.prizeAmount - 7 : -7;
 
   return (
     <div className={`relative ${theme.bg} rounded-xl border-2 ${theme.border} shadow-md overflow-hidden font-sans select-none transition-transform hover:scale-[1.01]`}>
@@ -165,7 +165,7 @@ function RealPaperTicket({
             <span className="text-xs sm:text-sm font-mono font-black text-slate-950 tracking-wider block">
               {ticket.number}
             </span>
-            <span className="text-[8px] font-bold text-red-600 block mt-0.5">MRP ₹6.00</span>
+            <span className="text-[8px] font-bold text-red-600 block mt-0.5">MRP ₹7.00</span>
           </div>
 
           <div className="opacity-60 leading-none">
@@ -222,7 +222,7 @@ function RealPaperTicket({
           <div className={`${theme.ribbon} text-white px-2 py-0.5 rounded text-[9px] sm:text-[10px] font-black uppercase tracking-wider flex items-center justify-between shadow-2xs my-1`}>
             <span>★ 1st PRIZE ₹ 1 CRORE ★</span>
             <span className="text-[8px] opacity-90 hidden sm:inline">(INCL. SUPER PRIZE)</span>
-            <span className="font-mono text-[9px]">MRP ₹6/-</span>
+            <span className="font-mono text-[9px]">MRP ₹7/-</span>
           </div>
 
           {/* 3. Central Ticket Number Display */}
@@ -279,7 +279,7 @@ function RealPaperTicket({
             ) : (
               <div className="rotate-[4deg] border border-slate-300 bg-slate-100/90 text-slate-500 px-2 py-0.5 rounded text-[9px] font-bold uppercase text-right">
                 <div>✕ NO PRIZE</div>
-                <div className="text-[8px] text-slate-400 font-mono">-₹6.00</div>
+                <div className="text-[8px] text-slate-400 font-mono">-₹7.00</div>
               </div>
             )}
           </div>
@@ -670,7 +670,7 @@ export default function DemoPlayModule({ initialDraws = [] }: DemoPlayModuleProp
   const totalEvaluated = evaluatedTickets.length;
   const totalWins = evaluatedTickets.filter(item => item.evalRes.isWin).length;
   const accuracyPercent = totalEvaluated > 0 ? Math.round((totalWins / totalEvaluated) * 100) : 0;
-  const totalCost = totalEvaluated * 6; // ₹6 per ticket
+  const totalCost = totalEvaluated * 7; // ₹7 per ticket
   const totalReturns = evaluatedTickets.reduce((acc, item) => acc + item.evalRes.prizeAmount, 0);
   const netPnl = totalReturns - totalCost;
 
@@ -851,7 +851,7 @@ export default function DemoPlayModule({ initialDraws = [] }: DemoPlayModuleProp
                 : `Print Lucky Ticket (${selectedSlot})`}
             </span>
           </span>
-          <span className="text-[10px] font-mono text-slate-400">MRP ₹6.00</span>
+          <span className="text-[10px] font-mono text-slate-400">MRP ₹7.00</span>
         </div>
 
         {/* 1-Click Quick Ticket Button */}
