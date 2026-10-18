@@ -16,6 +16,7 @@ import { fileURLToPath } from 'url';
 import { createWorker } from 'tesseract.js';
 import { pingSearchEngines } from './seo_pinger.js';
 import { sendOneSignalResultPush } from './onesignal_notifier.js';
+import { sendTelegramResultPost } from './telegram_notifier.js';
 
 dns.setDefaultResultOrder('ipv4first');
 
@@ -379,6 +380,13 @@ async function processSlot(dateStr, slot) {
     await sendOneSignalResultPush({ dateStr, slot, prizeData });
   } catch (pushErr) {
     console.warn('[Poller] OneSignal push warning:', pushErr.message);
+  }
+
+  // Automatically broadcast verified draw results to official Telegram channel @dearresultlive
+  try {
+    await sendTelegramResultPost({ dateStr, slot, prizeData });
+  } catch (tgErr) {
+    console.warn('[Poller] Telegram broadcast warning:', tgErr.message);
   }
   return true;
 }
