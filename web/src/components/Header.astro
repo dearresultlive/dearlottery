@@ -14,13 +14,13 @@ const { currentPath = '/' } = Astro.props;
     <div class="flex items-center justify-between h-14 sm:h-16 gap-1.5 sm:gap-4">
       
       {/* Brand Logo - Authentic Local Lottery Portal Identity */}
-      <a href="/" class="flex items-center gap-2 sm:gap-3 group min-w-0 flex-shrink">
+      <a href="/" class="flex items-center gap-2 sm:gap-3 group flex-shrink-0">
         <img
           src="/favicon.svg"
           alt="Dear Result Live"
           class="w-8 h-8 sm:w-11 sm:h-11 rounded-xl sm:rounded-2xl shadow-sm flex-shrink-0 group-hover:scale-105 transition-transform"
         />
-        <div class="min-w-0">
+        <div class="flex-shrink-0">
           <div class="flex items-center gap-1 sm:gap-1.5">
             <span class="font-black text-xs sm:text-lg tracking-tight text-slate-900 group-hover:text-blue-700 transition-colors whitespace-nowrap">
               DEAR RESULT LIVE
@@ -29,17 +29,17 @@ const { currentPath = '/' } = Astro.props;
               LIVE
             </span>
           </div>
-          <span id="header-brand-tagline" class="text-[9px] sm:text-[11px] text-blue-700 font-bold tracking-tight block truncate">
+          <span id="header-brand-tagline" class="text-[9px] sm:text-[11px] text-blue-700 font-bold tracking-tight block whitespace-nowrap">
             Lottery Sambad • Live Result Portal
           </span>
         </div>
       </a>
 
       {/* Navigation Desktop */}
-      <nav class="hidden md:flex items-center gap-1">
+      <nav class="hidden lg:flex items-center gap-0.5 xl:gap-1.5 flex-shrink min-w-0">
         <a
           href="/"
-          class={`px-3 py-2 rounded-xl text-xs sm:text-sm font-black transition-colors ${
+          class={`px-2 xl:px-3 py-1.5 rounded-xl text-xs xl:text-sm font-black whitespace-nowrap transition-colors ${
             currentPath === '/'
               ? 'text-blue-700 bg-blue-50 border border-blue-200'
               : 'text-slate-700 hover:text-blue-700 hover:bg-slate-100'
@@ -49,7 +49,7 @@ const { currentPath = '/' } = Astro.props;
         </a>
         <a
           href="/lucky-ticket"
-          class={`px-3 py-2 rounded-xl text-xs sm:text-sm font-black transition-colors ${
+          class={`px-2 xl:px-3 py-1.5 rounded-xl text-xs xl:text-sm font-black whitespace-nowrap transition-colors ${
             currentPath === '/lucky-ticket' || currentPath === '/demo'
               ? 'text-blue-700 bg-blue-50 border border-blue-200'
               : 'text-slate-700 hover:text-blue-700 hover:bg-slate-100'
@@ -59,7 +59,7 @@ const { currentPath = '/' } = Astro.props;
         </a>
         <a
           href="/yesterday"
-          class={`px-3 py-2 rounded-xl text-xs sm:text-sm font-black transition-colors ${
+          class={`px-2 xl:px-3 py-1.5 rounded-xl text-xs xl:text-sm font-black whitespace-nowrap transition-colors ${
             currentPath === '/yesterday'
               ? 'text-blue-700 bg-blue-50 border border-blue-200'
               : 'text-slate-700 hover:text-blue-700 hover:bg-slate-100'
@@ -69,7 +69,7 @@ const { currentPath = '/' } = Astro.props;
         </a>
         <a
           href="/target-numbers"
-          class={`px-3 py-2 rounded-xl text-xs sm:text-sm font-black transition-colors ${
+          class={`px-2 xl:px-3 py-1.5 rounded-xl text-xs xl:text-sm font-black whitespace-nowrap transition-colors ${
             currentPath === '/target-numbers'
               ? 'text-blue-700 bg-blue-50 border border-blue-200'
               : 'text-slate-700 hover:text-blue-700 hover:bg-slate-100'
@@ -79,7 +79,7 @@ const { currentPath = '/' } = Astro.props;
         </a>
         <a
           href="/old-results"
-          class={`px-3 py-2 rounded-xl text-xs sm:text-sm font-black transition-colors ${
+          class={`px-2 xl:px-3 py-1.5 rounded-xl text-xs xl:text-sm font-black whitespace-nowrap transition-colors ${
             currentPath === '/old-results'
               ? 'text-blue-700 bg-blue-50 border border-blue-200'
               : 'text-slate-700 hover:text-blue-700 hover:bg-slate-100'
@@ -89,7 +89,7 @@ const { currentPath = '/' } = Astro.props;
         </a>
         <a
           href="/analytics"
-          class={`px-3 py-2 rounded-xl text-xs sm:text-sm font-black transition-colors ${
+          class={`px-2 xl:px-3 py-1.5 rounded-xl text-xs xl:text-sm font-black whitespace-nowrap transition-colors ${
             currentPath === '/analytics'
               ? 'text-blue-700 bg-blue-50 border border-blue-200'
               : 'text-slate-700 hover:text-blue-700 hover:bg-slate-100'
@@ -99,7 +99,7 @@ const { currentPath = '/' } = Astro.props;
         </a>
         <a
           href="/checker"
-          class={`px-3.5 py-2 rounded-xl text-xs sm:text-sm font-black transition-colors ${
+          class={`px-2.5 xl:px-3.5 py-1.5 rounded-xl text-xs xl:text-sm font-black whitespace-nowrap transition-colors ${
             currentPath === '/checker'
               ? 'text-blue-700 bg-blue-50 border border-blue-200'
               : 'text-slate-700 hover:text-blue-700 hover:bg-slate-100'
@@ -109,7 +109,7 @@ const { currentPath = '/' } = Astro.props;
         </a>
       </nav>
 
-      {/* Controls: Notification Bell + Compact App Pill + Language Toggle + Desktop Checker */}
+      {/* Controls: Notification Bell + Compact App Pill + Telegram (Desktop Only) + Language Toggle */}
       <div class="flex items-center gap-1 sm:gap-2 flex-shrink-0">
         <div id="header-bell-wrapper" class="header-notification-bell-wrapper flex items-center">
           <NotificationBell client:idle />
@@ -126,27 +126,19 @@ const { currentPath = '/' } = Astro.props;
           <span>App</span>
         </button>
 
+        {/* Telegram Pill: Desktop Only (Hidden on Mobile) */}
         <a
           href="https://t.me/dearresultlive"
           target="_blank"
           rel="noopener noreferrer"
-          class="inline-flex items-center gap-1 bg-[#229ED9] hover:bg-[#1E88E5] text-white font-black text-[11px] sm:text-xs px-2 sm:px-2.5 py-1.5 rounded-lg sm:rounded-xl shadow-2xs active:scale-95 transition-all cursor-pointer leading-none"
+          class="hidden md:inline-flex items-center gap-1 bg-[#229ED9] hover:bg-[#1E88E5] text-white font-black text-[11px] sm:text-xs px-2 sm:px-2.5 py-1.5 rounded-lg sm:rounded-xl shadow-2xs active:scale-95 transition-all cursor-pointer leading-none"
           title="Join Dear Result Live Telegram Channel"
         >
           <svg class="w-3.5 h-3.5 fill-current" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm4.64 6.8c-.15 1.58-.8 5.42-1.13 7.19-.14.75-.42 1-.68 1.03-.58.05-1.02-.38-1.58-.75-.88-.58-1.38-.94-2.23-1.5-.99-.65-.35-1.01.22-1.59.15-.15 2.71-2.48 2.76-2.69a.2.2 0 00-.05-.18c-.06-.05-.14-.03-.21-.02-.09.02-1.49.95-4.22 2.79-.4.27-.76.41-1.08.4-.36-.01-1.04-.2-1.55-.37-.63-.2-1.12-.31-1.08-.66.02-.18.27-.36.75-.55 2.92-1.27 4.86-2.11 5.83-2.51 2.78-1.16 3.35-1.36 3.73-1.36.08 0 .27.02.39.12.1.08.13.19.14.27-.01.06.01.24 0 .38z"/></svg>
-          <span class="hidden sm:inline">Telegram</span>
+          <span>Telegram</span>
         </a>
 
         <LanguageToggle client:idle />
-
-        <a
-          href="/checker"
-          aria-label="Ticket Checker"
-          class="hidden md:inline-flex items-center gap-1 bg-blue-700 hover:bg-blue-800 text-white text-[11px] sm:text-xs font-black px-2.5 sm:px-3 py-1.5 sm:py-2 rounded-lg sm:rounded-xl shadow-xs transition-all active:scale-95"
-        >
-          <span>🔍</span>
-          <span id="header-btn-checker-full">Check Ticket</span>
-        </a>
       </div>
 
     </div>
