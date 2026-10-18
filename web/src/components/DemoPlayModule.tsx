@@ -321,6 +321,7 @@ export default function DemoPlayModule({ initialDraws = [] }: DemoPlayModuleProp
 
   // Hot number combinations generated from heat map & repeating draws
   const [hotCards, setHotCards] = useState<HotNumberCard[]>([]);
+  const [isRefreshingHot, setIsRefreshingHot] = useState<boolean>(false);
 
   // Time passed checks for today
   const currentTotalMin = istNow.getHours() * 60 + istNow.getMinutes();
@@ -562,43 +563,57 @@ export default function DemoPlayModule({ initialDraws = [] }: DemoPlayModuleProp
     }
   };
 
-  // Generate Hot Numbers from Heat Map and Historical Archives
+  // Generate Hot Numbers from Heat Map and Historical Archives (Dynamically randomized on each Refresh)
   const generateHotNumbers = () => {
+    setIsRefreshingHot(true);
+    const seriesOptions = ['72B', '64D', '81G', '92H', '55A', '58C', '73E', '86J', '84D', '69A', '77C', '95L', '62B'];
     const list: HotNumberCard[] = [];
-    const seriesOptions = ['72B', '64D', '81G', '92H', '55A', '58C', '73E'];
 
-    // 1. Multi-Win Recurring Numbers (Numbers that repeatedly won 1st/2nd prize)
+    // 1. Pick 3 distinct multi-win recurring numbers from pool of top 25 historical winners
     try {
-      const topRecurring = getTopRecurringNumbers('3Y', 6);
-      for (let i = 0; i < topRecurring.length; i++) {
-        const item = topRecurring[i];
-        if (item.number && item.number.length === 5) {
-          list.push({
-            series: seriesOptions[i % seriesOptions.length],
-            number: item.number,
-            tag: `${item.count}x Repeat Winner`,
-            tagBn: `${item.count} বার বিজয়ী`,
-            reason: `Won ${item.lastRank} in official draw`,
-            reasonBn: `অফিশিয়াল খেলায় ${item.count} বার পুরস্কার জয়ী`
-          });
+      const topRecurring = getTopRecurringNumbers('3Y', 25);
+      if (topRecurring && topRecurring.length > 0) {
+        // Randomly shuffle to pick 3 distinct numbers each time
+        const shuffled = [...topRecurring].sort(() => 0.5 - Math.random());
+        const selected = shuffled.slice(0, 3);
+        for (const item of selected) {
+          if (item.number && item.number.length === 5) {
+            const randSeries = seriesOptions[Math.floor(Math.random() * seriesOptions.length)];
+            list.push({
+              series: randSeries,
+              number: item.number,
+              tag: `${item.count}x Repeat Winner`,
+              tagBn: `${item.count} বার বিজয়ী`,
+              reason: `Won ${item.lastRank} in official draw`,
+              reasonBn: `অফিশিয়াল খেলায় ${item.count} বার জয়ী`
+            });
+          }
         }
       }
     } catch (e) {}
 
-    // 2. Heat Map Middles + Top Endings
+    // 2. Generate 3 distinct heat map combinations from top 15 middles & top 15 endings
     try {
-      const topMiddles = getTopFrequentMiddles(6, '3Y');
-      const topEndings = getTopFrequentEndings(6, '3Y');
+      const topMiddles = getTopFrequentMiddles(15, '3Y');
+      const topEndings = getTopFrequentEndings(15, '3Y');
 
-      for (let i = 0; i < 4; i++) {
-        const midObj = topMiddles[i] || { middle: '48' };
-        const endObj = topEndings[i] || { ending: '55' };
+      const usedMiddles = new Set<string>();
+      let attempts = 0;
+      while (list.length < 6 && attempts < 20) {
+        attempts++;
+        const midIdx = Math.floor(Math.random() * Math.min(topMiddles.length || 10, 10));
+        const endIdx = Math.floor(Math.random() * Math.min(topEndings.length || 10, 10));
+        const midObj = topMiddles[midIdx] || { middle: '48' };
+        const endObj = topEndings[endIdx] || { ending: '55' };
+
+        // Generate dynamic lead digit (1-9)
         const lead = String(Math.floor(Math.random() * 9) + 1);
         const combo = `${lead}${midObj.middle}${endObj.ending}`;
+        const randSeries = seriesOptions[Math.floor(Math.random() * seriesOptions.length)];
 
         if (!list.some(l => l.number === combo)) {
           list.push({
-            series: seriesOptions[(i + 3) % seriesOptions.length],
+            series: randSeries,
             number: combo,
             tag: `Heat Map Mid ${midObj.middle}`,
             tagBn: `হিট ম্যাপ মিডিল ${midObj.middle}`,
@@ -609,20 +624,31 @@ export default function DemoPlayModule({ initialDraws = [] }: DemoPlayModuleProp
       }
     } catch (e) {}
 
-    // Fallbacks if data is empty
+    // Fallbacks if data is empty or < 6
     const fallbacks: HotNumberCard[] = [
       { series: '72B', number: '48755', tag: 'Hot Middle Pattern', tagBn: 'হট মিডিল ৪৮ ও এন্ডিং ৫৫', reason: 'High frequency in 5th prize', reasonBn: '৫ম পুরস্কারে সর্বাধিক আসা' },
       { series: '64D', number: '09674', tag: '2nd Prize Winner', tagBn: '২য় প্রাইজ বিজয়ী', reason: 'Won ₹9,000 in recent day draw', reasonBn: 'সাম্প্রতিক ড্র-তে ৯,০০০ টাকা জয়ী' },
       { series: '81G', number: '65322', tag: 'High-Hit Combo', tagBn: 'হাই-হিট কম্বিনেশন', reason: 'Top-rated repeating middle 53', reasonBn: 'টপ রেটেড মিডিল ৫৩' },
-      { series: '92H', number: '84257', tag: 'Top Ranked Number', tagBn: 'টপ রেঙ্কড নম্বর', reason: 'High accuracy hit pattern', reasonBn: 'ধারাবাহিক হিট রেট প্যাটার্ন' }
+      { series: '92H', number: '84257', tag: 'Top Ranked Number', tagBn: 'টপ রেঙ্কড নম্বর', reason: 'High accuracy hit pattern', reasonBn: 'ধারাবাহিক হিট রেট প্যাটার্ন' },
+      { series: '55A', number: '13963', tag: '2nd Prize Winner', tagBn: '২য় পুরস্কার বিজয়ী', reason: 'Recent winning combination', reasonBn: 'সাম্প্রতিক ড্র-তে বিজয়ী নম্বর' },
+      { series: '70B', number: '50936', tag: 'Hot Ending Pattern', tagBn: 'হট এন্ডিং ৩৬ প্যাটার্ন', reason: 'Repeated in 4th/5th tier', reasonBn: '৪র্থ ও ৫ম স্তরে একাধিকবার আসা' },
+      { series: '84D', number: '29144', tag: 'Heat Map Pattern', tagBn: 'হিট ম্যাপ ২৯ ও এন্ডিং ৪৪', reason: 'Frequent repeating 4th tier', reasonBn: '৪র্থ স্তরে ধারাবাহিক আসা' }
     ];
 
-    for (const fb of fallbacks) {
-      if (list.length >= 6) break;
-      if (!list.some(l => l.number === fb.number)) list.push(fb);
+    while (list.length < 6) {
+      const fb = fallbacks[Math.floor(Math.random() * fallbacks.length)];
+      if (!list.some(l => l.number === fb.number)) {
+        list.push(fb);
+      }
     }
 
-    setHotCards(list.slice(0, 6));
+    // Shuffle the final 6 so recurring and heat map numbers are well-distributed
+    const shuffledFinal = list.sort(() => 0.5 - Math.random()).slice(0, 6);
+    setHotCards(shuffledFinal);
+
+    setTimeout(() => {
+      setIsRefreshingHot(false);
+    }, 300);
   };
 
   // Initial generation
@@ -961,11 +987,16 @@ export default function DemoPlayModule({ initialDraws = [] }: DemoPlayModuleProp
           <button
             type="button"
             onClick={generateHotNumbers}
-            className="text-[10px] sm:text-[11px] font-bold text-amber-900 bg-amber-100 hover:bg-amber-200 border border-amber-300 px-2 py-1 rounded-lg transition-colors flex items-center gap-1 shrink-0"
+            disabled={isRefreshingHot}
+            className="text-[10px] sm:text-[11px] font-bold text-amber-900 bg-amber-100 hover:bg-amber-200 active:scale-95 border border-amber-300 px-2.5 py-1 rounded-lg transition-all flex items-center gap-1 shrink-0 cursor-pointer shadow-2xs"
             title="Refresh hot numbers"
           >
-            <span>🔄</span>
-            <span>{lang === 'bn' ? 'নতুন নম্বর' : 'Refresh'}</span>
+            <span className={isRefreshingHot ? 'animate-spin inline-block' : 'inline-block'}>🔄</span>
+            <span>
+              {isRefreshingHot 
+                ? (lang === 'bn' ? 'তৈরি হচ্ছে...' : 'Generating...') 
+                : (lang === 'bn' ? 'নতুন নম্বর' : 'Refresh')}
+            </span>
           </button>
         </div>
 
