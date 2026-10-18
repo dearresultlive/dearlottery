@@ -107,6 +107,7 @@ function RealPaperTicket({
   evalRes,
   onDelete,
   onCopy,
+  onAddSem,
   isCopied,
   lang
 }: {
@@ -114,6 +115,7 @@ function RealPaperTicket({
   evalRes: any;
   onDelete: (id: string) => void;
   onCopy: (id: string, text: string) => void;
+  onAddSem?: (id: string, delta: number) => void;
   isCopied: boolean;
   lang: string;
 }) {
@@ -216,12 +218,35 @@ function RealPaperTicket({
               </div>
             </div>
 
-            {/* Quick Actions (Copy & Delete) */}
+            {/* Quick Actions (Sem Stepper, Copy & Delete) */}
             <div className="flex items-center gap-1 shrink-0">
+              {onAddSem && (
+                <div className="flex items-center bg-black/5 rounded-lg p-0.5 border border-black/10 gap-0.5">
+                  {sem > 5 && (
+                    <button
+                      type="button"
+                      onClick={() => onAddSem(ticket.id, -5)}
+                      className="px-1.5 py-0.5 rounded text-[9px] font-black bg-white hover:bg-slate-200 text-slate-700 shadow-2xs active:scale-95 transition-all cursor-pointer"
+                      title="Reduce 5 Sem (-₹35)"
+                    >
+                      -5
+                    </button>
+                  )}
+                  <button
+                    type="button"
+                    onClick={() => onAddSem(ticket.id, 5)}
+                    className="px-2 py-0.5 rounded text-[9px] font-black bg-emerald-600 hover:bg-emerald-700 text-white shadow-2xs active:scale-95 transition-all flex items-center gap-0.5 cursor-pointer"
+                    title="Add 5 more Sem (+₹35)"
+                  >
+                    <span>+5 Sem</span>
+                  </button>
+                </div>
+              )}
+
               <button
                 type="button"
                 onClick={() => onCopy(ticket.id, `${ticket.series} ${ticket.number} (${sem} Sem)`)}
-                className={`px-1.5 py-0.5 rounded text-[10px] font-bold transition-colors ${
+                className={`px-1.5 py-0.5 rounded text-[10px] font-bold transition-colors cursor-pointer ${
                   isCopied
                     ? 'bg-emerald-600 text-white'
                     : 'bg-black/5 hover:bg-black/10 text-slate-700'
@@ -233,7 +258,7 @@ function RealPaperTicket({
               <button
                 type="button"
                 onClick={() => onDelete(ticket.id)}
-                className="w-5 h-5 rounded-full bg-black/5 hover:bg-red-500 hover:text-white flex items-center justify-center text-[10px] text-slate-500 transition-colors"
+                className="w-5 h-5 rounded-full bg-black/5 hover:bg-red-500 hover:text-white flex items-center justify-center text-[10px] text-slate-500 transition-colors cursor-pointer"
                 title="Remove ticket"
               >
                 ✕
@@ -342,6 +367,7 @@ export default function DemoPlayModule({ initialDraws = [] }: DemoPlayModuleProp
   const [manualSeries, setManualSeries] = useState('72B');
   const [manualNumber, setManualNumber] = useState('');
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
+  const [successMsg, setSuccessMsg] = useState<string | null>(null);
 
   // Tickets stored in localStorage
   const [myTickets, setMyTickets] = useState<LuckyTicket[]>([]);
@@ -515,8 +541,10 @@ export default function DemoPlayModule({ initialDraws = [] }: DemoPlayModuleProp
   };
 
   // Add ticket function for selected game with Sem count
-  const addTicket = (series: string, number: string, semCount: number = selectedSem) => {
+  // If ticket already exists in the same game, clicking again adds +5 Sem to the same number!
+  const addTicket = (series: string, number: string, semCount: number = 5) => {
     setErrorMsg(null);
+    setSuccessMsg(null);
     const cleanNum = number.replace(/\D/g, '');
 
     if (cleanNum.length !== 5) {
@@ -526,28 +554,58 @@ export default function DemoPlayModule({ initialDraws = [] }: DemoPlayModuleProp
 
     const cleanSeries = series.trim().toUpperCase() || '72B';
 
-    // Duplicate check within selected game
-    const exists = myTickets.some(t => t.date === selectedDate && t.slot === selectedSlot && t.number === cleanNum);
-    if (exists) {
-      setErrorMsg(lang === 'bn' ? 'এই টিকিটটি ইতিমধ্যে এই খেলায় রয়েছে।' : 'Ticket already added for this game.');
-      return;
+    // Incremental purchase: Check if ticket already exists in selected game
+    const existingIndex = myTickets.findIndex(
+      t => t.date === selectedDate && t.slot === selectedSlot && t.number === cleanNum
+    );
+
+    let targetTicket: LuckyTicket;
+
+    if (existingIndex >= 0) {
+      const existing = myTickets[existingIndex];
+      const updatedSem = (existing.sem || 5) + semCount;
+      const updatedTicket: LuckyTicket = {
+        ...existing,
+        sem: updatedSem
+      };
+
+      const nextTickets = [...myTickets];
+      nextTickets[existingIndex] = updatedTicket;
+      saveTickets(nextTickets);
+      targetTicket = updatedTicket;
+
+      setSuccessMsg(
+        lang === 'bn'
+          ? `+${semCount} সেম যোগ হয়েছে! ${existing.series} ${existing.number} মোট: ${updatedSem} সেম (₹${updatedSem * 7})`
+          : `Added +${semCount} Sem! ${existing.series} ${existing.number} Total: ${updatedSem} Sem (₹${updatedSem * 7})`
+      );
+      setTimeout(() => setSuccessMsg(null), 3000);
+    } else {
+      const newTicket: LuckyTicket = {
+        id: `${Date.now()}-${Math.random().toString(36).substring(2, 6)}`,
+        series: cleanSeries,
+        number: cleanNum,
+        sem: semCount,
+        slot: selectedSlot,
+        date: selectedDate,
+        createdAt: Date.now()
+      };
+
+      const nextTickets = [newTicket, ...myTickets];
+      saveTickets(nextTickets);
+      targetTicket = newTicket;
+
+      setSuccessMsg(
+        lang === 'bn'
+          ? `টিকিট যোগ হয়েছে: ${cleanSeries} ${cleanNum} (${semCount} সেম • ₹${semCount * 7})`
+          : `Ticket added: ${cleanSeries} ${cleanNum} (${semCount} Sem • ₹${semCount * 7})`
+      );
+      setTimeout(() => setSuccessMsg(null), 3000);
     }
 
-    const newTicket: LuckyTicket = {
-      id: `${Date.now()}-${Math.random().toString(36).substring(2, 6)}`,
-      series: cleanSeries,
-      number: cleanNum,
-      sem: semCount,
-      slot: selectedSlot,
-      date: selectedDate,
-      createdAt: Date.now()
-    };
-
-    const nextTickets = [newTicket, ...myTickets];
-    saveTickets(nextTickets);
     setManualNumber('');
 
-    const evalRes = evaluateTicket(newTicket);
+    const evalRes = evaluateTicket(targetTicket);
     if (evalRes.isWin) {
       try {
         confetti({ particleCount: 75, spread: 65, origin: { y: 0.6 } });
@@ -555,7 +613,22 @@ export default function DemoPlayModule({ initialDraws = [] }: DemoPlayModuleProp
     }
   };
 
-  // Quick Random Lucky Ticket generator (uses currently selected Sem)
+  // Add or reduce Sem for a specific ticket directly
+  const handleAddSemToTicket = (ticketId: string, delta: number = 5) => {
+    setErrorMsg(null);
+    setSuccessMsg(null);
+    const nextTickets = myTickets.map(t => {
+      if (t.id === ticketId) {
+        const currentSem = t.sem || 5;
+        const newSem = Math.max(5, currentSem + delta);
+        return { ...t, sem: newSem };
+      }
+      return t;
+    });
+    saveTickets(nextTickets);
+  };
+
+  // Quick Random Lucky Ticket generator (Adds 5 Sem)
   const handleQuickTicket = () => {
     const seriesOptions = ['72B', '64D', '81G', '92H', '55A', '58C', '73E', '86J', '84D', '69A', '77C'];
     const middleSeeds = ['48', '62', '79', '35', '52', '29', '43', '80', '15', '24'];
@@ -567,7 +640,7 @@ export default function DemoPlayModule({ initialDraws = [] }: DemoPlayModuleProp
     const lead = String(Math.floor(Math.random() * 9) + 1);
     const num = `${lead}${m}${end.slice(-2)}`;
 
-    addTicket(s, num, selectedSem);
+    addTicket(s, num, 5);
   };
 
   // Copy helper
@@ -871,55 +944,39 @@ export default function DemoPlayModule({ initialDraws = [] }: DemoPlayModuleProp
       {/* 4. Ticket Generator Controls with 1-Tap Sem Selector */}
       <div className="bg-white border border-slate-200 rounded-2xl p-3 sm:p-4 shadow-sm space-y-3">
         
-        {/* SEM SELECTOR BAR (Defaults to 5 Sem - Standard Retail Purchase!) */}
-        <div className="flex items-center justify-between gap-1.5 bg-slate-50 border border-slate-200 p-2 rounded-xl">
-          <div className="flex items-center gap-1 text-xs font-black text-slate-800 shrink-0">
-            <span>📚</span>
-            <span>{lang === 'bn' ? 'সেম (মিনিমাম ৫):' : 'Sem (Min 5):'}</span>
+        {/* 5 SEM RETAIL STANDARD BADGE */}
+        <div className="flex items-center justify-between gap-2 bg-gradient-to-r from-amber-50 to-orange-50 border border-amber-200/90 p-2.5 rounded-xl text-xs">
+          <div className="flex items-center gap-1.5">
+            <span className="text-base">📚</span>
+            <div>
+              <span className="font-black text-amber-950 block text-[11px] sm:text-xs">
+                {lang === 'bn' 
+                  ? 'স্ট্যান্ডার্ড রিটেইল টিকিট: ৫ সেম (₹৩৫)' 
+                  : 'Standard Retail Ticket: 5 Sem (₹35)'}
+              </span>
+              <span className="text-[10px] text-amber-900/80 block">
+                {lang === 'bn'
+                  ? 'একই নম্বরে পুনরায় ক্লিক করলে সরাসরি +৫ সেম করে বৃদ্ধি পাবে'
+                  : 'Clicking the same number again adds +5 Sem to the ticket'}
+              </span>
+            </div>
           </div>
-
-          <div className="flex items-center gap-1 overflow-x-auto">
-            {SEM_OPTIONS.map(opt => {
-              const isSelected = selectedSem === opt.count;
-              return (
-                <button
-                  key={opt.count}
-                  type="button"
-                  onClick={() => setSelectedSem(opt.count)}
-                  className={`px-2 py-1 rounded-lg text-xs font-black transition-all shrink-0 flex items-center gap-1 cursor-pointer ${
-                    isSelected
-                      ? 'bg-amber-600 text-white shadow-2xs scale-[1.02]'
-                      : 'bg-white hover:bg-slate-100 text-slate-700 border border-slate-200'
-                  }`}
-                >
-                  <span>{opt.count} Sem</span>
-                  <span className={`text-[10px] font-mono ${isSelected ? 'text-amber-100' : 'text-slate-500'}`}>
-                    (₹{opt.price})
-                  </span>
-                  {opt.popular && (
-                    <span className={`text-[8px] px-1 py-0.2 rounded font-sans uppercase font-black ${
-                      isSelected ? 'bg-amber-800 text-white' : 'bg-amber-100 text-amber-900'
-                    }`}>
-                      ★
-                    </span>
-                  )}
-                </button>
-              );
-            })}
-          </div>
+          <span className="bg-amber-600 text-white font-mono font-black text-xs px-2.5 py-1 rounded-lg shrink-0 shadow-2xs">
+            5 SEM • ₹35
+          </span>
         </div>
 
-        {/* 1-Click Quick Ticket Button (Uses selected Sem count) */}
+        {/* 1-Click Quick Ticket Button (Adds 5 Sem) */}
         <button
           type="button"
           onClick={handleQuickTicket}
-          className="w-full bg-gradient-to-r from-amber-500 via-orange-500 to-amber-600 hover:from-amber-600 hover:to-orange-600 text-white font-black text-xs sm:text-sm py-2.5 px-4 rounded-xl shadow-xs transition-all active:scale-[0.99] flex items-center justify-center gap-2"
+          className="w-full bg-gradient-to-r from-amber-500 via-orange-500 to-amber-600 hover:from-amber-600 hover:to-orange-600 text-white font-black text-xs sm:text-sm py-2.5 px-4 rounded-xl shadow-xs transition-all active:scale-[0.99] flex items-center justify-center gap-2 cursor-pointer"
         >
           <span className="text-base sm:text-lg">🎲</span>
           <span>
             {lang === 'bn' 
-              ? `কুইক লাকি টিকিট নিন (${selectedSem} সেম • মোট ₹${selectedSem * 7})` 
-              : `Print Quick Lucky Ticket (${selectedSem} Sem • ₹${selectedSem * 7})`}
+              ? 'কুইক লাকি টিকিট নিন (৫ সেম • ₹৩৫)' 
+              : 'Print Quick Lucky Ticket (5 Sem • ₹35)'}
           </span>
         </button>
 
@@ -927,7 +984,7 @@ export default function DemoPlayModule({ initialDraws = [] }: DemoPlayModuleProp
         <form 
           onSubmit={(e) => {
             e.preventDefault();
-            addTicket(manualSeries, manualNumber, selectedSem);
+            addTicket(manualSeries, manualNumber, 5);
           }} 
           className="flex items-center gap-1.5 pt-1 border-t border-slate-100"
         >
@@ -951,11 +1008,18 @@ export default function DemoPlayModule({ initialDraws = [] }: DemoPlayModuleProp
           />
           <button
             type="submit"
-            className="bg-blue-700 hover:bg-blue-800 text-white font-black text-xs sm:text-sm px-3.5 py-2 rounded-xl shadow-xs transition-all active:scale-95 shrink-0"
+            className="bg-blue-700 hover:bg-blue-800 text-white font-black text-xs sm:text-sm px-3.5 py-2 rounded-xl shadow-xs transition-all active:scale-95 shrink-0 cursor-pointer"
           >
-            {lang === 'bn' ? `+ প্রিন্ট (${selectedSem} সেম)` : `+ Print (${selectedSem} Sem)`}
+            {lang === 'bn' ? '+ প্রিন্ট (৫ সেম)' : '+ Print (5 Sem)'}
           </button>
         </form>
+
+        {successMsg && (
+          <div className="text-[11px] text-emerald-800 font-bold bg-emerald-50 border border-emerald-300 rounded-lg p-2 text-center flex items-center justify-center gap-1.5 animate-fadeIn">
+            <span>🎉</span>
+            <span>{successMsg}</span>
+          </div>
+        )}
 
         {errorMsg && (
           <div className="text-[11px] text-red-600 font-bold bg-red-50 border border-red-200 rounded-lg p-1.5 text-center">
@@ -1014,6 +1078,7 @@ export default function DemoPlayModule({ initialDraws = [] }: DemoPlayModuleProp
                 evalRes={evaluateTicket(ticket)}
                 onDelete={handleDeleteTicket}
                 onCopy={handleCopyTicket}
+                onAddSem={handleAddSemToTicket}
                 isCopied={copiedTicketId === ticket.id}
                 lang={lang}
               />
@@ -1061,53 +1126,71 @@ export default function DemoPlayModule({ initialDraws = [] }: DemoPlayModuleProp
 
         {/* Hot Cards Grid */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-          {hotCards.map((item, idx) => (
-            <div 
-              key={idx} 
-              className="bg-slate-50 hover:bg-amber-50/40 border border-slate-200 hover:border-amber-300 rounded-xl p-2.5 flex items-center justify-between gap-2 transition-all group"
-            >
-              <div className="min-w-0">
-                <div className="flex items-center gap-1.5">
-                  <span className="font-mono text-xs font-black bg-amber-200/90 text-amber-950 px-1.5 py-0.2 rounded">
-                    {item.series}
-                  </span>
-                  <span className="font-mono text-sm sm:text-base font-black text-slate-950 tracking-wider">
-                    {item.number}
-                  </span>
+          {hotCards.map((item, idx) => {
+            const existingInGame = activeGameTickets.find(t => t.number === item.number);
+            const currentSem = existingInGame?.sem || 0;
+
+            return (
+              <div 
+                key={idx} 
+                className={`border rounded-xl p-2.5 flex items-center justify-between gap-2 transition-all group ${
+                  currentSem > 0 
+                    ? 'border-emerald-400 bg-emerald-50/40 ring-1 ring-emerald-300' 
+                    : 'bg-slate-50 hover:bg-amber-50/40 border-slate-200 hover:border-amber-300'
+                }`}
+              >
+                <div className="min-w-0">
+                  <div className="flex items-center gap-1.5 flex-wrap">
+                    <span className="font-mono text-xs font-black bg-amber-200/90 text-amber-950 px-1.5 py-0.2 rounded">
+                      {item.series}
+                    </span>
+                    <span className="font-mono text-sm sm:text-base font-black text-slate-950 tracking-wider">
+                      {item.number}
+                    </span>
+                    {currentSem > 0 && (
+                      <span className="bg-emerald-600 text-white text-[9px] font-black px-1.5 py-0.2 rounded-md shrink-0 shadow-2xs">
+                        🎟️ {currentSem} Sem
+                      </span>
+                    )}
+                  </div>
+                  <div className="text-[10px] text-slate-500 mt-0.5 flex items-center gap-1 truncate">
+                    <span className="font-bold text-amber-700 shrink-0">
+                      {lang === 'bn' ? item.tagBn : item.tag}
+                    </span>
+                    <span>•</span>
+                    <span className="truncate">{lang === 'bn' ? item.reasonBn : item.reason}</span>
+                  </div>
                 </div>
-                <div className="text-[10px] text-slate-500 mt-0.5 flex items-center gap-1 truncate">
-                  <span className="font-bold text-amber-700 shrink-0">
-                    {lang === 'bn' ? item.tagBn : item.tag}
-                  </span>
-                  <span>•</span>
-                  <span className="truncate">{lang === 'bn' ? item.reasonBn : item.reason}</span>
+
+                <div className="flex items-center gap-1 shrink-0">
+                  {/* Copy Button */}
+                  <button
+                    type="button"
+                    onClick={() => handleCopyTicket(`hot-${idx}`, `${item.series} ${item.number}`)}
+                    className="p-1.5 rounded-lg border border-slate-200 bg-white hover:bg-slate-100 text-slate-700 text-xs shadow-2xs transition-all cursor-pointer"
+                    title="Copy number"
+                  >
+                    {copiedTicketId === `hot-${idx}` ? '✓' : '📋'}
+                  </button>
+
+                  {/* Add 5 Sem Button (Clicking again adds +5 Sem to the same number!) */}
+                  <button
+                    type="button"
+                    onClick={() => addTicket(item.series, item.number, 5)}
+                    className="px-2.5 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white font-black text-xs shadow-2xs active:scale-95 transition-all flex items-center gap-1 cursor-pointer"
+                    title={
+                      currentSem > 0 
+                        ? (lang === 'bn' ? `${item.number} নম্বরে আরও +৫ সেম নিন (মোট: ${currentSem + 5} সেম)` : `Add +5 more Sem to ${item.number} (Total: ${currentSem + 5} Sem)`)
+                        : (lang === 'bn' ? '৫ সেম টিকিট নিন' : 'Add 5 Sem ticket')
+                    }
+                  >
+                    <span>+</span>
+                    <span>5 Sem</span>
+                  </button>
                 </div>
               </div>
-
-              <div className="flex items-center gap-1 shrink-0">
-                {/* Copy Button */}
-                <button
-                  type="button"
-                  onClick={() => handleCopyTicket(`hot-${idx}`, `${item.series} ${item.number}`)}
-                  className="p-1.5 rounded-lg border border-slate-200 bg-white hover:bg-slate-100 text-slate-700 text-xs shadow-2xs transition-all"
-                  title="Copy number"
-                >
-                  {copiedTicketId === `hot-${idx}` ? '✓' : '📋'}
-                </button>
-
-                {/* Add to Ticket Button (Uses selected Sem count) */}
-                <button
-                  type="button"
-                  onClick={() => addTicket(item.series, item.number, selectedSem)}
-                  className="px-2.5 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white font-black text-xs shadow-2xs active:scale-95 transition-all flex items-center gap-1"
-                  title={`Add ${selectedSem} Sem ticket`}
-                >
-                  <span>+</span>
-                  <span>{lang === 'bn' ? `${selectedSem} সেম নিন` : `${selectedSem} Sem`}</span>
-                </button>
-              </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       </div>
 
