@@ -25,6 +25,24 @@ interface PrizeRecord {
   fifth_prize?: string[];
 }
 
+export interface TicketEvalResult {
+  status: 'RESULT_OUT' | 'UPCOMING' | 'DRAWING';
+  isWin: boolean;
+  prizeTitle: string;
+  prizeAmount: number;
+}
+
+export interface PurchaseFeedback {
+  ticket: LuckyTicket;
+  evalRes: TicketEvalResult;
+  isIncrement: boolean;
+  semAdded: number;
+  totalSem: number;
+  ticketCost: number;
+  netPnl: number;
+  timestamp: number;
+}
+
 export interface LuckyTicket {
   id: string;
   series: string;
@@ -300,6 +318,30 @@ function RealPaperTicket({
             </div>
           </div>
 
+          {/* Micro Profit & Loss Info Strip on Ticket Body */}
+          <div className="flex items-center justify-between text-[8px] sm:text-[9px] font-bold px-2 py-0.5 bg-black/[0.04] rounded border border-black/5 mt-0.5">
+            <span className="text-slate-600 font-mono">
+              {lang === 'bn' ? `খরচ: ₹${ticketCost} (${sem} সেম)` : `Cost: ₹${ticketCost} (${sem} Sem)`}
+            </span>
+            <span>
+              {evalRes.isWin ? (
+                <span className="text-emerald-700 font-black">
+                  {lang === 'bn' 
+                    ? `প্রাইজ: ₹${formatINR(evalRes.prizeAmount)} • নিট লাভ: +₹${formatINR(netTicketPnl)}` 
+                    : `Prize: ₹${formatINR(evalRes.prizeAmount)} • Net: +₹${formatINR(netTicketPnl)}`}
+                </span>
+              ) : evalRes.status === 'RESULT_OUT' ? (
+                <span className="text-rose-700 font-bold">
+                  {lang === 'bn' ? `নিট ক্ষতি: -₹${ticketCost}` : `Net Loss: -₹${ticketCost}`}
+                </span>
+              ) : (
+                <span className="text-blue-700 font-bold">
+                  {lang === 'bn' ? `ড্র-এর পর লাভ/ক্ষতি হিসাব হবে` : `P/L calculated after draw`}
+                </span>
+              )}
+            </span>
+          </div>
+
           {/* 4. Footer Barcode & Microtext */}
           <div className="flex items-end justify-between border-t border-black/10 pt-1 mt-1 text-[8px] text-slate-500">
             <span className="truncate max-w-[140px] sm:max-w-[200px] font-mono tracking-tighter">
@@ -311,10 +353,16 @@ function RealPaperTicket({
           {/* 5. Live Rubber Stamp Overlay & Multiplied Profit Indicator */}
           <div className="absolute right-2 sm:right-5 top-1/2 -translate-y-1/2 pointer-events-none z-20 flex flex-col items-end gap-1">
             {evalRes.isWin ? (
-              <div className="rotate-[-5deg] border-2 border-dashed border-emerald-600 bg-emerald-500/20 text-emerald-950 px-2.5 sm:px-3.5 py-1 sm:py-1.5 rounded-lg shadow-sm font-black text-xs sm:text-sm tracking-wide uppercase backdrop-blur-[0.5px] animate-bounce text-right">
-                <div>🎉 {evalRes.prizeTitle}</div>
+              <div className="rotate-[-5deg] border-2 border-dashed border-emerald-600 bg-emerald-500/25 text-emerald-950 px-2.5 sm:px-3.5 py-1 sm:py-1.5 rounded-lg shadow-sm font-black text-xs sm:text-sm tracking-wide uppercase backdrop-blur-[0.5px] animate-bounce text-right">
+                <div className="flex items-center justify-end gap-1">
+                  <span>🎉</span>
+                  <span>{evalRes.prizeTitle}</span>
+                </div>
                 <div className="text-[10px] text-emerald-900 font-mono font-bold mt-0.5">
-                  Win: {formatINR(evalRes.prizeAmount)} • Net: +{formatINR(netTicketPnl)}
+                  Win: ₹{formatINR(evalRes.prizeAmount)}
+                </div>
+                <div className="text-[10px] sm:text-xs text-emerald-950 font-mono font-black border-t border-emerald-700/20 pt-0.5 mt-0.5">
+                  Net: +₹{formatINR(netTicketPnl)}
                 </div>
               </div>
             ) : evalRes.status === 'DRAWING' ? (
@@ -322,13 +370,14 @@ function RealPaperTicket({
                 🔴 {lang === 'bn' ? 'ড্র চলছে...' : 'DRAW IN PROGRESS'}
               </div>
             ) : evalRes.status === 'UPCOMING' ? (
-              <div className="rotate-[3deg] border-2 border-dashed border-blue-500 bg-blue-500/10 text-blue-700 px-2.5 py-0.5 rounded-md font-bold text-[9px] sm:text-[11px] tracking-wider uppercase">
-                ⏳ DRAW AT {ticket.slot} ({sem} SEM)
+              <div className="rotate-[3deg] border-2 border-dashed border-blue-500 bg-blue-500/10 text-blue-700 px-2.5 py-0.5 rounded-md font-bold text-[9px] sm:text-[11px] tracking-wider uppercase text-right">
+                <div>⏳ DRAW AT {ticket.slot}</div>
+                <div className="text-[8px] text-blue-900 font-mono">COST: ₹{ticketCost} ({sem} SEM)</div>
               </div>
             ) : (
-              <div className="rotate-[4deg] border border-slate-300 bg-slate-100/90 text-slate-500 px-2 py-0.5 rounded text-[9px] font-bold uppercase text-right">
+              <div className="rotate-[4deg] border border-slate-300 bg-slate-100/90 text-slate-600 px-2 py-0.5 rounded text-[9px] font-bold uppercase text-right shadow-2xs">
                 <div>✕ NO PRIZE</div>
-                <div className="text-[8px] text-slate-400 font-mono">-₹{ticketCost}.00</div>
+                <div className="text-[8px] text-rose-700 font-mono font-bold">NET: -₹{ticketCost}.00</div>
               </div>
             )}
           </div>
@@ -368,6 +417,7 @@ export default function DemoPlayModule({ initialDraws = [] }: DemoPlayModuleProp
   const [manualNumber, setManualNumber] = useState('');
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [successMsg, setSuccessMsg] = useState<string | null>(null);
+  const [purchaseFeedback, setPurchaseFeedback] = useState<PurchaseFeedback | null>(null);
 
   // Tickets stored in localStorage
   const [myTickets, setMyTickets] = useState<LuckyTicket[]>([]);
@@ -441,7 +491,7 @@ export default function DemoPlayModule({ initialDraws = [] }: DemoPlayModuleProp
   };
 
   // Match evaluation for a ticket against official draw prizes (Multiplied by Sem count!)
-  const evaluateTicket = (ticket: LuckyTicket) => {
+  const evaluateTicket = (ticket: LuckyTicket): TicketEvalResult => {
     const draw = findDrawForTicket(ticket);
     const prizes: PrizeRecord = draw?.parsed_data?.prizes || draw?.prizes || {};
     const hasPrizes = Boolean(prizes.first_prize?.number && draw?.status !== 'UPCOMING' && draw?.status !== 'DRAWING');
@@ -560,8 +610,10 @@ export default function DemoPlayModule({ initialDraws = [] }: DemoPlayModuleProp
     );
 
     let targetTicket: LuckyTicket;
+    let isIncrement = false;
 
     if (existingIndex >= 0) {
+      isIncrement = true;
       const existing = myTickets[existingIndex];
       const updatedSem = (existing.sem || 5) + semCount;
       const updatedTicket: LuckyTicket = {
@@ -576,10 +628,10 @@ export default function DemoPlayModule({ initialDraws = [] }: DemoPlayModuleProp
 
       setSuccessMsg(
         lang === 'bn'
-          ? `+${semCount} সেম যোগ হয়েছে! ${existing.series} ${existing.number} মোট: ${updatedSem} সেম (₹${updatedSem * 7})`
-          : `Added +${semCount} Sem! ${existing.series} ${existing.number} Total: ${updatedSem} Sem (₹${updatedSem * 7})`
+          ? `+${semCount} সেম বৃদ্ধি! ${existing.series} ${existing.number} মোট: ${updatedSem} সেম (খরচ: ₹${updatedSem * 7})`
+          : `Added +${semCount} Sem! ${existing.series} ${existing.number} Total: ${updatedSem} Sem (Cost: ₹${updatedSem * 7})`
       );
-      setTimeout(() => setSuccessMsg(null), 3000);
+      setTimeout(() => setSuccessMsg(null), 4000);
     } else {
       const newTicket: LuckyTicket = {
         id: `${Date.now()}-${Math.random().toString(36).substring(2, 6)}`,
@@ -600,15 +652,32 @@ export default function DemoPlayModule({ initialDraws = [] }: DemoPlayModuleProp
           ? `টিকিট যোগ হয়েছে: ${cleanSeries} ${cleanNum} (${semCount} সেম • ₹${semCount * 7})`
           : `Ticket added: ${cleanSeries} ${cleanNum} (${semCount} Sem • ₹${semCount * 7})`
       );
-      setTimeout(() => setSuccessMsg(null), 3000);
+      setTimeout(() => setSuccessMsg(null), 4000);
     }
 
     setManualNumber('');
 
     const evalRes = evaluateTicket(targetTicket);
+    const totalSem = targetTicket.sem || 5;
+    const ticketCost = totalSem * 7;
+    const netPnl = evalRes.status === 'RESULT_OUT'
+      ? (evalRes.isWin ? evalRes.prizeAmount - ticketCost : -ticketCost)
+      : -ticketCost;
+
+    setPurchaseFeedback({
+      ticket: targetTicket,
+      evalRes,
+      isIncrement,
+      semAdded: semCount,
+      totalSem,
+      ticketCost,
+      netPnl,
+      timestamp: Date.now()
+    });
+
     if (evalRes.isWin) {
       try {
-        confetti({ particleCount: 75, spread: 65, origin: { y: 0.6 } });
+        confetti({ particleCount: 85, spread: 70, origin: { y: 0.6 } });
       } catch (e) {}
     }
   };
@@ -617,15 +686,44 @@ export default function DemoPlayModule({ initialDraws = [] }: DemoPlayModuleProp
   const handleAddSemToTicket = (ticketId: string, delta: number = 5) => {
     setErrorMsg(null);
     setSuccessMsg(null);
+    let updatedTarget: LuckyTicket | null = null;
     const nextTickets = myTickets.map(t => {
       if (t.id === ticketId) {
         const currentSem = t.sem || 5;
         const newSem = Math.max(5, currentSem + delta);
-        return { ...t, sem: newSem };
+        updatedTarget = { ...t, sem: newSem };
+        return updatedTarget;
       }
       return t;
     });
     saveTickets(nextTickets);
+
+    if (updatedTarget) {
+      const target = updatedTarget as LuckyTicket;
+      const evalRes = evaluateTicket(target);
+      const totalSem = target.sem || 5;
+      const ticketCost = totalSem * 7;
+      const netPnl = evalRes.status === 'RESULT_OUT'
+        ? (evalRes.isWin ? evalRes.prizeAmount - ticketCost : -ticketCost)
+        : -ticketCost;
+
+      setPurchaseFeedback({
+        ticket: target,
+        evalRes,
+        isIncrement: true,
+        semAdded: delta,
+        totalSem,
+        ticketCost,
+        netPnl,
+        timestamp: Date.now()
+      });
+
+      if (evalRes.isWin && delta > 0) {
+        try {
+          confetti({ particleCount: 75, spread: 65, origin: { y: 0.6 } });
+        } catch (e) {}
+      }
+    }
   };
 
   // Quick Random Lucky Ticket generator (Adds 5 Sem)
@@ -769,22 +867,55 @@ export default function DemoPlayModule({ initialDraws = [] }: DemoPlayModuleProp
   // Filter tickets for currently selected game (Date + Slot)
   const activeGameTickets = myTickets.filter(t => t.date === selectedDate && t.slot === selectedSlot);
 
+  // Active game specific P/L calculations
+  const gameStats = useMemo(() => {
+    const totalSem = activeGameTickets.reduce((acc, t) => acc + (t.sem || 5), 0);
+    const totalCost = totalSem * 7;
+    const evals = activeGameTickets.map(t => ({ ticket: t, evalRes: evaluateTicket(t) }));
+    const settled = evals.filter(item => item.evalRes.status === 'RESULT_OUT');
+    const wins = settled.filter(item => item.evalRes.isWin);
+    const totalReturns = wins.reduce((acc, item) => acc + item.evalRes.prizeAmount, 0);
+    const netPnl = totalReturns - totalCost;
+    const isPending = settled.length === 0;
+
+    return {
+      totalSem,
+      totalCost,
+      totalReturns,
+      netPnl,
+      winsCount: wins.length,
+      settledCount: settled.length,
+      isPending
+    };
+  }, [activeGameTickets, initialDraws]);
+
   // Overall Global Profit & Loss & Accuracy calculation with Sem factoring
-  const evaluatedTickets = useMemo(() => {
-    return myTickets.map(t => ({
+  const globalStats = useMemo(() => {
+    const totalSemAll = myTickets.reduce((acc, t) => acc + (t.sem || 5), 0);
+    const totalCostAll = totalSemAll * 7;
+
+    const allEvals = myTickets.map(t => ({
       ticket: t,
       evalRes: evaluateTicket(t)
-    })).filter(item => item.evalRes.status === 'RESULT_OUT');
-  }, [myTickets, initialDraws]);
+    }));
 
-  const totalEvaluated = evaluatedTickets.length;
-  const totalWins = evaluatedTickets.filter(item => item.evalRes.isWin).length;
-  const accuracyPercent = totalEvaluated > 0 ? Math.round((totalWins / totalEvaluated) * 100) : 0;
-  
-  // Total cost takes into account each ticket's sem: (sem * ₹7)
-  const totalCost = evaluatedTickets.reduce((acc, item) => acc + (item.ticket.sem || 5) * 7, 0);
-  const totalReturns = evaluatedTickets.reduce((acc, item) => acc + item.evalRes.prizeAmount, 0);
-  const netPnl = totalReturns - totalCost;
+    const settledAll = allEvals.filter(item => item.evalRes.status === 'RESULT_OUT');
+    const totalWins = settledAll.filter(item => item.evalRes.isWin).length;
+    const totalReturns = settledAll.reduce((acc, item) => acc + item.evalRes.prizeAmount, 0);
+    const accuracyPercent = settledAll.length > 0 ? Math.round((totalWins / settledAll.length) * 100) : 0;
+    const overallNetPnl = totalReturns - totalCostAll;
+
+    return {
+      totalSemAll,
+      totalCostAll,
+      settledCount: settledAll.length,
+      pendingCount: myTickets.length - settledAll.length,
+      totalWins,
+      totalReturns,
+      accuracyPercent,
+      overallNetPnl
+    };
+  }, [myTickets, initialDraws]);
 
   return (
     <div className="space-y-4 max-w-xl mx-auto text-slate-800">
@@ -811,38 +942,77 @@ export default function DemoPlayModule({ initialDraws = [] }: DemoPlayModuleProp
         </div>
       </div>
 
-      {/* 2. Global Performance & Accuracy Bar (Real Profit / Loss taking Sem into account) */}
+      {/* 2. Global Performance & Accuracy Bar (Transparent Cost, Returns, and Net P/L) */}
       <div className="grid grid-cols-4 gap-1.5 sm:gap-2 text-center">
         <div className="bg-white border border-slate-200 rounded-xl p-2 shadow-2xs">
           <span className="text-[9px] sm:text-[10px] text-slate-500 font-bold block uppercase truncate">
-            {lang === 'bn' ? 'বুকলেট' : 'Booklets'}
+            {lang === 'bn' ? 'মোট টিকিট' : 'Booklets'}
           </span>
-          <span className="font-mono text-sm sm:text-base font-black text-slate-900">
-            {totalEvaluated}
+          <span className="font-mono text-xs sm:text-base font-black text-slate-900 block truncate">
+            {myTickets.length}
           </span>
-        </div>
-        <div className="bg-white border border-slate-200 rounded-xl p-2 shadow-2xs">
-          <span className="text-[9px] sm:text-[10px] text-slate-500 font-bold block uppercase truncate">
-            {lang === 'bn' ? 'ম্যাচ / জয়' : 'Hits'}
-          </span>
-          <span className="font-mono text-sm sm:text-base font-black text-emerald-600">
-            {totalWins}
+          <span className="text-[8px] sm:text-[9px] text-slate-400 block font-mono">
+            {globalStats.totalSemAll} Sem
           </span>
         </div>
+
         <div className="bg-white border border-slate-200 rounded-xl p-2 shadow-2xs">
           <span className="text-[9px] sm:text-[10px] text-slate-500 font-bold block uppercase truncate">
-            {lang === 'bn' ? 'অ্যাকুরেসি' : 'Accuracy'}
+            {lang === 'bn' ? 'মোট খরচ' : 'Total Cost'}
           </span>
-          <span className="font-mono text-sm sm:text-base font-black text-blue-700">
-            {accuracyPercent}%
+          <span className="font-mono text-xs sm:text-base font-black text-slate-900 block truncate">
+            ₹{globalStats.totalCostAll}
+          </span>
+          <span className="text-[8px] sm:text-[9px] text-slate-400 block font-mono">
+            ₹7/ticket
           </span>
         </div>
+
         <div className="bg-white border border-slate-200 rounded-xl p-2 shadow-2xs">
           <span className="text-[9px] sm:text-[10px] text-slate-500 font-bold block uppercase truncate">
-            {lang === 'bn' ? 'লাভ/ক্ষতি (P/L)' : 'Net P/L'}
+            {lang === 'bn' ? 'মোট জয়' : 'Total Won'}
           </span>
-          <span className={`font-mono text-xs sm:text-sm font-black truncate block ${netPnl >= 0 ? 'text-emerald-700' : 'text-slate-700'}`}>
-            {netPnl >= 0 ? `+${formatINR(netPnl)}` : `-${formatINR(Math.abs(netPnl))}`}
+          <span className="font-mono text-xs sm:text-base font-black text-emerald-600 block truncate">
+            ₹{formatINR(globalStats.totalReturns)}
+          </span>
+          <span className="text-[8px] sm:text-[9px] text-emerald-700 block font-bold truncate">
+            {globalStats.totalWins} জয় ({globalStats.accuracyPercent}%)
+          </span>
+        </div>
+
+        <div className="bg-white border border-slate-200 rounded-xl p-2 shadow-2xs">
+          <span className="text-[9px] sm:text-[10px] text-slate-500 font-bold block uppercase truncate">
+            {lang === 'bn' ? 'নিট P/L' : 'Net P/L'}
+          </span>
+          <span className={`font-mono text-xs sm:text-base font-black truncate block ${
+            myTickets.length === 0 
+              ? 'text-slate-700' 
+              : globalStats.overallNetPnl >= 0 
+              ? 'text-emerald-700' 
+              : 'text-rose-700'
+          }`}>
+            {myTickets.length === 0 
+              ? '₹0' 
+              : globalStats.overallNetPnl >= 0 
+              ? `+₹${formatINR(globalStats.overallNetPnl)}` 
+              : `-₹${formatINR(Math.abs(globalStats.overallNetPnl))}`}
+          </span>
+          <span className={`text-[8px] sm:text-[9px] block font-bold truncate ${
+            myTickets.length === 0
+              ? 'text-slate-400'
+              : globalStats.overallNetPnl > 0 
+              ? 'text-emerald-700' 
+              : globalStats.overallNetPnl < 0 
+              ? 'text-rose-600' 
+              : 'text-slate-500'
+          }`}>
+            {myTickets.length === 0 
+              ? (lang === 'bn' ? 'খালি' : 'Empty')
+              : globalStats.overallNetPnl > 0 
+              ? (lang === 'bn' ? '🎉 লাভ' : 'Profit') 
+              : globalStats.overallNetPnl < 0 
+              ? (lang === 'bn' ? 'ক্ষতি' : 'Loss') 
+              : (lang === 'bn' ? 'ব্রেক-ইভেন' : 'Even')}
           </span>
         </div>
       </div>
@@ -1014,7 +1184,88 @@ export default function DemoPlayModule({ initialDraws = [] }: DemoPlayModuleProp
           </button>
         </form>
 
-        {successMsg && (
+        {/* Instant Purchase & Live Profit/Loss Feedback Card */}
+        {purchaseFeedback && (
+          <div 
+            className={`rounded-xl p-3 border shadow-xs transition-all animate-fadeIn relative ${
+              purchaseFeedback.evalRes.status === 'RESULT_OUT' && purchaseFeedback.evalRes.isWin
+                ? 'bg-gradient-to-r from-emerald-800 via-teal-800 to-emerald-900 text-white border-emerald-400 ring-2 ring-emerald-500/40'
+                : purchaseFeedback.evalRes.status === 'RESULT_OUT' && !purchaseFeedback.evalRes.isWin
+                ? 'bg-gradient-to-r from-slate-900 to-slate-800 text-white border-slate-700'
+                : 'bg-gradient-to-r from-blue-950 to-indigo-950 text-white border-blue-700'
+            }`}
+          >
+            <div className="flex items-start justify-between gap-2">
+              <div className="flex items-start gap-2.5 min-w-0">
+                <span className="text-2xl shrink-0 mt-0.5">
+                  {purchaseFeedback.evalRes.status === 'RESULT_OUT' && purchaseFeedback.evalRes.isWin ? '🎉' : purchaseFeedback.evalRes.status === 'RESULT_OUT' ? '🎟️' : '⏳'}
+                </span>
+                <div className="space-y-1 min-w-0">
+                  <div className="flex items-center gap-1.5 flex-wrap">
+                    <span className="text-xs sm:text-sm font-black text-white">
+                      {purchaseFeedback.isIncrement
+                        ? (lang === 'bn' ? `+${purchaseFeedback.semAdded} সেম বৃদ্ধি সফল!` : `+${purchaseFeedback.semAdded} Sem Added!`)
+                        : (lang === 'bn' ? 'টিকিট প্রিন্ট সম্পন্ন!' : 'Ticket Printed!')}
+                    </span>
+                    <span className="bg-white/20 font-mono text-[10px] sm:text-xs font-bold px-1.5 py-0.2 rounded text-white">
+                      {purchaseFeedback.ticket.series} {purchaseFeedback.ticket.number}
+                    </span>
+                    <span className="bg-amber-400 text-amber-950 font-black text-[9px] sm:text-[10px] px-1.5 py-0.2 rounded">
+                      {purchaseFeedback.totalSem} Sem (₹{purchaseFeedback.ticketCost})
+                    </span>
+                  </div>
+
+                  {purchaseFeedback.evalRes.status === 'RESULT_OUT' ? (
+                    purchaseFeedback.evalRes.isWin ? (
+                      <div className="space-y-1">
+                        <div className="text-[11px] text-emerald-200 font-bold flex items-center gap-1">
+                          <span>🏆</span>
+                          <span>{lang === 'bn' ? `${purchaseFeedback.evalRes.prizeTitle} জয়ী (+₹${formatINR(purchaseFeedback.evalRes.prizeAmount)})` : `Won ${purchaseFeedback.evalRes.prizeTitle} (+₹${formatINR(purchaseFeedback.evalRes.prizeAmount)})`}</span>
+                        </div>
+                        <div className="text-xs sm:text-sm font-black text-amber-300 font-mono flex items-center gap-1.5 flex-wrap">
+                          <span>💰</span>
+                          <span>
+                            {lang === 'bn' 
+                              ? `নিট লাভ: +₹${formatINR(purchaseFeedback.netPnl)}` 
+                              : `Net Profit: +₹${formatINR(purchaseFeedback.netPnl)}`}
+                          </span>
+                          <span className="text-[10px] text-emerald-200 font-normal">
+                            (প্রাইজ ₹{formatINR(purchaseFeedback.evalRes.prizeAmount)} - খরচ ₹{purchaseFeedback.ticketCost})
+                          </span>
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="text-[11px] text-slate-300 flex items-center gap-2 flex-wrap">
+                        <span>{lang === 'bn' ? 'এই ড্র-তে কোনো প্রাইজ মেলেনি।' : 'No prize won in this draw.'}</span>
+                        <span className="text-rose-300 font-bold font-mono">
+                          {lang === 'bn' ? `নিট ক্ষতি: -₹${purchaseFeedback.ticketCost}` : `Net Loss: -₹${purchaseFeedback.ticketCost}`}
+                        </span>
+                      </div>
+                    )
+                  ) : (
+                    <div className="text-[11px] text-blue-200">
+                      {lang === 'bn'
+                        ? `বিনিয়োগ: ₹${purchaseFeedback.ticketCost} • ${purchaseFeedback.ticket.slot} ড্র সম্পন্ন হলে প্রফিট/লস লাইভ আপডেট হবে।`
+                        : `Invested: ₹${purchaseFeedback.ticketCost} • P/L will settle live once ${purchaseFeedback.ticket.slot} draw results are out.`}
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* Dismiss Button */}
+              <button
+                type="button"
+                onClick={() => setPurchaseFeedback(null)}
+                className="text-white/60 hover:text-white p-1 rounded hover:bg-white/10 transition-colors shrink-0 text-xs cursor-pointer"
+                title="Dismiss"
+              >
+                ✕
+              </button>
+            </div>
+          </div>
+        )}
+
+        {successMsg && !purchaseFeedback && (
           <div className="text-[11px] text-emerald-800 font-bold bg-emerald-50 border border-emerald-300 rounded-lg p-2 text-center flex items-center justify-center gap-1.5 animate-fadeIn">
             <span>🎉</span>
             <span>{successMsg}</span>
@@ -1048,12 +1299,107 @@ export default function DemoPlayModule({ initialDraws = [] }: DemoPlayModuleProp
             <button
               type="button"
               onClick={handleClearSlot}
-              className="text-[11px] font-bold text-red-600 hover:underline"
+              className="text-[11px] font-bold text-red-600 hover:underline cursor-pointer"
             >
               {lang === 'bn' ? 'এই ড্র ক্লিয়ার করুন' : 'Clear game'}
             </button>
           )}
         </div>
+
+        {/* Active Game Financial P/L Bar */}
+        {activeGameTickets.length > 0 && (
+          <div className="bg-slate-900 text-white rounded-xl p-3 border border-slate-800 shadow-xs space-y-2.5">
+            <div className="flex items-center justify-between text-xs border-b border-slate-800 pb-1.5">
+              <span className="font-bold flex items-center gap-1.5 text-slate-200">
+                <span>📊</span>
+                <span>
+                  {lang === 'bn' 
+                    ? `${selectedDate === todayStr ? 'আজকের' : 'গতকালকের'} ${selectedSlot} ড্র-এর মোট লাভ/ক্ষতি (P/L):` 
+                    : `${selectedSlot} Game Financial Summary (P/L):`}
+                </span>
+              </span>
+              <span className="font-mono text-[10px] text-slate-400 bg-white/10 px-2 py-0.5 rounded">
+                {activeGameTickets.length} {lang === 'bn' ? 'টি টিকিট' : 'Tickets'} • {gameStats.totalSem} Sem
+              </span>
+            </div>
+
+            <div className="grid grid-cols-3 gap-2 text-center">
+              <div className="bg-white/5 rounded-lg p-2 border border-white/10">
+                <span className="text-[9px] text-slate-400 block font-bold uppercase">
+                  {lang === 'bn' ? 'মোট খরচ' : 'Total Spent'}
+                </span>
+                <span className="font-mono text-xs sm:text-sm font-bold text-slate-200">
+                  ₹{gameStats.totalCost}
+                </span>
+              </div>
+
+              <div className="bg-white/5 rounded-lg p-2 border border-white/10">
+                <span className="text-[9px] text-slate-400 block font-bold uppercase">
+                  {lang === 'bn' ? 'মোট জয়' : 'Total Won'}
+                </span>
+                <span className="font-mono text-xs sm:text-sm font-bold text-amber-400">
+                  ₹{formatINR(gameStats.totalReturns)}
+                  {gameStats.winsCount > 0 && (
+                    <span className="text-[9px] text-emerald-400 ml-1 font-sans">
+                      ({gameStats.winsCount} জয়)
+                    </span>
+                  )}
+                </span>
+              </div>
+
+              <div className={`rounded-lg p-2 border ${
+                gameStats.isPending 
+                  ? 'bg-blue-950/40 border-blue-800 text-blue-300' 
+                  : gameStats.netPnl >= 0 
+                  ? 'bg-emerald-950/60 border-emerald-600 text-emerald-300 ring-1 ring-emerald-500/50' 
+                  : 'bg-rose-950/40 border-rose-900/60 text-rose-300'
+              }`}>
+                <span className="text-[9px] text-slate-400 block font-bold uppercase">
+                  {gameStats.isPending 
+                    ? (lang === 'bn' ? 'স্ট্যাটাস' : 'Status') 
+                    : (lang === 'bn' ? 'নিট লাভ/ক্ষতি' : 'Net P/L')}
+                </span>
+                <span className="font-mono text-xs sm:text-sm font-black truncate block">
+                  {gameStats.isPending 
+                    ? (lang === 'bn' ? 'ড্র অপেক্ষায়' : 'Awaiting Draw')
+                    : gameStats.netPnl >= 0 
+                    ? `+₹${formatINR(gameStats.netPnl)}` 
+                    : `-₹${formatINR(Math.abs(gameStats.netPnl))}`}
+                </span>
+              </div>
+            </div>
+
+            {/* Bottom Insight Line */}
+            <div className="text-[10px] text-center font-bold pt-0.5">
+              {gameStats.isPending ? (
+                <span className="text-blue-300">
+                  {lang === 'bn' 
+                    ? `⏳ এই ড্র-তে মোট ₹${gameStats.totalCost} বিনিয়োগ হয়েছে। ড্র ফলাফল প্রকাশ হলে প্রফিট/লস এখানে দেখাবে।` 
+                    : `⏳ ₹${gameStats.totalCost} invested in this draw. Profit/loss will calculate after draw.`}
+                </span>
+              ) : gameStats.netPnl > 0 ? (
+                <span className="text-emerald-400 flex items-center justify-center gap-1">
+                  <span>🎉</span>
+                  <span>
+                    {lang === 'bn' 
+                      ? `দারুণ! এই ড্র-তে আপনার মোট নিট লাভ: +₹${formatINR(gameStats.netPnl)}` 
+                      : `Great! Net profit in this draw: +₹${formatINR(gameStats.netPnl)}`}
+                  </span>
+                </span>
+              ) : gameStats.netPnl === 0 ? (
+                <span className="text-slate-400">
+                  {lang === 'bn' ? 'খরচ ও প্রাপ্তি সমান সমান (ব্রেক-ইভেন)' : 'Break-even (₹0 P/L)'}
+                </span>
+              ) : (
+                <span className="text-rose-400">
+                  {lang === 'bn' 
+                    ? `এই ড্র-তে নিট ক্ষতি: -₹${formatINR(Math.abs(gameStats.netPnl))} (খরচ: ₹${gameStats.totalCost}, প্রাপ্তি: ₹${formatINR(gameStats.totalReturns)})` 
+                    : `Net loss in this draw: -₹${formatINR(Math.abs(gameStats.netPnl))} (Spent: ₹${gameStats.totalCost}, Won: ₹${formatINR(gameStats.totalReturns)})`}
+                </span>
+              )}
+            </div>
+          </div>
+        )}
 
         {activeGameTickets.length === 0 ? (
           <div className="bg-white border-2 border-dashed border-slate-200 rounded-2xl p-6 text-center space-y-1.5">
@@ -1129,13 +1475,30 @@ export default function DemoPlayModule({ initialDraws = [] }: DemoPlayModuleProp
           {hotCards.map((item, idx) => {
             const existingInGame = activeGameTickets.find(t => t.number === item.number);
             const currentSem = existingInGame?.sem || 0;
+            const targetSem = currentSem > 0 ? currentSem : 5;
+
+            // Check if this number won in the currently selected game
+            const previewEval = evaluateTicket({
+              id: `preview-${idx}`,
+              series: item.series,
+              number: item.number,
+              sem: targetSem,
+              slot: selectedSlot,
+              date: selectedDate,
+              createdAt: 0
+            });
+            const isWinner = previewEval.status === 'RESULT_OUT' && previewEval.isWin;
+            const previewCost = targetSem * 7;
+            const previewNetProfit = previewEval.prizeAmount - previewCost;
 
             return (
               <div 
                 key={idx} 
                 className={`border rounded-xl p-2.5 flex items-center justify-between gap-2 transition-all group ${
-                  currentSem > 0 
-                    ? 'border-emerald-400 bg-emerald-50/40 ring-1 ring-emerald-300' 
+                  isWinner
+                    ? 'border-emerald-500 bg-emerald-50/80 ring-1 ring-emerald-400 shadow-2xs'
+                    : currentSem > 0 
+                    ? 'border-blue-400 bg-blue-50/50 ring-1 ring-blue-300' 
                     : 'bg-slate-50 hover:bg-amber-50/40 border-slate-200 hover:border-amber-300'
                 }`}
               >
@@ -1148,11 +1511,17 @@ export default function DemoPlayModule({ initialDraws = [] }: DemoPlayModuleProp
                       {item.number}
                     </span>
                     {currentSem > 0 && (
-                      <span className="bg-emerald-600 text-white text-[9px] font-black px-1.5 py-0.2 rounded-md shrink-0 shadow-2xs">
+                      <span className="bg-slate-800 text-white text-[9px] font-black px-1.5 py-0.2 rounded-md shrink-0 shadow-2xs">
                         🎟️ {currentSem} Sem
                       </span>
                     )}
+                    {isWinner && (
+                      <span className="bg-emerald-600 text-white text-[9px] font-black px-1.5 py-0.2 rounded-md shrink-0 shadow-2xs animate-pulse">
+                        🎉 WIN: +₹{formatINR(previewNetProfit)}
+                      </span>
+                    )}
                   </div>
+
                   <div className="text-[10px] text-slate-500 mt-0.5 flex items-center gap-1 truncate">
                     <span className="font-bold text-amber-700 shrink-0">
                       {lang === 'bn' ? item.tagBn : item.tag}
@@ -1160,6 +1529,12 @@ export default function DemoPlayModule({ initialDraws = [] }: DemoPlayModuleProp
                     <span>•</span>
                     <span className="truncate">{lang === 'bn' ? item.reasonBn : item.reason}</span>
                   </div>
+
+                  {isWinner && (
+                    <div className="text-[9px] font-bold text-emerald-800 mt-0.5">
+                      {previewEval.prizeTitle} (+₹{formatINR(previewEval.prizeAmount)}) • {lang === 'bn' ? `নিট লাভ: +₹${formatINR(previewNetProfit)}` : `Net: +₹${formatINR(previewNetProfit)}`}
+                    </div>
+                  )}
                 </div>
 
                 <div className="flex items-center gap-1 shrink-0">
@@ -1177,7 +1552,11 @@ export default function DemoPlayModule({ initialDraws = [] }: DemoPlayModuleProp
                   <button
                     type="button"
                     onClick={() => addTicket(item.series, item.number, 5)}
-                    className="px-2.5 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white font-black text-xs shadow-2xs active:scale-95 transition-all flex items-center gap-1 cursor-pointer"
+                    className={`px-2.5 py-1.5 rounded-lg font-black text-xs shadow-2xs active:scale-95 transition-all flex items-center gap-1 cursor-pointer ${
+                      isWinner
+                        ? 'bg-emerald-600 hover:bg-emerald-700 text-white ring-1 ring-emerald-400'
+                        : 'bg-emerald-600 hover:bg-emerald-700 text-white'
+                    }`}
                     title={
                       currentSem > 0 
                         ? (lang === 'bn' ? `${item.number} নম্বরে আরও +৫ সেম নিন (মোট: ${currentSem + 5} সেম)` : `Add +5 more Sem to ${item.number} (Total: ${currentSem + 5} Sem)`)
