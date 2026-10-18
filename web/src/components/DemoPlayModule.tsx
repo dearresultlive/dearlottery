@@ -633,6 +633,20 @@ export default function DemoPlayModule({ initialDraws = [] }: DemoPlayModuleProp
       );
       setTimeout(() => setSuccessMsg(null), 4000);
     } else {
+      // Check quota limit: Maximum 5 distinct booklets allowed per draw game
+      const currentSlotCount = myTickets.filter(
+        t => t.date === selectedDate && t.slot === selectedSlot
+      ).length;
+
+      if (currentSlotCount >= 5) {
+        setErrorMsg(
+          lang === 'bn'
+            ? '⚠️ এই ড্র-এর জন্য সর্বোচ্চ ৫টি বুকলেটের কোটা পূর্ণ! নিচের যেকোনো টিকিটে সেম (+৫ সেম) বৃদ্ধি করুন অথবা নতুন নম্বর নিতে কোনো টিকিট মুছুন।'
+            : '⚠️ Quota full! Maximum 5 booklets allowed per draw. You can add more Sem (+5 Sem) to your existing tickets or delete one to pick a new number.'
+        );
+        return;
+      }
+
       const newTicket: LuckyTicket = {
         id: `${Date.now()}-${Math.random().toString(36).substring(2, 6)}`,
         series: cleanSeries,
@@ -728,6 +742,19 @@ export default function DemoPlayModule({ initialDraws = [] }: DemoPlayModuleProp
 
   // Quick Random Lucky Ticket generator (Adds 5 Sem)
   const handleQuickTicket = () => {
+    const currentSlotCount = myTickets.filter(
+      t => t.date === selectedDate && t.slot === selectedSlot
+    ).length;
+
+    if (currentSlotCount >= 5) {
+      setErrorMsg(
+        lang === 'bn'
+          ? '⚠️ এই ড্র-এর জন্য সর্বোচ্চ ৫টি বুকলেটের কোটা পূর্ণ! নিচের টিকিটে সেম (+৫ সেম) বৃদ্ধি করুন অথবা কোনো টিকিট মুছুন।'
+          : '⚠️ Quota full! Maximum 5 booklets allowed per draw. Add more Sem (+5 Sem) below or delete a ticket.'
+      );
+      return;
+    }
+
     const seriesOptions = ['72B', '64D', '81G', '92H', '55A', '58C', '73E', '86J', '84D', '69A', '77C'];
     const middleSeeds = ['48', '62', '79', '35', '52', '29', '43', '80', '15', '24'];
     const endingSeeds = ['55', '74', '22', '57', '63', '36', '14', '82', '99', '06'];
@@ -1114,39 +1141,53 @@ export default function DemoPlayModule({ initialDraws = [] }: DemoPlayModuleProp
       {/* 4. Ticket Generator Controls with 1-Tap Sem Selector */}
       <div className="bg-white border border-slate-200 rounded-2xl p-3 sm:p-4 shadow-sm space-y-3">
         
-        {/* 5 SEM RETAIL STANDARD BADGE */}
+        {/* 5 SEM RETAIL STANDARD BADGE & 5-BOOKLET LIMIT COUNTER */}
         <div className="flex items-center justify-between gap-2 bg-gradient-to-r from-amber-50 to-orange-50 border border-amber-200/90 p-2.5 rounded-xl text-xs">
-          <div className="flex items-center gap-1.5">
-            <span className="text-base">📚</span>
-            <div>
+          <div className="flex items-center gap-1.5 min-w-0">
+            <span className="text-base shrink-0">📚</span>
+            <div className="min-w-0">
               <span className="font-black text-amber-950 block text-[11px] sm:text-xs">
                 {lang === 'bn' 
-                  ? 'স্ট্যান্ডার্ড রিটেইল টিকিট: ৫ সেম (₹৩৫)' 
-                  : 'Standard Retail Ticket: 5 Sem (₹35)'}
+                  ? 'স্ট্যান্ডার্ড ৫ সেম (₹৩৫) • লিমিট: সর্বোচ্চ ৫ বুকলেট' 
+                  : 'Standard 5 Sem (₹35) • Limit: Max 5 Booklets'}
               </span>
-              <span className="text-[10px] text-amber-900/80 block">
+              <span className="text-[10px] text-amber-900/80 block truncate">
                 {lang === 'bn'
-                  ? 'একই নম্বরে পুনরায় ক্লিক করলে সরাসরি +৫ সেম করে বৃদ্ধি পাবে'
-                  : 'Clicking the same number again adds +5 Sem to the ticket'}
+                  ? 'একই টিকিটে যত খুশি +৫ সেম করে বাড়ানো যায়'
+                  : 'Add unlimited +5 Sem to any existing ticket'}
               </span>
             </div>
           </div>
-          <span className="bg-amber-600 text-white font-mono font-black text-xs px-2.5 py-1 rounded-lg shrink-0 shadow-2xs">
-            5 SEM • ₹35
-          </span>
+          <div className="flex items-center gap-1.5 shrink-0">
+            <span className={`font-mono font-black text-[10px] px-2 py-0.5 rounded-md border shadow-2xs ${
+              activeGameTickets.length >= 5
+                ? 'bg-amber-600 text-white border-amber-700'
+                : 'bg-white text-slate-800 border-amber-300'
+            }`}>
+              {activeGameTickets.length}/5
+            </span>
+            <span className="bg-amber-600 text-white font-mono font-black text-xs px-2.5 py-1 rounded-lg shrink-0 shadow-2xs">
+              5 SEM • ₹35
+            </span>
+          </div>
         </div>
 
         {/* 1-Click Quick Ticket Button (Adds 5 Sem) */}
         <button
           type="button"
           onClick={handleQuickTicket}
-          className="w-full bg-gradient-to-r from-amber-500 via-orange-500 to-amber-600 hover:from-amber-600 hover:to-orange-600 text-white font-black text-xs sm:text-sm py-2.5 px-4 rounded-xl shadow-xs transition-all active:scale-[0.99] flex items-center justify-center gap-2 cursor-pointer"
+          disabled={activeGameTickets.length >= 5}
+          className={`w-full font-black text-xs sm:text-sm py-2.5 px-4 rounded-xl shadow-xs transition-all flex items-center justify-center gap-2 ${
+            activeGameTickets.length >= 5
+              ? 'bg-slate-100 text-slate-400 border border-slate-200 cursor-not-allowed'
+              : 'bg-gradient-to-r from-amber-500 via-orange-500 to-amber-600 hover:from-amber-600 hover:to-orange-600 text-white active:scale-[0.99] cursor-pointer'
+          }`}
         >
-          <span className="text-base sm:text-lg">🎲</span>
+          <span className="text-base sm:text-lg">{activeGameTickets.length >= 5 ? '🔒' : '🎲'}</span>
           <span>
-            {lang === 'bn' 
-              ? 'কুইক লাকি টিকিট নিন (৫ সেম • ₹৩৫)' 
-              : 'Print Quick Lucky Ticket (5 Sem • ₹35)'}
+            {activeGameTickets.length >= 5
+              ? (lang === 'bn' ? '৫/৫ বুকলেট পূর্ণ (নিচে সেম বৃদ্ধি করুন)' : '5/5 Booklets Full (Add Sem below)')
+              : (lang === 'bn' ? 'কুইক লাকি টিকিট নিন (৫ সেম • ₹৩৫)' : 'Print Quick Lucky Ticket (5 Sem • ₹35)')}
           </span>
         </button>
 
@@ -1290,8 +1331,12 @@ export default function DemoPlayModule({ initialDraws = [] }: DemoPlayModuleProp
                 ? `আপনার টিকিট (${selectedDate === todayStr ? 'আজ' : 'গতকাল'} • ${selectedSlot})` 
                 : `Your Tickets (${selectedSlot})`}
             </span>
-            <span className="bg-slate-200 text-slate-700 text-[10px] px-1.5 py-0.2 rounded-full font-bold">
-              {activeGameTickets.length}
+            <span className={`text-[10px] px-2 py-0.2 rounded-full font-mono font-bold shadow-2xs ${
+              activeGameTickets.length >= 5
+                ? 'bg-amber-100 text-amber-900 border border-amber-300'
+                : 'bg-slate-200 text-slate-800'
+            }`}>
+              {activeGameTickets.length}/5
             </span>
           </h2>
 
