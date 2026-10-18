@@ -6,9 +6,7 @@ import {
   formatINR, 
   parseTicketInput, 
   getSlotStatus, 
-  getSlotCountdown,
-  getNextUpcomingDraw,
-  isDrawSlotUpcoming
+  getNextUpcomingDraw 
 } from '../lib/lottery-utils';
 import confetti from 'canvas-confetti';
 
@@ -30,15 +28,247 @@ export interface DemoTicket {
   createdAt: number;
 }
 
-interface DemoStats {
-  totalSimulated: number;
-  totalWins: number;
-  simulatedSpend: number; // ₹7 per ticket
-  simulatedReturns: number; // Sum of prize money won
-}
-
 interface DemoPlayModuleProps {
   initialDraws?: any[];
+}
+
+// Authentic Dear scheme names mapped by day of the week & slot
+function getSchemeName(dateStr: string, slot: '1PM' | '6PM' | '8PM'): string {
+  try {
+    const parts = dateStr.split('-');
+    const dateObj = new Date(Number(parts[0]), Number(parts[1]) - 1, Number(parts[2]));
+    const dayNames = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+    const day = dayNames[dateObj.getDay()] || 'Sunday';
+
+    const schemes: Record<string, Record<'1PM' | '6PM' | '8PM', string>> = {
+      Sunday: { '1PM': 'DEAR YAMUNA MORNING', '6PM': 'DEAR SEA DAY', '8PM': 'DEAR TOUCAN NIGHT' },
+      Monday: { '1PM': 'DEAR DWARKA MORNING', '6PM': 'DEAR DESERT DAY', '8PM': 'DEAR FINCH NIGHT' },
+      Tuesday: { '1PM': 'DEAR GODAVARI MORNING', '6PM': 'DEAR WAVE DAY', '8PM': 'DEAR GOOSE NIGHT' },
+      Wednesday: { '1PM': 'DEAR TEESTA MORNING', '6PM': 'DEAR HILL DAY', '8PM': 'DEAR PELICAN NIGHT' },
+      Thursday: { '1PM': 'DEAR PADMA MORNING', '6PM': 'DEAR LAKE DAY', '8PM': 'DEAR SANDPIPER NIGHT' },
+      Friday: { '1PM': 'DEAR HOOGHLY MORNING', '6PM': 'DEAR MOUNTAIN DAY', '8PM': 'DEAR SEAGULL NIGHT' },
+      Saturday: { '1PM': 'DEAR KOSI MORNING', '6PM': 'DEAR RIVER DAY', '8PM': 'DEAR STORK NIGHT' }
+    };
+
+    return schemes[day]?.[slot] || `DEAR ${slot} LOTTERY`;
+  } catch (e) {
+    return `DEAR ${slot} LOTTERY`;
+  }
+}
+
+// Real-world Barcode Visual Component
+function TicketBarcode({ code }: { code: string }) {
+  const bars = [2, 1, 3, 1, 2, 4, 1, 2, 1, 3, 2, 1, 4, 1, 2, 3, 1, 2, 1, 4, 2, 1, 3, 1, 2];
+  return (
+    <div className="flex flex-col items-center select-none opacity-85">
+      <div className="flex items-center gap-[1.5px] h-6 sm:h-7">
+        {bars.map((w, i) => (
+          <div
+            key={i}
+            className="bg-slate-900 h-full"
+            style={{ width: `${w * 1.4}px` }}
+          />
+        ))}
+      </div>
+      <span className="text-[8px] font-mono font-bold tracking-widest text-slate-700 mt-0.5">
+        * {code} *
+      </span>
+    </div>
+  );
+}
+
+// Realistic Physical Paper Ticket Component
+function RealPaperTicket({
+  ticket,
+  evalRes,
+  onDelete,
+  onCopy,
+  isCopied,
+  lang
+}: {
+  ticket: DemoTicket;
+  evalRes: any;
+  onDelete: (id: string) => void;
+  onCopy: (id: string, text: string) => void;
+  isCopied: boolean;
+  lang: string;
+}) {
+  const schemeName = getSchemeName(ticket.date, ticket.slot);
+  const formattedDate = ticket.date.split('-').reverse().join('/');
+
+  // Authentic slot theme colorways matching real paper lotteries
+  const theme = ticket.slot === '1PM' 
+    ? {
+        bg: 'bg-[#fffef0]',
+        border: 'border-amber-400',
+        ribbon: 'bg-red-600',
+        seriesBadge: 'bg-amber-100 text-amber-950 border-amber-300',
+        accentText: 'text-amber-900',
+        stubBg: 'bg-amber-500/10'
+      }
+    : ticket.slot === '6PM'
+    ? {
+        bg: 'bg-[#f0f9ff]',
+        border: 'border-blue-400',
+        ribbon: 'bg-blue-700',
+        seriesBadge: 'bg-blue-100 text-blue-950 border-blue-300',
+        accentText: 'text-blue-900',
+        stubBg: 'bg-blue-500/10'
+      }
+    : {
+        bg: 'bg-[#faf5ff]',
+        border: 'border-purple-400',
+        ribbon: 'bg-purple-800',
+        seriesBadge: 'bg-purple-100 text-purple-950 border-purple-300',
+        accentText: 'text-purple-900',
+        stubBg: 'bg-purple-500/10'
+      };
+
+  return (
+    <div className={`relative ${theme.bg} rounded-xl border-2 ${theme.border} shadow-md overflow-hidden font-sans select-none transition-transform hover:scale-[1.01]`}>
+      
+      {/* Semicircle perforation notch cutouts on top and bottom divider */}
+      <div className="absolute left-[64px] sm:left-[78px] -top-2.5 w-5 h-5 rounded-full bg-slate-100 border-b-2 border-slate-300 z-20 pointer-events-none"></div>
+      <div className="absolute left-[64px] sm:left-[78px] -bottom-2.5 w-5 h-5 rounded-full bg-slate-100 border-t-2 border-slate-300 z-20 pointer-events-none"></div>
+
+      <div className="flex items-stretch min-h-[148px] sm:min-h-[160px]">
+        
+        {/* LEFT COUNTERFOIL STUB (Perforated) */}
+        <div className={`w-[64px] sm:w-[78px] shrink-0 border-r-2 border-dashed border-slate-300 ${theme.stubBg} flex flex-col justify-between items-center py-2 px-1 text-center relative z-10`}>
+          <div className="space-y-0.5">
+            <span className="text-[8px] font-black tracking-tighter text-slate-600 block uppercase">NAGALAND</span>
+            <span className="text-[7px] font-bold text-slate-500 block">STATE LOTTERIES</span>
+          </div>
+
+          {/* Stamped Number on Stub */}
+          <div className="my-auto py-1">
+            <span className="text-[10px] sm:text-xs font-mono font-black text-slate-900 block leading-tight">
+              {ticket.series}
+            </span>
+            <span className="text-xs sm:text-sm font-mono font-black text-slate-950 tracking-wider block">
+              {ticket.number}
+            </span>
+            <span className="text-[8px] font-bold text-red-600 block mt-0.5">₹6.00</span>
+          </div>
+
+          <div className="opacity-60 leading-none">
+            <span className="font-mono text-[7px] tracking-tighter text-slate-700 block">|||||||||||</span>
+            <span className="text-[6px] font-mono text-slate-500 block">STUB</span>
+          </div>
+        </div>
+
+        {/* RIGHT MAIN TICKET SLIP */}
+        <div className="flex-1 flex flex-col justify-between p-2 sm:p-3 min-w-0 relative">
+          
+          {/* 1. Header with Government Title & Controls */}
+          <div className="flex items-start justify-between gap-1 border-b border-black/10 pb-1.5">
+            <div className="min-w-0">
+              <div className="flex items-center gap-1.5">
+                <span className="text-xs sm:text-sm leading-none">🏛️</span>
+                <span className="text-[10px] sm:text-xs font-black tracking-wider uppercase text-slate-900 truncate">
+                  NAGALAND STATE LOTTERIES
+                </span>
+              </div>
+              <div className="flex items-center gap-1 text-[9px] sm:text-[10px] font-bold text-slate-600 mt-0.5">
+                <span className="text-red-700 font-black">{schemeName}</span>
+                <span>•</span>
+                <span>{formattedDate}</span>
+              </div>
+            </div>
+
+            {/* Quick Actions (Copy & Delete) */}
+            <div className="flex items-center gap-1 shrink-0">
+              <button
+                type="button"
+                onClick={() => onCopy(ticket.id, `${ticket.series} ${ticket.number}`)}
+                className={`px-1.5 py-0.5 rounded text-[10px] font-bold transition-colors ${
+                  isCopied
+                    ? 'bg-emerald-600 text-white'
+                    : 'bg-black/5 hover:bg-black/10 text-slate-700'
+                }`}
+                title="Copy number"
+              >
+                {isCopied ? '✓' : '📋'}
+              </button>
+              <button
+                type="button"
+                onClick={() => onDelete(ticket.id)}
+                className="w-5 h-5 rounded-full bg-black/5 hover:bg-red-500 hover:text-white flex items-center justify-center text-[10px] text-slate-500 transition-colors"
+                title="Remove ticket"
+              >
+                ✕
+              </button>
+            </div>
+          </div>
+
+          {/* 2. 1st Prize Ribbon Banner */}
+          <div className={`${theme.ribbon} text-white px-2 py-0.5 rounded text-[9px] sm:text-[10px] font-black uppercase tracking-wider flex items-center justify-between shadow-2xs my-1`}>
+            <span>★ 1st PRIZE ₹ 1 CRORE ★</span>
+            <span className="text-[8px] opacity-90 hidden sm:inline">(INCL. SUPER PRIZE)</span>
+            <span className="font-mono text-[9px]">MRP ₹6/-</span>
+          </div>
+
+          {/* 3. Central Ticket Number Display */}
+          <div className="flex items-center justify-center gap-2 sm:gap-3 py-1">
+            {/* Series */}
+            <div className="flex flex-col items-center">
+              <span className="text-[7px] sm:text-[8px] font-bold uppercase text-slate-500">SERIES</span>
+              <span className={`${theme.seriesBadge} border font-mono font-black text-sm sm:text-base px-2 py-0.5 rounded shadow-2xs`}>
+                {ticket.series}
+              </span>
+            </div>
+
+            {/* 5-Digit Number Boxes */}
+            <div className="flex flex-col items-center">
+              <span className="text-[7px] sm:text-[8px] font-bold uppercase text-slate-500">TICKET NUMBER</span>
+              <div className="flex items-center gap-1 sm:gap-1.5">
+                {ticket.number.split('').map((digit, idx) => (
+                  <div
+                    key={idx}
+                    className="w-6 h-8 sm:w-8 sm:h-10 bg-white border border-slate-300 rounded shadow-2xs flex items-center justify-center font-mono font-black text-lg sm:text-2xl text-slate-950"
+                  >
+                    {digit}
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          {/* 4. Footer Barcode & Microtext */}
+          <div className="flex items-end justify-between border-t border-black/10 pt-1 mt-1 text-[8px] text-slate-500">
+            <span className="truncate max-w-[140px] sm:max-w-[200px] font-mono tracking-tighter">
+              DIRECTORATE OF NAGALAND STATE LOTTERIES
+            </span>
+            <TicketBarcode code={`${ticket.series} ${ticket.number}`} />
+          </div>
+
+          {/* 5. Live Rubber Stamp Overlay */}
+          <div className="absolute right-3 sm:right-6 top-1/2 -translate-y-1/2 pointer-events-none z-20">
+            {evalRes.isWin ? (
+              <div className="rotate-[-6deg] border-2 border-dashed border-emerald-600 bg-emerald-500/15 text-emerald-800 px-2.5 sm:px-3.5 py-1 sm:py-1.5 rounded-lg shadow-sm font-black text-xs sm:text-sm tracking-wider uppercase backdrop-blur-[0.5px] animate-bounce">
+                🎉 {evalRes.prizeTitle}
+              </div>
+            ) : evalRes.status === 'DRAWING' ? (
+              <div className="rotate-[-2deg] border-2 border-dashed border-red-500 bg-red-500/15 text-red-700 px-2.5 py-1 rounded-md font-black text-[10px] sm:text-xs tracking-wider uppercase animate-pulse">
+                🔴 DRAW IN PROGRESS
+              </div>
+            ) : evalRes.status === 'UPCOMING' ? (
+              <div className="rotate-[3deg] border-2 border-dashed border-blue-500 bg-blue-500/10 text-blue-700 px-2.5 py-0.5 rounded-md font-bold text-[9px] sm:text-[11px] tracking-wider uppercase">
+                ⏳ DRAW AT {ticket.slot}
+              </div>
+            ) : (
+              <div className="rotate-[4deg] border border-slate-300 bg-slate-100/90 text-slate-500 px-2 py-0.5 rounded text-[9px] font-bold uppercase">
+                ✕ NO PRIZE
+              </div>
+            )}
+          </div>
+
+        </div>
+
+      </div>
+
+    </div>
+  );
 }
 
 export default function DemoPlayModule({ initialDraws = [] }: DemoPlayModuleProps) {
@@ -50,7 +280,7 @@ export default function DemoPlayModule({ initialDraws = [] }: DemoPlayModuleProp
     return getISTDateString(d);
   }, []);
 
-  // Time & slot status calculations
+  // Time & slot calculations
   const istNow = getISTNow();
   const currentTotalMin = istNow.getHours() * 60 + istNow.getMinutes();
   const is1pmPassed = currentTotalMin >= 795;
@@ -58,48 +288,18 @@ export default function DemoPlayModule({ initialDraws = [] }: DemoPlayModuleProp
   const is8pmPassed = currentTotalMin >= 1215;
   const isAllTodayOver = is8pmPassed;
 
-  // Next upcoming draw
   const nextUpcoming = useMemo(() => getNextUpcomingDraw(), []);
-
-  // Active draw slot selection defaults directly to next upcoming game!
   const [selectedSlot, setSelectedSlot] = useState<'1PM' | '6PM' | '8PM'>(nextUpcoming.slot);
+
   const [copiedTicketId, setCopiedTicketId] = useState<string | null>(null);
-  const [manualSeries, setManualSeries] = useState('');
+  const [manualSeries, setManualSeries] = useState('72B');
   const [manualNumber, setManualNumber] = useState('');
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
   // Tickets stored in localStorage
   const [myTickets, setMyTickets] = useState<DemoTicket[]>([]);
-  const [stats, setStats] = useState<DemoStats>({
-    totalSimulated: 0,
-    totalWins: 0,
-    simulatedSpend: 0,
-    simulatedReturns: 0
-  });
 
-  // Hot middle/ending statistical seeds for quick pick
-  const slotTrends = useMemo(() => {
-    const seeds: Record<string, { middles: string[]; endings: string[]; seriesList: string[] }> = {
-      '1PM': {
-        middles: ['24', '48', '62', '79', '85', '91'],
-        endings: ['15', '38', '47', '69', '82', '94'],
-        seriesList: ['70B', '64D', '81G', '92H', '55A']
-      },
-      '6PM': {
-        middles: ['18', '35', '52', '67', '74', '88'],
-        endings: ['06', '23', '41', '58', '77', '95'],
-        seriesList: ['58C', '73E', '86J', '90K', '62B']
-      },
-      '8PM': {
-        middles: ['12', '29', '43', '61', '80', '96'],
-        endings: ['14', '32', '55', '68', '83', '99'],
-        seriesList: ['84D', '69A', '77C', '88H', '95L']
-      }
-    };
-    return seeds[selectedSlot] || seeds['1PM'];
-  }, [selectedSlot]);
-
-  // Load saved demo tickets and stats from localStorage on mount
+  // Load tickets on mount
   useEffect(() => {
     if (typeof window !== 'undefined') {
       try {
@@ -108,19 +308,9 @@ export default function DemoPlayModule({ initialDraws = [] }: DemoPlayModuleProp
           const parsed = JSON.parse(saved);
           if (Array.isArray(parsed)) setMyTickets(parsed);
         }
+      } catch (e) {}
 
-        const savedStats = localStorage.getItem('dearlottery_demo_stats');
-        if (savedStats) {
-          const parsed = JSON.parse(savedStats);
-          if (parsed && typeof parsed.totalSimulated === 'number') {
-            setStats(parsed);
-          }
-        }
-      } catch (e) {
-        console.error('Failed to parse saved demo data', e);
-      }
-
-      // Read URL query parameter for prefilling from Target Numbers page
+      // Prefill from URL query params (e.g. from Target Numbers page)
       const params = new URLSearchParams(window.location.search);
       const qNum = params.get('num');
       const qSlot = params.get('slot') as '1PM' | '6PM' | '8PM';
@@ -135,18 +325,10 @@ export default function DemoPlayModule({ initialDraws = [] }: DemoPlayModuleProp
     }
   }, []);
 
-  // Save tickets & stats to localStorage whenever changed
   const saveTickets = (tickets: DemoTicket[]) => {
     setMyTickets(tickets);
     if (typeof window !== 'undefined') {
       localStorage.setItem('dearlottery_demo_tickets', JSON.stringify(tickets));
-    }
-  };
-
-  const updateStats = (newStats: DemoStats) => {
-    setStats(newStats);
-    if (typeof window !== 'undefined') {
-      localStorage.setItem('dearlottery_demo_stats', JSON.stringify(newStats));
     }
   };
 
@@ -169,13 +351,10 @@ export default function DemoPlayModule({ initialDraws = [] }: DemoPlayModuleProp
     if (status !== 'RESULT_OUT' || !hasPrizes) {
       return {
         status,
-        isEvaluated: false,
         isWin: false,
         prizeTitle: status === 'DRAWING' 
-          ? (lang === 'bn' ? 'ড্র চলছে...' : lang === 'hi' ? 'ड्रॉ चल रहा है...' : 'Drawing in progress...') 
-          : (lang === 'bn' ? `আসন্ন ড্র (${ticket.slot})` : lang === 'hi' ? `आगामी ड्रा (${ticket.slot})` : `Awaiting ${ticket.slot} Draw`),
-        prizeAmount: 0,
-        matchDetails: ''
+          ? (lang === 'bn' ? 'ড্র চলছে...' : 'Drawing in progress...') 
+          : (lang === 'bn' ? `${ticket.slot} ড্র অপেক্ষমাণ` : `Awaiting ${ticket.slot} Draw`)
       };
     }
 
@@ -190,21 +369,14 @@ export default function DemoPlayModule({ initialDraws = [] }: DemoPlayModuleProp
         if (!tSeries || !fSeries || tSeries === fSeries) {
           return {
             status: 'RESULT_OUT',
-            isEvaluated: true,
             isWin: true,
-            prizeTitle: lang === 'bn' ? '১ম পুরস্কার (১ কোটি টাকা)!' : lang === 'hi' ? 'पहला पुरस्कार (₹1 करोड़)!' : '1st Prize (₹1 Crore Winner)!',
-            prizeAmount: 10000000,
-            matchDetails: `Full 5-digit & Series match (${fSeries} ${fNum})`
+            prizeTitle: lang === 'bn' ? '১ম পুরস্কার (১ কোটি)!' : '1st Prize (₹1 Crore)!'
           };
         } else {
-          // Consolation Prize
           return {
             status: 'RESULT_OUT',
-            isEvaluated: true,
             isWin: true,
-            prizeTitle: lang === 'bn' ? 'সান্ত্বনা পুরস্কার (₹১,০০০)' : lang === 'hi' ? 'सांत्वना पुरस्कार (₹1,000)' : 'Consolation Prize (₹1,000)',
-            prizeAmount: 1000,
-            matchDetails: `5 digits matched ${fNum} with different series`
+            prizeTitle: lang === 'bn' ? 'সান্ত্বনা পুরস্কার (₹১,০০০)' : 'Consolation (₹1,000)'
           };
         }
       }
@@ -214,11 +386,8 @@ export default function DemoPlayModule({ initialDraws = [] }: DemoPlayModuleProp
     if (prizes.second_prize && prizes.second_prize.some(n => n.trim() === tNum)) {
       return {
         status: 'RESULT_OUT',
-        isEvaluated: true,
         isWin: true,
-        prizeTitle: lang === 'bn' ? '২য় পুরস্কার (₹৯,০০০)' : lang === 'hi' ? 'दूसरा पुरस्कार (₹9,000)' : '2nd Prize (₹9,000)',
-        prizeAmount: 9000,
-        matchDetails: 'Full 5-digit match'
+        prizeTitle: lang === 'bn' ? '২য় পুরস্কার (₹৯,০০০)' : '2nd Prize (₹9,000)'
       };
     }
 
@@ -227,11 +396,8 @@ export default function DemoPlayModule({ initialDraws = [] }: DemoPlayModuleProp
     if (prizes.third_prize && prizes.third_prize.some(n => n.trim() === last4)) {
       return {
         status: 'RESULT_OUT',
-        isEvaluated: true,
         isWin: true,
-        prizeTitle: lang === 'bn' ? '৩য় পুরস্কার (₹৪৫০)' : lang === 'hi' ? 'तीसरा पुरस्कार (₹450)' : '3rd Prize (₹450)',
-        prizeAmount: 450,
-        matchDetails: `Last 4 digits matched: ${last4}`
+        prizeTitle: lang === 'bn' ? '৩য় পুরস্কার (₹৪৫০)' : '3rd Prize (₹450)'
       };
     }
 
@@ -239,11 +405,8 @@ export default function DemoPlayModule({ initialDraws = [] }: DemoPlayModuleProp
     if (prizes.fourth_prize && prizes.fourth_prize.some(n => n.trim() === last4)) {
       return {
         status: 'RESULT_OUT',
-        isEvaluated: true,
         isWin: true,
-        prizeTitle: lang === 'bn' ? '৪র্থ পুরস্কার (₹২৫০)' : lang === 'hi' ? 'चौथा पुरस्कार (₹250)' : '4th Prize (₹250)',
-        prizeAmount: 250,
-        matchDetails: `Last 4 digits matched: ${last4}`
+        prizeTitle: lang === 'bn' ? '৪র্থ পুরস্কার (₹২৫০)' : '4th Prize (₹250)'
       };
     }
 
@@ -251,33 +414,15 @@ export default function DemoPlayModule({ initialDraws = [] }: DemoPlayModuleProp
     if (prizes.fifth_prize && prizes.fifth_prize.some(n => n.trim() === last4)) {
       return {
         status: 'RESULT_OUT',
-        isEvaluated: true,
         isWin: true,
-        prizeTitle: lang === 'bn' ? '৫ম পুরস্কার (₹১২০)' : lang === 'hi' ? 'पांचवां पुरस्कार (₹120)' : '5th Prize (₹120)',
-        prizeAmount: 120,
-        matchDetails: `Last 4 digits matched: ${last4}`
-      };
-    }
-
-    // Partial near miss: last 2 digits match first prize
-    if (prizes.first_prize && tNum.slice(-2) === prizes.first_prize.number.trim().slice(-2)) {
-      return {
-        status: 'RESULT_OUT',
-        isEvaluated: true,
-        isWin: false,
-        prizeTitle: lang === 'bn' ? 'খুব কাছাকাছি! শেষ ২ সংখ্যা মিলেছে' : lang === 'hi' ? 'बहुत करीब! अंतिम 2 अंक मिले' : 'Near Miss! Last 2 digits matched',
-        prizeAmount: 0,
-        matchDetails: `Last 2 digits (${tNum.slice(-2)}) matched 1st prize`
+        prizeTitle: lang === 'bn' ? '৫ম পুরস্কার (₹১২০)' : '5th Prize (₹120)'
       };
     }
 
     return {
       status: 'RESULT_OUT',
-      isEvaluated: true,
       isWin: false,
-      prizeTitle: lang === 'bn' ? 'মেলেনি (পরবর্তী ড্র-তে চেষ্টা করুন)' : lang === 'hi' ? 'नहीं मिला (अगले ड्रॉ में प्रयास करें)' : 'No Match (Try Next Draw)',
-      prizeAmount: 0,
-      matchDetails: 'Better luck in next simulation'
+      prizeTitle: lang === 'bn' ? 'মেলেনি' : 'No Match'
     };
   };
 
@@ -296,24 +441,21 @@ export default function DemoPlayModule({ initialDraws = [] }: DemoPlayModuleProp
       }
       setCopiedTicketId(ticketId);
       setTimeout(() => setCopiedTicketId(null), 2000);
-    } catch (e) {
-      console.error('Failed to copy ticket', e);
-    }
+    } catch (e) {}
   };
 
-  // Add ticket helper
+  // Add ticket function
   const addTicket = (series: string, number: string) => {
     setErrorMsg(null);
     const cleanNum = number.replace(/\D/g, '');
 
     if (cleanNum.length !== 5) {
-      setErrorMsg(lang === 'bn' ? 'দয়া করে সঠিক ৫ ডিজিটের টিকিট নম্বর দিন।' : lang === 'hi' ? 'कृपया सही 5 अंकों का टिकट नंबर दर्ज करें।' : 'Please enter a valid 5-digit number.');
+      setErrorMsg(lang === 'bn' ? 'দয়া করে সঠিক ৫ ডিজিট দিন।' : 'Please enter 5 digits.');
       return;
     }
 
     const cleanSeries = series.trim().toUpperCase() || '72B';
 
-    // If slot has passed today, next official draw for that slot will be tomorrow
     const isSlotPassedToday = (
       (selectedSlot === '1PM' && is1pmPassed) ||
       (selectedSlot === '6PM' && is6pmPassed) ||
@@ -321,22 +463,15 @@ export default function DemoPlayModule({ initialDraws = [] }: DemoPlayModuleProp
     );
     const targetDate = (isAllTodayOver || isSlotPassedToday) ? tomorrowStr : todayStr;
 
-    // Prevent duplicate within the same slot and date
+    // Duplicate check
     const exists = myTickets.some(t => t.date === targetDate && t.slot === selectedSlot && t.number === cleanNum);
     if (exists) {
-      setErrorMsg(lang === 'bn' ? 'এই টিকিটটি ইতিমধ্যে আপনার তালিকায় রয়েছে।' : lang === 'hi' ? 'यह टिकट पहले से आपकी सूची में है।' : 'This ticket is already in your pocket.');
-      return;
-    }
-
-    // Limit to 6 active tickets per slot to prevent clutter
-    const slotCount = myTickets.filter(t => t.slot === selectedSlot).length;
-    if (slotCount >= 6) {
-      setErrorMsg(lang === 'bn' ? 'একটি ড্র-তে সর্বোচ্চ ৬টি ডেমো টিকিট নেওয়া যাবে।' : lang === 'hi' ? 'एक ड्रॉ में अधिकतम 6 डेमो टिकट लिए जा सकते हैं।' : 'Maximum 6 demo tickets allowed per slot.');
+      setErrorMsg(lang === 'bn' ? 'এই টিকিটটি ইতিমধ্যে রয়েছে।' : 'Ticket already added.');
       return;
     }
 
     const newTicket: DemoTicket = {
-      id: `${Date.now()}-${Math.random().toString(36).substring(2, 7)}`,
+      id: `${Date.now()}-${Math.random().toString(36).substring(2, 6)}`,
       series: cleanSeries,
       number: cleanNum,
       slot: selectedSlot,
@@ -347,454 +482,201 @@ export default function DemoPlayModule({ initialDraws = [] }: DemoPlayModuleProp
     const nextTickets = [newTicket, ...myTickets];
     saveTickets(nextTickets);
 
-    // Update simulation stats (simulated ₹7 cost per ticket)
-    const evalRes = evaluateTicket(newTicket);
-    updateStats({
-      ...stats,
-      totalSimulated: stats.totalSimulated + 1,
-      simulatedSpend: stats.simulatedSpend + 7,
-      totalWins: evalRes.isWin ? stats.totalWins + 1 : stats.totalWins,
-      simulatedReturns: evalRes.isWin ? stats.simulatedReturns + evalRes.prizeAmount : stats.simulatedReturns
-    });
-
     setManualNumber('');
-    setManualSeries('');
 
-    // Trigger celebration if it wins immediately (for declared past slot)
+    const evalRes = evaluateTicket(newTicket);
     if (evalRes.isWin) {
-      triggerConfetti();
+      try {
+        confetti({ particleCount: 70, spread: 60, origin: { y: 0.6 } });
+      } catch (e) {}
     }
   };
 
-  const triggerConfetti = () => {
-    try {
-      confetti({
-        particleCount: 80,
-        spread: 70,
-        origin: { y: 0.6 }
-      });
-    } catch (e) {}
-  };
+  // Quick Random Ticket generator
+  const handleQuickTicket = () => {
+    const seriesOptions = ['72B', '64D', '81G', '92H', '55A', '58C', '73E', '86J', '84D', '69A', '77C'];
+    const middleSeeds = ['48', '62', '79', '35', '52', '29', '43', '80', '15', '24'];
+    const endingSeeds = ['55', '74', '22', '57', '63', '36', '14', '82', '99', '06'];
 
-  // Quick Action: Smart Trend Pick
-  const handleSmartPick = () => {
-    const s = slotTrends.seriesList[Math.floor(Math.random() * slotTrends.seriesList.length)];
-    const m = slotTrends.middles[Math.floor(Math.random() * slotTrends.middles.length)];
-    const end = slotTrends.endings[Math.floor(Math.random() * slotTrends.endings.length)];
-    const leadDigit = String(Math.floor(Math.random() * 9) + 1);
-    const num = `${leadDigit}${m}${end.slice(-2)}`;
+    const s = seriesOptions[Math.floor(Math.random() * seriesOptions.length)];
+    const m = middleSeeds[Math.floor(Math.random() * middleSeeds.length)];
+    const end = endingSeeds[Math.floor(Math.random() * endingSeeds.length)];
+    const lead = String(Math.floor(Math.random() * 9) + 1);
+    const num = `${lead}${m}${end.slice(-2)}`;
+
     addTicket(s, num);
   };
 
-  // Frequent winning numbers extracted from recent games & statistical hot patterns
-  const winningSuggestions = useMemo(() => {
-    const list: Array<{ series: string; number: string; tag: string; tagBn: string; reason: string; reasonBn: string }> = [];
-
-    // Gather actual 1st prize & 2nd prize winning numbers from recent draws
-    for (const draw of initialDraws) {
-      const prizes = draw?.parsed_data?.prizes || draw?.prizes;
-      if (!prizes) continue;
-
-      // 1st Prize
-      if (prizes.first_prize?.number) {
-        const s = prizes.first_prize.series || slotTrends.seriesList[0] || '72B';
-        const num = prizes.first_prize.number.trim();
-        if (num.length === 5 && !list.some(item => item.number === num)) {
-          list.push({
-            series: s,
-            number: num,
-            tag: '1st Prize Winner',
-            tagBn: '১ম পুরস্কার (১ কোটি)',
-            reason: `${draw.draw_time || ''} Draw Winner`,
-            reasonBn: `${draw.draw_time || ''} ড্র-এর ১ম পুরস্কার বিজয়ী`
-          });
-        }
-      }
-
-      // 2nd Prizes (top 5-digit winners)
-      if (Array.isArray(prizes.second_prize)) {
-        for (const num of prizes.second_prize) {
-          const clean = num.trim();
-          if (clean.length === 5 && !list.some(item => item.number === clean)) {
-            const s = slotTrends.seriesList[list.length % slotTrends.seriesList.length] || '72B';
-            list.push({
-              series: s,
-              number: clean,
-              tag: '2nd Prize Winner (₹9,000)',
-              tagBn: '২য় পুরস্কার বিজয়ী (₹৯,০০০)',
-              reason: `Won in recent ${draw.draw_time || ''} draw`,
-              reasonBn: `সাম্প্রতিক ${draw.draw_time || ''} খেলায় বিজয়ী`
-            });
-            if (list.length >= 8) break;
-          }
-        }
-      }
-      if (list.length >= 8) break;
-    }
-
-    // High frequency statistical fallback combinations
-    const fallbackCombos = [
-      { series: slotTrends.seriesList[0] || '72B', number: '48755', tag: 'Hot Middle Pattern', tagBn: 'হট মিডিল ৪৮ ও এন্ডিং ৫৫', reason: 'High frequency in 5th prize', reasonBn: '৫ম পুরস্কারে সর্বাধিক আসা মিডিল' },
-      { series: slotTrends.seriesList[1] || '64D', number: '09674', tag: '2nd Prize Winner', tagBn: '২য় পুরস্কার বিজয়ী', reason: 'Won ₹9,000 in recent day draw', reasonBn: 'সাম্প্রতিক ড্র-তে ৯,০০০ টাকা জয়ী' },
-      { series: slotTrends.seriesList[2] || '81G', number: '65322', tag: 'High-Hit Combo', tagBn: 'হাই-হিট কম্বিনেশন', reason: 'Top-rated repeating middle 53', reasonBn: 'টপ রেটেড মিডিল ৫৩ ও এন্ডিং ২২' },
-      { series: slotTrends.seriesList[3] || '92H', number: '84257', tag: 'Top Ranked Number', tagBn: 'টপ রেঙ্কড নম্বর', reason: 'High accuracy hit pattern', reasonBn: 'ধারাবাহিক হিট রেট প্যাটার্ন' },
-      { series: slotTrends.seriesList[4] || '55A', number: '13963', tag: '2nd Prize Winner', tagBn: '২য় পুরস্কার বিজয়ী', reason: 'Recent winning combination', reasonBn: 'সাম্প্রতিক ড্র-তে বিজয়ী নম্বর' },
-      { series: slotTrends.seriesList[0] || '70B', number: '50936', tag: 'Hot Ending Pattern', tagBn: 'হট এন্ডিং ৩৬ প্যাটার্ন', reason: 'Repeated in 4th/5th tier', reasonBn: '৪র্থ ও ৫ম স্তরে একাধিকবার আসা' },
-    ];
-
-    for (const item of fallbackCombos) {
-      if (list.length >= 6) break;
-      if (!list.some(l => l.number === item.number)) {
-        list.push(item);
-      }
-    }
-
-    return list.slice(0, 6);
-  }, [initialDraws, slotTrends]);
-
-  // Manual Add Form Submit
-  const handleManualAdd = (e: React.FormEvent) => {
-    e.preventDefault();
-    addTicket(manualSeries, manualNumber);
-  };
-
-  // Remove individual ticket
+  // Delete single ticket
   const handleDeleteTicket = (id: string) => {
-    const filtered = myTickets.filter(t => t.id !== id);
-    saveTickets(filtered);
+    saveTickets(myTickets.filter(t => t.id !== id));
   };
 
-  // Reset all stats
-  const handleResetStats = () => {
-    if (confirm(lang === 'bn' ? 'আপনি কি সব ডেমো স্কোর ও পরিসংখ্যান রিসেট করতে চান?' : 'Are you sure you want to reset your simulation statistics?')) {
-      saveTickets([]);
-      updateStats({
-        totalSimulated: 0,
-        totalWins: 0,
-        simulatedSpend: 0,
-        simulatedReturns: 0
-      });
-    }
+  // Clear all tickets
+  const handleClearAll = () => {
+    saveTickets([]);
   };
 
-  // Filter tickets for currently selected slot
   const activeSlotTickets = myTickets.filter(t => t.slot === selectedSlot);
 
-  // Calculate live accuracy
-  const accuracyPercent = stats.totalSimulated > 0 
-    ? Math.round((stats.totalWins / stats.totalSimulated) * 100) 
-    : 0;
-  const netPnl = stats.simulatedReturns - stats.simulatedSpend;
-
-  // WhatsApp share message
-  const shareText = `🎯 *Dear Lottery Demo Play (ভার্চুয়াল পেপার টেস্ট)*\n📅 তারিখ: ${todayStr} • ${selectedSlot}\n\n📊 আমার সিমুলেশন স্কোর:\n• মোট টেস্ট টিকিট: ${stats.totalSimulated}\n• ম্যাচ / জয়: ${stats.totalWins} (সফলতা ${accuracyPercent}%)\n• ভার্চুয়াল প্রফিট/লসের হিসাব: ${netPnl >= 0 ? '+' : ''}${formatINR(netPnl)}\n\n👉 আপনিও আপনার টার্গেট নম্বর বিনামূল্যে টেস্ট করুন:\nhttps://dearresultlive.in/demo`;
-  const whatsappUrl = `https://api.whatsapp.com/send?text=${encodeURIComponent(shareText)}`;
+  // Quick hot picks
+  const quickPicks = [
+    { series: '72B', number: '48755' },
+    { series: '64D', number: '09674' },
+    { series: '81G', number: '65322' },
+    { series: '92H', number: '84257' }
+  ];
 
   return (
-    <div className="space-y-4 max-w-[620px] mx-auto text-slate-800">
+    <div className="space-y-4 max-w-xl mx-auto text-slate-800">
       
-      {/* 1. Header Banner */}
-      <div className="bg-gradient-to-br from-indigo-900 via-blue-900 to-slate-900 text-white rounded-3xl p-4 sm:p-6 shadow-md relative overflow-hidden">
-        <div className="absolute top-0 right-0 translate-x-4 -translate-y-4 w-32 h-32 bg-blue-500/10 rounded-full blur-2xl pointer-events-none"></div>
-        
-        <div className="flex items-center justify-between gap-2 mb-2">
-          <span className="inline-flex items-center gap-1.5 bg-blue-500/20 text-blue-200 border border-blue-400/30 text-[10px] sm:text-xs font-black px-2.5 py-0.5 rounded-full uppercase tracking-wider backdrop-blur-sm">
-            <span>🎮</span>
-            <span>{lang === 'bn' ? 'ভার্চুয়াল পেপার টিকিট' : lang === 'hi' ? 'वर्चुअल पेपर लॉटरी' : '100% Free Paper Simulation'}</span>
-          </span>
-          <span className="text-[10px] text-blue-300 font-bold bg-white/10 px-2 py-0.5 rounded-lg">
+      {/* 1. Header (Simple & Clean) */}
+      <div className="bg-slate-900 text-white rounded-2xl p-3.5 sm:p-4 shadow-sm flex items-center justify-between">
+        <div>
+          <h1 className="text-base sm:text-lg font-black tracking-tight text-white flex items-center gap-1.5">
+            <span>🎫</span>
+            <span>
+              {lang === 'bn' ? 'ডিয়ার লটারি পেপার টিকিট' : lang === 'hi' ? 'डियर लॉटरी पेपर टिकट' : 'Dear Lottery Paper Ticket'}
+            </span>
+          </h1>
+          <p className="text-[11px] sm:text-xs text-slate-400 mt-0.5">
+            {lang === 'bn' 
+              ? 'বাস্তব পেপার টিকিটের মতো সিমুলেশন ও লাইভ রেজাল্ট ভেরিফিকেশন' 
+              : 'Real-world paper ticket styling & live result verification'}
+          </p>
+        </div>
+        <div className="text-right shrink-0">
+          <span className="font-mono text-xs font-bold text-amber-400 bg-white/10 px-2 py-0.5 rounded">
             {todayStr.split('-').reverse().join('/')}
           </span>
         </div>
-
-        <h1 className="text-xl sm:text-2xl font-black tracking-tight text-white">
-          {lang === 'bn' 
-            ? 'ডিয়ার লটারি ডেমো প্লে ও প্র্যাকটিস' 
-            : lang === 'hi' 
-            ? 'डियर लॉटरी डेमो प्ले एवं प्रैक्टिस' 
-            : 'Dear Lottery Demo & Paper Play'}
-        </h1>
-        <p className="text-xs sm:text-sm text-blue-100/90 mt-1 leading-relaxed">
-          {lang === 'bn'
-            ? 'কাউন্টারে আসল টাকা দিয়ে টিকিট কাটার আগে এখানে বিনামূল্যে আপনার নম্বর প্রেডিকশন টেস্ট করুন। দেখুন আপনার টার্গেটের হিট রেট কত!'
-            : lang === 'hi'
-            ? 'काउंटर पर असली पैसे लगाने से पहले यहां मुफ्त में अपने नंबरों का अनुमान टेस्ट करें। जानें आपकी सटीकता कितनी है!'
-            : 'Practice your number predictions for free before buying physical tickets. Test your hit rate with real-time draw verification!'}
-        </p>
       </div>
 
-      {/* 2. Personal Performance & Accuracy Stats Cards */}
-      <div className="grid grid-cols-4 gap-1.5 sm:gap-2 text-center">
-        <div className="bg-white border border-slate-200 rounded-2xl p-2 sm:p-2.5 shadow-2xs">
-          <span className="text-[9px] sm:text-[10px] font-bold text-slate-500 block uppercase truncate">
-            {lang === 'bn' ? 'মোট টিকিট' : 'Tickets'}
-          </span>
-          <span className="font-mono text-sm sm:text-lg font-black text-slate-900">
-            {stats.totalSimulated}
-          </span>
-        </div>
+      {/* 2. Slot Selector (1:00 PM | 6:00 PM | 8:00 PM) */}
+      <div className="grid grid-cols-3 gap-2">
+        {(['1PM', '6PM', '8PM'] as const).map(slot => {
+          const isSelected = selectedSlot === slot;
+          const isNext = nextUpcoming.slot === slot;
+          const isPassed = (
+            (slot === '1PM' && is1pmPassed) ||
+            (slot === '6PM' && is6pmPassed) ||
+            (slot === '8PM' && is8pmPassed)
+          );
 
-        <div className="bg-white border border-slate-200 rounded-2xl p-2 sm:p-2.5 shadow-2xs">
-          <span className="text-[9px] sm:text-[10px] font-bold text-slate-500 block uppercase truncate">
-            {lang === 'bn' ? 'ম্যাচ/জয়' : 'Matches'}
-          </span>
-          <span className="font-mono text-sm sm:text-lg font-black text-emerald-600">
-            {stats.totalWins}
-          </span>
-        </div>
-
-        <div className="bg-white border border-slate-200 rounded-2xl p-2 sm:p-2.5 shadow-2xs">
-          <span className="text-[9px] sm:text-[10px] font-bold text-slate-500 block uppercase truncate">
-            {lang === 'bn' ? 'সফলতা' : 'Accuracy'}
-          </span>
-          <span className="font-mono text-sm sm:text-lg font-black text-blue-700">
-            {accuracyPercent}%
-          </span>
-        </div>
-
-        <div className="bg-white border border-slate-200 rounded-2xl p-2 sm:p-2.5 shadow-2xs">
-          <span className="text-[9px] sm:text-[10px] font-bold text-slate-500 block uppercase truncate">
-            {lang === 'bn' ? 'ভার্চুয়াল P/L' : 'Demo P/L'}
-          </span>
-          <span className={`font-mono text-xs sm:text-base font-black truncate block ${netPnl >= 0 ? 'text-emerald-700' : 'text-slate-700'}`}>
-            {netPnl >= 0 ? `+${formatINR(netPnl)}` : `-${formatINR(Math.abs(netPnl))}`}
-          </span>
-        </div>
-      </div>
-
-      {/* 3. Slot Selector */}
-      <div className="bg-white border border-slate-200 rounded-2xl p-3 shadow-2xs space-y-2">
-        <div className="flex items-center justify-between px-1">
-          <span className="text-xs font-black text-slate-900 flex items-center gap-1.5">
-            <span>⏰</span>
-            <span>{lang === 'bn' ? 'ড্র টাইম সিলেক্ট করুন:' : lang === 'hi' ? 'ड्रॉ समय चुनें:' : 'Select Draw Time:'}</span>
-          </span>
-          <span className="text-[11px] font-bold text-blue-700">
-            {activeSlotTickets.length}/6 {lang === 'bn' ? 'টি টিকিট অ্যাক্টিভ' : 'Active'}
-          </span>
-        </div>
-
-        <div className="grid grid-cols-3 gap-2">
-          {(['1PM', '6PM', '8PM'] as const).map(slot => {
-            const isSelected = selectedSlot === slot;
-            const isUpcomingNext = nextUpcoming.slot === slot;
-            const isSlotPassed = (
-              (slot === '1PM' && is1pmPassed) ||
-              (slot === '6PM' && is6pmPassed) ||
-              (slot === '8PM' && is8pmPassed)
-            );
-
-            return (
-              <button
-                key={slot}
-                type="button"
-                onClick={() => { setSelectedSlot(slot); setErrorMsg(null); }}
-                className={`py-2 px-1.5 sm:px-2 rounded-xl text-center font-black transition-all relative ${
-                  isSelected
-                    ? 'bg-blue-700 text-white shadow-sm ring-2 ring-blue-600 scale-[1.01]'
-                    : isUpcomingNext
-                    ? 'bg-emerald-50 hover:bg-emerald-100 border-2 border-emerald-500 text-emerald-950 shadow-xs'
-                    : 'bg-slate-100 hover:bg-slate-200 border border-slate-200 text-slate-700'
-                }`}
-              >
-                <div className="text-sm sm:text-base leading-tight font-black">
-                  {slot === '1PM' ? '1:00 PM' : slot === '6PM' ? '6:00 PM' : '8:00 PM'}
-                </div>
-                <div className={`text-[9px] sm:text-[10px] mt-0.5 font-bold ${
-                  isSelected 
-                    ? 'text-blue-100' 
-                    : isUpcomingNext
-                    ? 'text-emerald-700'
-                    : 'text-slate-500'
-                }`}>
-                  {slot === '1PM' ? 'Morning' : slot === '6PM' ? 'Day' : 'Night'}
-                </div>
-
-                {/* Status Badges */}
-                <div className="mt-1">
-                  {isUpcomingNext ? (
-                    <span className={`inline-block text-[8px] sm:text-[9px] px-1.5 py-0.2 rounded-full font-black uppercase tracking-tight ${
-                      isSelected 
-                        ? 'bg-emerald-400 text-slate-950' 
-                        : 'bg-emerald-600 text-white animate-pulse'
-                    }`}>
-                      ⚡ {lang === 'bn' ? 'পরবর্তী ড্র' : 'Next Game'}
-                    </span>
-                  ) : isSlotPassed ? (
-                    <span className={`inline-block text-[8px] sm:text-[9px] px-1.5 py-0.2 rounded-full font-bold ${
-                      isSelected ? 'bg-blue-800 text-blue-200' : 'bg-slate-200 text-slate-600'
-                    }`}>
-                      {lang === 'bn' ? 'খেলা শেষ' : 'Done'}
-                    </span>
-                  ) : (
-                    <span className={`inline-block text-[8px] sm:text-[9px] px-1.5 py-0.2 rounded-full font-bold ${
-                      isSelected ? 'bg-blue-800 text-blue-200' : 'bg-slate-200 text-slate-600'
-                    }`}>
-                      {lang === 'bn' ? 'আসন্ন' : 'Upcoming'}
-                    </span>
-                  )}
-                </div>
-              </button>
-            );
-          })}
-        </div>
-
-        {/* Notice when viewing a passed slot */}
-        {(
-          (selectedSlot === '1PM' && is1pmPassed) ||
-          (selectedSlot === '6PM' && is6pmPassed) ||
-          (selectedSlot === '8PM' && is8pmPassed)
-        ) && (
-          <div className="p-2.5 bg-amber-50 border border-amber-300 rounded-xl text-xs text-amber-950 flex flex-col sm:flex-row sm:items-center justify-between gap-2 shadow-2xs">
-            <div className="flex items-center gap-1.5">
-              <span>ℹ️</span>
-              <span>
-                {lang === 'bn'
-                  ? `আজকের ${selectedSlot.replace('PM', ':00 PM')} ড্র সম্পন্ন হয়েছে। লাইভ পরবর্তী ড্র-এর টিকিট নিন:`
-                  : `Today's ${selectedSlot} draw is finished. Pick tickets for next upcoming live draw:`}
-              </span>
-            </div>
+          return (
             <button
+              key={slot}
               type="button"
-              onClick={() => setSelectedSlot(nextUpcoming.slot)}
-              className="bg-amber-600 hover:bg-amber-700 text-white font-black text-[11px] px-3 py-1 rounded-lg shrink-0 self-start sm:self-auto shadow-xs active:scale-95 transition-all"
+              onClick={() => { setSelectedSlot(slot); setErrorMsg(null); }}
+              className={`py-2 px-1.5 rounded-xl text-center font-black transition-all ${
+                isSelected
+                  ? 'bg-blue-700 text-white shadow-sm ring-2 ring-blue-600'
+                  : 'bg-white hover:bg-slate-50 border border-slate-200 text-slate-700'
+              }`}
             >
-              ⚡ {nextUpcoming.timeLabel} ড্র সিলেক্ট করুন ➔
+              <div className="text-xs sm:text-sm font-black">
+                {slot === '1PM' ? '1:00 PM' : slot === '6PM' ? '6:00 PM' : '8:00 PM'}
+              </div>
+              <div className="text-[9px] mt-0.5">
+                {isNext ? (
+                  <span className={isSelected ? 'text-emerald-300 font-bold' : 'text-emerald-600 font-bold'}>
+                    ⚡ {lang === 'bn' ? 'পরবর্তী' : 'Next'}
+                  </span>
+                ) : isPassed ? (
+                  <span className={isSelected ? 'text-blue-200' : 'text-slate-400'}>
+                    {lang === 'bn' ? 'সম্পন্ন' : 'Done'}
+                  </span>
+                ) : (
+                  <span className={isSelected ? 'text-blue-200' : 'text-slate-400'}>
+                    {lang === 'bn' ? 'আসন্ন' : 'Upcoming'}
+                  </span>
+                )}
+              </div>
             </button>
-          </div>
-        )}
+          );
+        })}
       </div>
 
-      {/* 4. Ticket Picker & Generator */}
+      {/* 3. Ticket Generator Controls */}
       <div className="bg-white border border-slate-200 rounded-2xl p-3 sm:p-4 shadow-sm space-y-3">
-        <div className="flex items-center justify-between border-b border-slate-100 pb-2">
-          <span className="text-xs font-black text-slate-900 flex items-center gap-1.5">
-            <span>🎟️</span>
-            <span>{lang === 'bn' ? 'টিকিট কাউন্টার (ভার্চুয়াল)' : lang === 'hi' ? 'टिकट काउंटर (वर्चुअल)' : 'Simulated Ticket Counter'}</span>
-          </span>
-          <span className="text-[10px] text-amber-900 font-black bg-amber-100 border border-amber-300 px-2 py-0.5 rounded-full">
-            {lang === 'bn' ? 'অফিশিয়াল MRP ₹৭ / টিকিট' : lang === 'hi' ? 'आधिकारिक MRP: ₹7 / टिकट' : 'Official MRP: ₹7 / ticket'}
-          </span>
-        </div>
-
-        {/* High-Probability Hot Target Prediction Card Button */}
+        
+        {/* Quick Ticket Button */}
         <button
           type="button"
-          onClick={handleSmartPick}
-          className="w-full text-left bg-gradient-to-r from-amber-500 via-orange-500 to-red-600 hover:from-amber-600 hover:via-orange-600 hover:to-red-700 text-white rounded-2xl p-3 sm:p-4 shadow-sm hover:shadow-md transition-all active:scale-[0.99] group relative overflow-hidden border border-amber-300/40"
+          onClick={handleQuickTicket}
+          className="w-full bg-gradient-to-r from-amber-500 via-orange-500 to-amber-600 hover:from-amber-600 hover:to-orange-600 text-white font-black text-xs sm:text-sm py-2.5 px-4 rounded-xl shadow-xs transition-all active:scale-[0.99] flex items-center justify-center gap-2"
         >
-          {/* Subtle decorative glow */}
-          <div className="absolute top-0 right-0 -translate-y-4 translate-x-4 w-32 h-32 bg-yellow-300/20 rounded-full blur-xl pointer-events-none group-hover:scale-125 transition-transform"></div>
-
-          {/* Top Pill / Badge */}
-          <div className="flex items-center justify-between gap-2 mb-2">
-            <span className="inline-flex items-center gap-1.5 bg-black/25 text-amber-200 border border-amber-300/30 text-[10px] sm:text-[11px] font-black px-2.5 py-0.5 rounded-full backdrop-blur-xs">
-              <span className="animate-pulse">🎯</span>
-              <span>
-                {lang === 'bn' 
-                  ? 'অতীত ড্র অ্যানালাইসিস ভিত্তিক প্রেডিকশন' 
-                  : lang === 'hi' 
-                  ? 'ड्रॉ एनालिसिस आधारित हाई-हिट प्रेडिक्शन' 
-                  : 'Past Draw Analysis & High-Hit Prediction'}
-              </span>
-            </span>
-
-            <span className="text-[10px] sm:text-[11px] font-mono font-bold bg-white text-orange-700 px-2.5 py-0.5 rounded-md shadow-2xs shrink-0 flex items-center gap-1">
-              <span>⚡ ১-ক্লিক প্রেডিকশন</span>
-              <span>➔</span>
-            </span>
-          </div>
-
-          {/* Main Title */}
-          <div className="flex items-center gap-2">
-            <span className="text-xl sm:text-2xl animate-bounce">🔥</span>
-            <div className="font-black text-sm sm:text-base tracking-tight text-white drop-shadow-2xs">
-              {lang === 'bn'
-                ? 'হট উইনিং টার্গেট টিকিট জেনারেট করুন'
-                : lang === 'hi'
-                ? 'हॉट विनिंग टारगेट टिकट जनरेट करें'
-                : 'Generate Hot Winning Target Ticket'}
-            </div>
-          </div>
-
-          {/* Subtitle / Why this wins */}
-          <p className="text-[11px] sm:text-xs text-amber-100 font-medium mt-1 leading-relaxed">
-            {lang === 'bn'
-              ? 'সাম্প্রতিক ড্র-তে যে নম্বর ও মিডিলগুলো বারবার ১ম, ২য় ও ৫ম পুরস্কার জিতেছে—সেই উইনিং ট্রেন্ড প্যাটার্ন অনুযায়ী টিকিট তৈরি হয়।'
-              : lang === 'hi'
-              ? 'हाल के खेलों में सबसे ज्यादा बार जीतने वाले मिडिल और एंडिंग पैटर्न के आधार पर यह टिकट जनरेट होता है।'
-              : 'Generated using high-frequency winning middles & ending combinations that repeatedly won prizes in recent draws.'}
-          </p>
-
-          {/* Live Hot Seeds Preview Tag */}
-          <div className="mt-2.5 pt-2 border-t border-white/20 flex flex-wrap items-center justify-between gap-1 text-[10px] text-amber-200/90 font-mono">
-            <div className="flex items-center gap-1.5">
-              <span className="font-bold text-white uppercase text-[9px] bg-black/20 px-1.5 py-0.2 rounded font-sans">
-                {selectedSlot} ট্রেন্ড
-              </span>
-              <span>মিডিল: <strong className="text-white">{slotTrends.middles.slice(0, 3).join(', ')}</strong></span>
-              <span>•</span>
-              <span>এন্ডিং: <strong className="text-white">{slotTrends.endings.slice(0, 3).join(', ')}</strong></span>
-            </div>
-            <span className="text-white font-black underline underline-offset-2 text-[10px] sm:text-[11px]">
-              {lang === 'bn' ? '+ টিকিট ব্যাগে যোগ করুন' : '+ Add to Pocket'}
-            </span>
-          </div>
+          <span className="text-base sm:text-lg">🎲</span>
+          <span>{lang === 'bn' ? 'কুইক পেপার টিকিট প্রিন্ট করুন (১-ক্লিক)' : 'Print Quick Paper Ticket (1-Click)'}</span>
         </button>
 
-        {/* Manual Input Form */}
-        <form onSubmit={handleManualAdd} className="space-y-2 pt-1 border-t border-slate-100">
-          <div className="flex items-center justify-between text-[11px] font-bold text-slate-600">
-            <span>{lang === 'bn' ? 'অথবা আপনার পছন্দের সিরিজ ও নম্বর দিন:' : lang === 'hi' ? 'या अपनी पसंद का सीरीज एवं नंबर दर्ज करें:' : 'Or enter custom series & number:'}</span>
-            <span className="text-[10px] text-slate-400 font-mono">৫ ডিজিট</span>
-          </div>
-
-          <div className="flex items-center gap-1.5 sm:gap-2">
-            <input
-              type="text"
-              placeholder="72B"
-              maxLength={4}
-              value={manualSeries}
-              onChange={e => setManualSeries(e.target.value.toUpperCase())}
-              className="w-16 sm:w-20 text-center font-mono font-black text-xs sm:text-sm uppercase bg-slate-50 border border-slate-300 rounded-xl px-1.5 py-2.5 focus:ring-2 focus:ring-blue-600 focus:bg-white outline-none flex-shrink-0"
-              title="Series (e.g. 72B)"
-            />
-            <input
-              type="text"
-              placeholder="28192"
-              maxLength={5}
-              value={manualNumber}
-              onChange={e => setManualNumber(e.target.value.replace(/\D/g, ''))}
-              className="flex-1 min-w-0 font-mono font-black text-sm sm:text-base tracking-wider bg-slate-50 border border-slate-300 rounded-xl px-2.5 py-2.5 focus:ring-2 focus:ring-blue-600 focus:bg-white outline-none text-center"
-              title="5-digit ticket number"
-            />
-            <button
-              type="submit"
-              className="bg-blue-700 hover:bg-blue-800 text-white font-black text-xs sm:text-sm px-3.5 sm:px-4 py-2.5 rounded-xl shadow-xs transition-all active:scale-95 flex-shrink-0 whitespace-nowrap"
-            >
-              {lang === 'bn' ? 'যোগ করুন' : lang === 'hi' ? 'जोड़ें' : 'Add'}
-            </button>
-          </div>
-
-          {errorMsg && (
-            <div className="text-[11px] text-red-600 font-bold bg-red-50 border border-red-200 rounded-lg p-2">
-              ⚠️ {errorMsg}
-            </div>
-          )}
+        {/* Manual 5-Digit Number Entry */}
+        <form 
+          onSubmit={(e) => {
+            e.preventDefault();
+            addTicket(manualSeries, manualNumber);
+          }} 
+          className="flex items-center gap-1.5 pt-1 border-t border-slate-100"
+        >
+          <input
+            type="text"
+            placeholder="72B"
+            maxLength={4}
+            value={manualSeries}
+            onChange={e => setManualSeries(e.target.value.toUpperCase())}
+            className="w-16 text-center font-mono font-black text-xs sm:text-sm uppercase bg-slate-50 border border-slate-300 rounded-xl px-1.5 py-2 focus:ring-2 focus:ring-blue-600 focus:bg-white outline-none shrink-0"
+            title="Series"
+          />
+          <input
+            type="text"
+            placeholder="Enter 5-digit number (e.g. 48755)"
+            maxLength={5}
+            value={manualNumber}
+            onChange={e => setManualNumber(e.target.value.replace(/\D/g, ''))}
+            className="flex-1 min-w-0 font-mono font-black text-xs sm:text-sm tracking-wider bg-slate-50 border border-slate-300 rounded-xl px-2.5 py-2 focus:ring-2 focus:ring-blue-600 focus:bg-white outline-none text-center"
+            title="5-digit number"
+          />
+          <button
+            type="submit"
+            className="bg-blue-700 hover:bg-blue-800 text-white font-black text-xs sm:text-sm px-3.5 py-2 rounded-xl shadow-xs transition-all active:scale-95 shrink-0"
+          >
+            {lang === 'bn' ? '+ প্রিন্ট' : '+ Print'}
+          </button>
         </form>
+
+        {errorMsg && (
+          <div className="text-[11px] text-red-600 font-bold bg-red-50 border border-red-200 rounded-lg p-1.5 text-center">
+            ⚠️ {errorMsg}
+          </div>
+        )}
+
+        {/* Quick Picks Row (Clean chips, no junk text) */}
+        <div className="flex items-center gap-1.5 pt-1 overflow-x-auto text-[11px]">
+          <span className="text-[10px] font-bold text-slate-400 shrink-0">
+            {lang === 'bn' ? 'হট নম্বর:' : 'Hot Picks:'}
+          </span>
+          {quickPicks.map((qp, i) => (
+            <button
+              key={i}
+              type="button"
+              onClick={() => addTicket(qp.series, qp.number)}
+              className="bg-slate-100 hover:bg-amber-100 border border-slate-200 hover:border-amber-300 rounded-lg px-2 py-0.5 font-mono font-bold text-slate-800 shrink-0 transition-colors flex items-center gap-1"
+            >
+              <span>{qp.series} {qp.number}</span>
+              <span className="text-emerald-700 font-black">+</span>
+            </button>
+          ))}
+        </div>
+
       </div>
 
-      {/* 5. "My Virtual Pocket" - Active Simulated Tickets List */}
-      <div className="space-y-2.5">
+      {/* 4. Active Paper Tickets Container */}
+      <div className="space-y-3">
         <div className="flex items-center justify-between px-1">
           <h2 className="text-xs sm:text-sm font-black text-slate-900 flex items-center gap-1.5">
-            <span>👛</span>
+            <span>🎟️</span>
             <span>
-              {lang === 'bn' 
-                ? `আমার ভার্চুয়াল টিকিট (${selectedSlot} ড্র)` 
-                : lang === 'hi' 
-                ? `मेरे वर्चुअल टिकट (${selectedSlot} ड्रॉ)` 
-                : `My Simulated Tickets (${selectedSlot})`}
+              {lang === 'bn' ? `আপনার পেপার টিকিট (${selectedSlot})` : `Your Paper Tickets (${selectedSlot})`}
             </span>
             <span className="bg-slate-200 text-slate-700 text-[10px] px-1.5 py-0.2 rounded-full font-bold">
               {activeSlotTickets.length}
@@ -805,310 +687,73 @@ export default function DemoPlayModule({ initialDraws = [] }: DemoPlayModuleProp
             <button
               type="button"
               onClick={() => {
-                const rest = myTickets.filter(t => !(t.date === todayStr && t.slot === selectedSlot));
-                saveTickets(rest);
+                saveTickets(myTickets.filter(t => t.slot !== selectedSlot));
               }}
               className="text-[11px] font-bold text-red-600 hover:underline"
             >
-              {lang === 'bn' ? 'এই ড্র ক্লিয়ার করুন' : 'Clear slot'}
+              {lang === 'bn' ? 'মুছে ফেলুন' : 'Clear slot'}
             </button>
           )}
         </div>
 
         {activeSlotTickets.length === 0 ? (
-          <div className="bg-white border-2 border-dashed border-slate-200 rounded-2xl p-6 text-center space-y-2">
+          <div className="bg-white border-2 border-dashed border-slate-200 rounded-2xl p-6 text-center space-y-1.5">
             <span className="text-3xl block">🎟️</span>
             <p className="text-xs font-bold text-slate-600">
               {lang === 'bn'
-                ? `আপনার কাছে এখনও ${selectedSlot} ড্র-এর কোনো ভার্চুয়াল টিকিট নেই।`
-                : lang === 'hi'
-                ? `आपके पास अभी ${selectedSlot} ड्रॉ का कोई वर्चुअल टिकट नहीं है।`
-                : `No active simulated tickets for ${selectedSlot} draw yet.`}
+                ? `এখনও ${selectedSlot} ড্র-এর কোনো পেপার টিকিট নেই।`
+                : `No paper tickets printed for ${selectedSlot} yet.`}
             </p>
             <p className="text-[11px] text-slate-400">
               {lang === 'bn'
-                ? 'উপরের "হট টার্গেট প্রেডিকশন" বাটন বা নিচের উইনিং সাজেশন থেকে টিকিট যোগ করুন!'
-                : lang === 'hi'
-                ? 'ऊपर "हॉट टारगेट प्रेडिक्शन" बटन या नीचे दिए गए सुझावों से टिकट जोड़ें!'
-                : 'Tap "Hot Target Prediction" button above or winning suggestions below to add simulated tickets!'}
+                ? 'উপরের "কুইক পেপার টিকিট প্রিন্ট করুন" বাটনে ক্লিক করুন!'
+                : 'Click "Print Quick Paper Ticket" above to generate one!'}
             </p>
           </div>
         ) : (
           <div className="space-y-3">
-            {activeSlotTickets.map((ticket) => {
-              const evalRes = evaluateTicket(ticket);
-              return (
-                <div
-                  key={ticket.id}
-                  className="relative bg-white border-2 border-amber-300 rounded-2xl shadow-sm hover:shadow-md transition-all overflow-hidden"
-                >
-                  {/* Perforated ticket circular notches on left and right */}
-                  <div className="absolute -left-2.5 top-1/2 -translate-y-1/2 w-5 h-5 rounded-full bg-slate-100 border-r-2 border-amber-300 z-10 pointer-events-none"></div>
-                  <div className="absolute -right-2.5 top-1/2 -translate-y-1/2 w-5 h-5 rounded-full bg-slate-100 border-l-2 border-amber-300 z-10 pointer-events-none"></div>
-
-                  {/* 1. Official Government Header Bar */}
-                  <div className={`px-3 sm:px-4 py-1.5 flex items-center justify-between text-white text-[10px] sm:text-xs font-black uppercase tracking-wider ${
-                    ticket.slot === '1PM' 
-                      ? 'bg-gradient-to-r from-blue-900 via-indigo-900 to-blue-950' 
-                      : ticket.slot === '6PM'
-                      ? 'bg-gradient-to-r from-rose-900 via-red-900 to-rose-950'
-                      : 'bg-gradient-to-r from-emerald-950 via-teal-950 to-slate-950'
-                  }`}>
-                    <div className="flex items-center gap-1.5 min-w-0">
-                      <span>🏛️</span>
-                      <span className="truncate">
-                        {lang === 'bn' ? 'নাগাল্যান্ড ও সিকিম রাজ্য লটারি' : lang === 'hi' ? 'नागालैंड व सिक्किम राज्य लॉटरी' : 'State Lotteries'}
-                      </span>
-                      <span className="text-amber-300 font-bold">•</span>
-                      <span className="text-amber-300 truncate">
-                        {ticket.slot === '1PM' ? 'DEAR MORNING (1:00 PM)' : ticket.slot === '6PM' ? 'DEAR DAY (6:00 PM)' : 'DEAR NIGHT (8:00 PM)'}
-                      </span>
-                    </div>
-
-                    <div className="flex items-center gap-1.5 flex-shrink-0">
-                      <span className="bg-amber-400 text-slate-950 font-black text-[9px] sm:text-[10px] px-2 py-0.5 rounded shadow-2xs">
-                        MRP ₹7.00
-                      </span>
-
-                      {/* Copy ticket number button */}
-                      <button
-                        type="button"
-                        onClick={() => handleCopyTicket(ticket.id, `${ticket.series} ${ticket.number}`)}
-                        className={`rounded-md px-1.5 py-0.5 flex items-center gap-1 text-[9px] sm:text-[10px] font-black transition-colors ${
-                          copiedTicketId === ticket.id
-                            ? 'bg-emerald-500 text-white'
-                            : 'bg-white/10 hover:bg-white/20 text-white'
-                        }`}
-                        title={lang === 'bn' ? 'টিকিট নম্বর কপি করুন' : 'Copy ticket number'}
-                      >
-                        <span>{copiedTicketId === ticket.id ? '✓' : '📋'}</span>
-                        <span>{copiedTicketId === ticket.id ? (lang === 'bn' ? 'কপি!' : 'Copied!') : (lang === 'bn' ? 'কপি' : 'Copy')}</span>
-                      </button>
-
-                      <button
-                        type="button"
-                        onClick={() => handleDeleteTicket(ticket.id)}
-                        className="text-white/60 hover:text-white hover:bg-white/20 rounded-full w-5 h-5 flex items-center justify-center text-xs transition-colors"
-                        title="Remove ticket"
-                      >
-                        ✕
-                      </button>
-                    </div>
-                  </div>
-
-                  {/* 2. Ticket Inner Body: Realistic Colors & Typography */}
-                  <div className="p-3 sm:p-4 bg-gradient-to-b from-[#fffef8] to-[#faf6ea]">
-                    
-                    {/* 1st Prize Goal & Draw Date Ribbon */}
-                    <div className="flex items-center justify-between text-[10px] font-bold text-slate-500 mb-2 border-b border-amber-200/60 pb-1.5">
-                      <span className="text-red-700 font-black flex items-center gap-1">
-                        <span>🏆</span>
-                        <span>{lang === 'bn' ? '১ম পুরস্কার: ₹১ কোটি' : lang === 'hi' ? 'पहला पुरस्कार: ₹1 करोड़' : '1st Prize: ₹1 Crore'}</span>
-                      </span>
-                      <div className="flex items-center gap-1 font-mono text-slate-500">
-                        {ticket.date > todayStr && (
-                          <span className="bg-blue-100 text-blue-900 border border-blue-300 text-[9px] font-sans font-black px-1.5 py-0.2 rounded">
-                            {lang === 'bn' ? 'আগামীকাল' : 'Tomorrow'}
-                          </span>
-                        )}
-                        <span>📅 {ticket.date.split('-').reverse().join('/')}</span>
-                      </div>
-                    </div>
-
-                    {/* Prominent Ticket Numbers Display */}
-                    <div className="flex items-center justify-center gap-2.5 sm:gap-4 py-1.5">
-                      {/* Series Pill */}
-                      <div className="flex flex-col items-center">
-                        <span className="text-[8px] sm:text-[9px] font-black text-slate-400 tracking-wider font-mono uppercase">SERIES</span>
-                        <span className="bg-slate-950 text-amber-300 font-mono text-xl sm:text-2xl font-black px-3 py-1 rounded-xl shadow-xs border border-slate-800">
-                          {ticket.series}
-                        </span>
-                      </div>
-
-                      {/* 5-Digit Number */}
-                      <div className="flex flex-col items-center">
-                        <span className="text-[8px] sm:text-[9px] font-black text-slate-400 tracking-wider font-mono uppercase">TICKET NUMBER</span>
-                        <span className="font-mono text-3xl sm:text-4xl font-black text-slate-950 tracking-[0.2em] sm:tracking-[0.25em] pl-2 drop-shadow-2xs">
-                          {ticket.number}
-                        </span>
-                      </div>
-                    </div>
-
-                    {/* 3. Barcode & Live Evaluation Footer */}
-                    <div className="mt-2.5 pt-2 border-t border-dashed border-amber-300/80 flex items-center justify-between text-[10px]">
-                      
-                      {/* Barcode Graphic */}
-                      <div className="flex items-center gap-1 opacity-70">
-                        <span className="font-mono tracking-tighter text-xs font-black select-none text-slate-700">
-                          ||||| | |||| || ||| |||| | |||
-                        </span>
-                        <span className="text-[8px] font-mono text-slate-400 hidden sm:inline">#{ticket.id.slice(-6).toUpperCase()}</span>
-                      </div>
-
-                      {/* Real-time Result Stamp */}
-                      <div>
-                        {evalRes.isWin ? (
-                          <span className="inline-flex items-center gap-1 bg-gradient-to-r from-emerald-600 to-teal-600 text-white font-black text-[11px] px-3 py-1 rounded-full shadow-sm animate-bounce">
-                            <span>🎉</span>
-                            <span>{evalRes.prizeTitle}</span>
-                          </span>
-                        ) : evalRes.status === 'DRAWING' ? (
-                          <span className="inline-flex items-center gap-1.5 bg-red-100 border border-red-300 text-red-800 font-bold text-[10px] px-2.5 py-0.5 rounded-full animate-pulse">
-                            <span className="w-1.5 h-1.5 rounded-full bg-red-600 animate-ping"></span>
-                            <span>{lang === 'bn' ? 'ড্র চলছে...' : 'Drawing in progress...'}</span>
-                          </span>
-                        ) : evalRes.status === 'UPCOMING' ? (
-                          <span className="inline-flex items-center gap-1 bg-slate-100 border border-slate-200 text-slate-600 font-bold text-[10px] px-2.5 py-0.5 rounded-full">
-                            <span>⏳</span>
-                            <span>{lang === 'bn' ? `${ticket.slot} ড্র অপেক্ষমাণ` : `Awaiting ${ticket.slot} draw`}</span>
-                          </span>
-                        ) : (
-                          <span className="inline-flex items-center gap-1 bg-slate-100 text-slate-500 font-bold text-[10px] px-2 py-0.5 rounded-full">
-                            <span>{evalRes.prizeTitle}</span>
-                          </span>
-                        )}
-                      </div>
-
-                    </div>
-
-                  </div>
-                </div>
-              );
-            })}
+            {activeSlotTickets.map(ticket => (
+              <RealPaperTicket
+                key={ticket.id}
+                ticket={ticket}
+                evalRes={evaluateTicket(ticket)}
+                onDelete={handleDeleteTicket}
+                onCopy={handleCopyTicket}
+                isCopied={copiedTicketId === ticket.id}
+                lang={lang}
+              />
+            ))}
           </div>
         )}
       </div>
 
-      {/* 6. Winning & Most Frequent Number Suggestions from Recent Games */}
-      {winningSuggestions.length > 0 && (
-        <div className="bg-white border border-slate-200 rounded-2xl p-3 sm:p-4 shadow-sm space-y-2.5">
-          <div className="flex items-center justify-between border-b border-slate-100 pb-2">
-            <div>
-              <span className="text-xs sm:text-sm font-black text-slate-900 flex items-center gap-1.5">
-                <span className="text-amber-500 text-base">🏆</span>
-                <span>
-                  {lang === 'bn'
-                    ? 'সাম্প্রতিক খেলায় সর্বাধিক আসা ও জয়ী নম্বরের সাজেশন'
-                    : lang === 'hi'
-                    ? 'हाल के खेलों में सबसे ज्यादा जीतने वाले नंबर'
-                    : 'Numbers Mostly Won in Recent Games'}
-                </span>
-              </span>
-              <p className="text-[10px] text-slate-500 mt-0.5">
-                {lang === 'bn' 
-                  ? 'সাম্প্রতিক ড্র-তে ১ম ও ২য় প্রাইজ বিজয়ী এবং ৫ম প্রাইজ-এ সর্বাধিক আসা হিট প্যাটার্ন'
-                  : '1st & 2nd prize winners and repeating high-hit combinations from recent draws'}
-              </p>
-            </div>
-            <span className="text-[10px] font-bold text-emerald-700 bg-emerald-50 border border-emerald-200 px-2 py-0.5 rounded-full shrink-0">
-              {lang === 'bn' ? '১-ক্লিক প্লে' : '1-Click Play'}
-            </span>
-          </div>
+      {/* 5. Clean Share on WhatsApp */}
+      {myTickets.length > 0 && (
+        <div className="flex items-center justify-between gap-2 pt-1">
+          <a
+            href={`https://api.whatsapp.com/send?text=${encodeURIComponent(
+              `🎫 *Dear Lottery Paper Tickets (${selectedSlot})*\n${myTickets
+                .filter(t => t.slot === selectedSlot)
+                .map(t => `• ${t.series} ${t.number}`)
+                .join('\n')}\n\n👉 Test your tickets here: https://dearresultlive.in/demo`
+            )}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex-1 bg-[#25D366] hover:bg-[#20bd5a] text-white font-black text-xs py-2 px-3 rounded-xl flex items-center justify-center gap-1.5 shadow-2xs transition-all text-center"
+          >
+            <span>💬</span>
+            <span>{lang === 'bn' ? 'হোয়াটসঅ্যাপে শেয়ার করুন' : 'Share on WhatsApp'}</span>
+          </a>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-1">
-            {winningSuggestions.map((item, idx) => {
-              const fullText = `${item.series} ${item.number}`;
-              const isCopied = copiedTicketId === `sug-${idx}`;
-              return (
-                <div
-                  key={`sug-${idx}`}
-                  className="flex items-center justify-between bg-slate-50 hover:bg-amber-50/50 border border-slate-200 hover:border-amber-300 rounded-xl p-2 sm:p-2.5 transition-all group"
-                >
-                  <div 
-                    onClick={() => {
-                      setManualSeries(item.series);
-                      setManualNumber(item.number);
-                    }}
-                    className="cursor-pointer min-w-0 flex-1 pr-1.5"
-                    title={lang === 'bn' ? 'নম্বরটি বক্সে বসাতে ক্লিক করুন' : 'Click to autofill input'}
-                  >
-                    <div className="flex items-center gap-1.5">
-                      <span className="text-[11px] font-black text-amber-800 bg-amber-100/90 border border-amber-200/80 px-1.5 py-0.2 rounded font-mono">
-                        {item.series}
-                      </span>
-                      <span className="text-sm sm:text-base font-black text-slate-950 tracking-wider font-mono">
-                        {item.number}
-                      </span>
-                    </div>
-                    <div className="text-[10px] text-slate-500 truncate mt-0.5 font-medium flex items-center gap-1">
-                      <span className="text-emerald-700 font-bold shrink-0">
-                        {lang === 'bn' ? item.tagBn : item.tag}
-                      </span>
-                      <span>•</span>
-                      <span className="truncate">{lang === 'bn' ? item.reasonBn : item.reason}</span>
-                    </div>
-                  </div>
-
-                  <div className="flex items-center gap-1 shrink-0">
-                    {/* Copy Button */}
-                    <button
-                      type="button"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleCopyTicket(`sug-${idx}`, fullText);
-                      }}
-                      title={lang === 'bn' ? 'কপি করুন' : 'Copy'}
-                      className="text-[11px] text-slate-600 hover:text-slate-900 bg-white hover:bg-slate-100 border border-slate-200 rounded-lg p-1.5 transition-all shadow-2xs"
-                    >
-                      {isCopied ? '✅' : '📋'}
-                    </button>
-
-                    {/* 1-Click Play Button */}
-                    <button
-                      type="button"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        addTicket(item.series, item.number);
-                      }}
-                      className="text-[11px] font-black text-white bg-emerald-600 hover:bg-emerald-700 active:scale-95 px-2.5 py-1.5 rounded-lg shadow-2xs transition-all flex items-center gap-1"
-                      title={lang === 'bn' ? 'ডেমো ব্যাগে যোগ করুন' : 'Add to pocket'}
-                    >
-                      <span>+</span>
-                      <span>{lang === 'bn' ? 'খেলুন' : lang === 'hi' ? 'खेलें' : 'Play'}</span>
-                    </button>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        </div>
-      )}
-
-      {/* 7. WhatsApp Share & Reset Actions */}
-      <div className="flex items-center justify-between gap-2 pt-2">
-        <a
-          href={whatsappUrl}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="flex-1 bg-[#25D366] hover:bg-[#20bd5a] text-white font-black text-xs py-2.5 px-3 rounded-xl flex items-center justify-center gap-1.5 shadow-2xs transition-all active:scale-95 text-center"
-        >
-          <span>💬</span>
-          <span>{lang === 'bn' ? 'স্কোর হোয়াটসঅ্যাপে শেয়ার করুন' : lang === 'hi' ? 'स्कोर व्हाट्सएप पर शेयर करें' : 'Share Score on WhatsApp'}</span>
-        </a>
-
-        {stats.totalSimulated > 0 && (
           <button
             type="button"
-            onClick={handleResetStats}
-            className="text-slate-500 hover:text-red-700 font-bold text-xs px-3 py-2.5 rounded-xl border border-slate-200 bg-white hover:bg-red-50 transition-colors"
+            onClick={handleClearAll}
+            className="text-slate-500 hover:text-red-700 font-bold text-xs px-3 py-2 rounded-xl border border-slate-200 bg-white hover:bg-red-50 transition-colors"
           >
-            {lang === 'bn' ? 'রিসেট' : 'Reset'}
+            {lang === 'bn' ? 'সব ক্লিয়ার' : 'Clear All'}
           </button>
-        )}
-      </div>
-
-      {/* 8. Responsible Play & Educational Disclaimer */}
-      <div className="bg-slate-50 border border-slate-200 rounded-2xl p-3.5 text-[11px] text-slate-600 leading-relaxed space-y-1">
-        <div className="font-black text-slate-800 flex items-center gap-1">
-          <span>ℹ️</span>
-          <span>{lang === 'bn' ? 'ডেমো প্লে সংক্রান্ত তথ্য ও নিয়মাবলী:' : 'Demo Simulator Disclaimer:'}</span>
         </div>
-        <p>
-          {lang === 'bn'
-            ? 'এটি একটি সম্পূর্ণ ফ্রি শিক্ষামূলক ডেমো ও পেপার সিমুলেটর। এখানে কোনো বাস্তব আর্থিক লেনদেন, আমানত বা আসল টাকা জেতার সুযোগ নেই। লটারি ড্র সবসময় সম্পূর্ণ এলোমেলো ও ভাগ্যের বিষয়।'
-            : 'This is a strictly free educational simulator for statistical practice and paper analysis. There are no real monetary deposits, withdrawals, or prizes. All lottery draws are independent and random.'}
-        </p>
-      </div>
+      )}
 
     </div>
   );
