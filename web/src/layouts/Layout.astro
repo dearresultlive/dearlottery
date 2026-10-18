@@ -18,7 +18,7 @@ interface Props {
 const { title, description, drawDate, drawTime, winningNumbers } = Astro.props;
 const currentPath = Astro.url.pathname;
 const isHomeActive = currentPath === '/' || currentPath.startsWith('/results');
-const isDemoActive = currentPath === '/demo';
+const isLuckyActive = currentPath === '/lucky-ticket' || currentPath === '/demo';
 const isTargetsActive = currentPath === '/target-numbers' || currentPath === '/analytics';
 const isCheckerActive = currentPath === '/checker';
 ---
@@ -150,17 +150,17 @@ const isCheckerActive = currentPath === '/checker';
       </a>
 
       <a
-        href="/demo"
-        aria-label="Demo Lottery Paper Play"
+        href="/lucky-ticket"
+        aria-label="Lucky Ticket Simulator"
         class={`flex flex-col items-center justify-center flex-1 min-h-[48px] py-1 transition-all active:scale-95 ${
-          isDemoActive ? 'text-blue-700 font-black' : 'text-slate-600 font-semibold hover:text-slate-900'
+          isLuckyActive ? 'text-blue-700 font-black' : 'text-slate-600 font-semibold hover:text-slate-900'
         }`}
       >
-        <span class="text-lg">🎮</span>
+        <span class="text-lg">🎟️</span>
         <span class="text-[10px] mt-0.5">
-          <span class="lang-en">Demo Play</span>
-          <span class="lang-bn">ডেমো প্লে</span>
-          <span class="lang-hi">डेमो प्ले</span>
+          <span class="lang-en">Lucky Ticket</span>
+          <span class="lang-bn">লাকি টিকিট</span>
+          <span class="lang-hi">लकी टिकट</span>
         </span>
       </a>
 

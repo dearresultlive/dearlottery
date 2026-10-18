@@ -48,14 +48,14 @@ const { currentPath = '/' } = Astro.props;
           <span id="nav-today">Today</span>
         </a>
         <a
-          href="/demo"
+          href="/lucky-ticket"
           class={`px-3 py-2 rounded-xl text-xs sm:text-sm font-black transition-colors ${
-            currentPath === '/demo'
+            currentPath === '/lucky-ticket' || currentPath === '/demo'
               ? 'text-blue-700 bg-blue-50 border border-blue-200'
               : 'text-slate-700 hover:text-blue-700 hover:bg-slate-100'
           }`}
         >
-          <span id="nav-demo">Demo Play</span>
+          <span id="nav-lucky">Lucky Ticket</span>
         </a>
         <a
           href="/yesterday"
@@ -146,7 +146,7 @@ const { currentPath = '/' } = Astro.props;
   function applyHeaderLanguage(lang) {
     var brand = document.getElementById('header-brand-tagline');
     var navToday = document.getElementById('nav-today');
-    var navDemo = document.getElementById('nav-demo');
+    var navLucky = document.getElementById('nav-lucky');
     var navYesterday = document.getElementById('nav-yesterday');
     var navTarget = document.getElementById('nav-target');
     var navOld = document.getElementById('nav-old');
@@ -157,7 +157,7 @@ const { currentPath = '/' } = Astro.props;
     if (lang === 'bn') {
       if (brand) brand.textContent = 'লটারি সংবাদ • আজকের তাজা রেজাল্ট';
       if (navToday) navToday.textContent = 'আজকের রেজাল্ট';
-      if (navDemo) navDemo.textContent = 'ডেমো প্লে';
+      if (navLucky) navLucky.textContent = 'লাকি টিকিট';
       if (navYesterday) navYesterday.textContent = 'গতকালকের রেজাল্ট';
       if (navTarget) navTarget.textContent = 'টার্গেট ও হট নম্বর';
       if (navOld) navOld.textContent = 'পুরনো রেজাল্ট';
@@ -167,7 +167,7 @@ const { currentPath = '/' } = Astro.props;
     } else if (lang === 'hi') {
       if (brand) brand.textContent = 'लॉटरी संबाद • आज का ताजा रिजल्ट';
       if (navToday) navToday.textContent = 'आज का रिजल्ट';
-      if (navDemo) navDemo.textContent = 'डेमो प्ले';
+      if (navLucky) navLucky.textContent = 'लकी टिकट';
       if (navYesterday) navYesterday.textContent = 'कल का रिजल्ट';
       if (navTarget) navTarget.textContent = 'टारगेट और हॉट नंबर';
       if (navOld) navOld.textContent = 'पुराने रिजल्ट';
@@ -177,7 +177,7 @@ const { currentPath = '/' } = Astro.props;
     } else {
       if (brand) brand.textContent = 'Lottery Sambad • Live Result Portal';
       if (navToday) navToday.textContent = "Today";
-      if (navDemo) navDemo.textContent = "Demo Play";
+      if (navLucky) navLucky.textContent = "Lucky Ticket";
       if (navYesterday) navYesterday.textContent = "Yesterday";
       if (navTarget) navTarget.textContent = "Target & Hot";
       if (navOld) navOld.textContent = 'Old Results';

@@ -251,11 +251,11 @@ export default function TargetNumbersTool({
               </button>
 
               <a
-                href={`/demo?num=${encodeURIComponent(luckyNumber)}&slot=${selectedSlot}`}
+                href={`/lucky-ticket?num=${encodeURIComponent(luckyNumber)}&slot=${selectedSlot}`}
                 className="inline-flex items-center gap-1.5 bg-blue-700 hover:bg-blue-800 text-white font-black text-xs px-4 py-2 rounded-xl shadow-xs transition-all active:scale-95"
               >
-                <span>🎮</span>
-                <span>{lang === 'bn' ? 'ডেমো প্লে-তে টেস্ট করুন ➔' : lang === 'hi' ? 'डेमो प्ले में टेस्ट करें ➔' : 'Test in Demo Play ➔'}</span>
+                <span>🎟️</span>
+                <span>{lang === 'bn' ? 'লাকি টিকিট প্রিন্ট করুন ➔' : lang === 'hi' ? 'लकी टिकट प्रिंट करें ➔' : 'Print Lucky Ticket ➔'}</span>
               </a>
             </div>
           </div>

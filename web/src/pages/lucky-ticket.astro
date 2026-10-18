@@ -1,0 +1,66 @@
+---
+import Layout from '../layouts/Layout.astro';
+import DemoPlayModule from '../components/DemoPlayModule';
+import { fetchLatestDraws, fetchDrawsByDate } from '../lib/api';
+import { getISTDateString, getISTNow } from '../lib/lottery-utils';
+
+const istNow = getISTNow();
+const todayDateStr = getISTDateString(istNow);
+
+const yesterday = new Date(istNow);
+yesterday.setDate(yesterday.getDate() - 1);
+const yesterdayDateStr = getISTDateString(yesterday);
+
+const todayDraws = await fetchLatestDraws();
+const yesterdayDraws = await fetchDrawsByDate(yesterdayDateStr);
+const allDraws = [...todayDraws, ...yesterdayDraws];
+---
+
+<Layout
+  title={`Dear Lottery Lucky Ticket • Live Paper Simulator (${todayDateStr}) | Lottery Sambad`}
+  description={`Generate and test your Dear Lottery Lucky Tickets for 1:00 PM, 6:00 PM, and 8:00 PM draws. Real-world paper ticket styling, heat map hot numbers, and live profit/loss tracking.`}
+  drawDate={todayDateStr}
+>
+  <div class="max-w-[620px] md:max-w-2xl mx-auto px-2.5 sm:px-4 py-3 space-y-4">
+    
+    {/* Breadcrumbs Navigation */}
+    <nav aria-label="Breadcrumb" class="flex items-center gap-2 text-xs text-slate-500 border-b border-slate-200 pb-2">
+      <a href="/" class="hover:text-blue-700 font-medium">Home (হোম)</a>
+      <span>/</span>
+      <span class="text-slate-900 font-bold">Lucky Ticket (লাকি টিকিট)</span>
+    </nav>
+
+    {/* Primary Interactive Lucky Ticket Module */}
+    <section id="lucky-ticket-module">
+      <DemoPlayModule client:load initialDraws={allDraws} />
+    </section>
+
+    {/* Quick Links Footer */}
+    <div class="flex items-center justify-center gap-3 pt-2 text-xs border-t border-slate-200">
+      <a
+        href="/"
+        class="text-blue-700 hover:text-blue-900 font-bold hover:underline flex items-center gap-1"
+      >
+        <span>👈</span>
+        <span>Today's Live Result (লাইভ রেজাল্ট)</span>
+      </a>
+      <span class="text-slate-300">•</span>
+      <a
+        href="/target-numbers"
+        class="text-amber-700 hover:text-amber-900 font-bold hover:underline flex items-center gap-1"
+      >
+        <span>🎯</span>
+        <span>Target Numbers (টার্গেট নম্বর)</span>
+      </a>
+      <span class="text-slate-300">•</span>
+      <a
+        href="/analytics"
+        class="text-purple-700 hover:text-purple-900 font-bold hover:underline flex items-center gap-1"
+      >
+        <span>📊</span>
+        <span>5Y Analytics</span>
+      </a>
+    </div>
+
+  </div>
+</Layout>
