@@ -53,7 +53,7 @@ const SEM_OPTIONS = [
   { count: 10, labelBn: '১০ সেম', price: 70, popular: false },
   { count: 25, labelBn: '২৫ সেম', price: 175, popular: false },
   { count: 50, labelBn: '৫০ সেম', price: 350, popular: false },
-  { count: 1, labelBn: '১টি টিকিট', price: 7, popular: false }
+  { count: 100, labelBn: '১০০ সেম', price: 700, popular: false }
 ];
 
 // Authentic Dear scheme names mapped by day of the week & slot
@@ -366,10 +366,10 @@ export default function DemoPlayModule({ initialDraws = [] }: DemoPlayModuleProp
         if (raw) {
           const parsed = JSON.parse(raw);
           if (Array.isArray(parsed)) {
-            // Ensure sem is populated for any older tickets (defaulting to 5)
+            // Ensure sem is minimum 5 for all tickets (as single tickets are not sold)
             const normalized = parsed.map(t => ({
               ...t,
-              sem: t.sem || 5
+              sem: Math.max(t.sem || 5, 5)
             }));
             setMyTickets(normalized);
           }
@@ -875,7 +875,7 @@ export default function DemoPlayModule({ initialDraws = [] }: DemoPlayModuleProp
         <div className="flex items-center justify-between gap-1.5 bg-slate-50 border border-slate-200 p-2 rounded-xl">
           <div className="flex items-center gap-1 text-xs font-black text-slate-800 shrink-0">
             <span>📚</span>
-            <span>{lang === 'bn' ? 'সেম বুকলেট:' : 'Sem:'}</span>
+            <span>{lang === 'bn' ? 'সেম (মিনিমাম ৫):' : 'Sem (Min 5):'}</span>
           </div>
 
           <div className="flex items-center gap-1 overflow-x-auto">
