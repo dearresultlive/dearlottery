@@ -45,6 +45,35 @@ export const GET: APIRoute = async ({ params }) => {
     targetDraw = generateWebMockDraw(dateStr, validSlot);
   }
 
+  // Attempt to fetch and stream official signed PDF from Sambad CDN if available
+  const [year, month, day] = dateStr.split('-');
+  const dateKey = `${day}-${month}-${year}`;
+  const slotKey = validSlot.toLowerCase();
+  const upstreamPdfUrl = `https://lottery.sambad.com/pdf/lottery-sambad-${slotKey}-${dateKey}.pdf`;
+
+  if (hasDeclaredPrizes || (isToday && istNow.getHours() >= targetHour)) {
+    try {
+      const upstreamRes = await fetch(upstreamPdfUrl, {
+        headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36' },
+        signal: AbortSignal.timeout(3000)
+      });
+      if (upstreamRes.ok) {
+        const pdfBytes = await upstreamRes.arrayBuffer();
+        return new Response(pdfBytes, {
+          status: 200,
+          headers: {
+            'Content-Type': 'application/pdf',
+            'Content-Disposition': `attachment; filename="Dear_Lottery_${dateStr}_${validSlot}_Official.pdf"`,
+            'Content-Length': String(pdfBytes.byteLength),
+            'Cache-Control': 'public, max-age=3600, s-maxage=86400'
+          }
+        });
+      }
+    } catch (upstreamErr) {
+      // Fall back to local generated PDF
+    }
+  }
+
   const pdfData = {
     draw_id: targetDraw?.id || `${dateStr}-${validSlot}`,
     draw_date: targetDraw?.draw_date || dateStr,
