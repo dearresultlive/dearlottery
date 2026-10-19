@@ -553,11 +553,11 @@ export default function DynamicSlotView({
               </button>
             </div>
 
-            <div className="flex-1 overflow-auto bg-slate-100 rounded-xl p-2 border border-slate-200 flex items-center justify-center">
+            <div className="flex-1 overflow-auto bg-slate-100 rounded-xl p-2 border border-slate-200 flex justify-center items-start">
               <img
                 src={activeSheetImg}
                 alt="Official Dear Lottery Gazette Result Sheet"
-                className="max-w-full max-h-[75vh] object-contain rounded shadow-lg"
+                className="max-w-full max-h-[75vh] object-contain rounded shadow-lg mx-auto block"
                 onError={() => {
                   if (activeSheetImg !== sheetSvgUrl) {
                     setActiveSheetImg(sheetSvgUrl);

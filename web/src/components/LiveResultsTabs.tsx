@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useRef } from 'react';
 import {
   formatINR,
   getISTNow,
@@ -73,6 +73,15 @@ export default function LiveResultsTabs({
   const [showImageModal, setShowImageModal] = useState<boolean>(false);
   const [selectedImageUrl, setSelectedImageUrl] = useState<string>('');
   const [zoomScale, setZoomScale] = useState<number>(1);
+  const zoomFrameRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (showImageModal && zoomFrameRef.current) {
+      zoomFrameRef.current.scrollTop = 0;
+      zoomFrameRef.current.scrollLeft = 0;
+    }
+  }, [showImageModal, selectedImageUrl]);
+
   const [showTextTables, setShowTextTables] = useState<boolean>(true);
   const [copiedLink, setCopiedLink] = useState<boolean>(false);
   const [slotCountdown, setSlotCountdown] = useState(getSlotCountdown('1PM'));
@@ -392,9 +401,10 @@ export default function LiveResultsTabs({
     setShowImageModal(true);
   };
 
-  const handleZoomIn = () => setZoomScale(prev => Math.min(prev + 0.3, 3));
-  const handleZoomOut = () => setZoomScale(prev => Math.max(prev - 0.3, 1));
+  const handleZoomIn = () => setZoomScale(prev => Math.min(Number((prev + 0.25).toFixed(2)), 2.5));
+  const handleZoomOut = () => setZoomScale(prev => Math.max(Number((prev - 0.25).toFixed(2)), 0.6));
   const handleResetZoom = () => setZoomScale(1);
+  const toggleImageZoom = () => setZoomScale(prev => (prev === 1 ? 1.5 : 1));
 
   const currentSlotInfo = slots.find(s => s.key === activeSlot) || slots[0];
   const hasActiveDateInList = pastDatesList.some(item => item.value === activeDateStr);
@@ -937,12 +947,15 @@ export default function LiveResultsTabs({
 
           {/* Interactive Zoom Frame */}
           <div
-            className="flex-1 overflow-auto max-w-3xl w-full mx-auto bg-slate-900/60 rounded-2xl p-2 border border-white/10 flex items-center justify-center relative touch-manipulation"
+            ref={zoomFrameRef}
+            className="flex-1 overflow-auto max-w-3xl w-full mx-auto bg-slate-900/60 rounded-2xl p-2 sm:p-3 border border-white/10 flex justify-center items-start relative touch-manipulation"
             onClick={e => e.stopPropagation()}
           >
             <img
               src={selectedImageUrl}
               alt="Official Dear Lottery Gazette Sheet"
+              onClick={toggleImageZoom}
+              title={zoomScale === 1 ? 'Click to zoom in' : 'Click to reset zoom'}
               onError={(e) => {
                 (e.target as HTMLImageElement).src = sheetSvgUrl;
               }}
@@ -951,7 +964,9 @@ export default function LiveResultsTabs({
                 transformOrigin: 'top center',
                 transition: 'transform 0.18s ease'
               }}
-              className="max-w-full h-auto object-contain rounded shadow-2xl"
+              className={`max-w-full h-auto object-contain rounded shadow-2xl mx-auto block ${
+                zoomScale === 1 ? 'cursor-zoom-in' : 'cursor-zoom-out'
+              }`}
             />
           </div>
 
@@ -964,9 +979,9 @@ export default function LiveResultsTabs({
               <button
                 type="button"
                 onClick={handleZoomOut}
-                disabled={zoomScale <= 1}
+                disabled={zoomScale <= 0.6}
                 aria-label="Zoom out"
-                className="w-7 h-7 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center font-black text-base disabled:opacity-40"
+                className="w-7 h-7 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center font-black text-base disabled:opacity-40 cursor-pointer"
               >
                 −
               </button>
@@ -974,16 +989,17 @@ export default function LiveResultsTabs({
                 type="button"
                 onClick={handleResetZoom}
                 aria-label="Reset zoom level"
-                className="px-2 font-mono font-bold text-xs"
+                className="px-2 font-mono font-bold text-xs cursor-pointer hover:text-amber-400"
+                title="Reset to 100%"
               >
                 {Math.round(zoomScale * 100)}%
               </button>
               <button
                 type="button"
                 onClick={handleZoomIn}
-                disabled={zoomScale >= 3}
+                disabled={zoomScale >= 2.5}
                 aria-label="Zoom in"
-                className="w-7 h-7 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center font-black text-base disabled:opacity-40"
+                className="w-7 h-7 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center font-black text-base disabled:opacity-40 cursor-pointer"
               >
                 +
               </button>
