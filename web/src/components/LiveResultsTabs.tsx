@@ -8,6 +8,7 @@ import {
 } from '../lib/lottery-utils';
 import { useLanguage } from '../lib/i18n';
 import HistoricalIntelligenceCard from './HistoricalIntelligenceCard';
+import LiveDrawProgressCard from './LiveDrawProgressCard';
 import { analyzeNumberHistory, getTopRecurringNumbers } from '../lib/history-analytics';
 
 interface PrizeData {
@@ -636,23 +637,13 @@ export default function LiveResultsTabs({
 
             </div>
           </div>
-      ) : activeStatus === 'DRAWING' ? (
-        <div className="bg-white border-2 border-red-300 rounded-2xl p-6 text-center space-y-3 shadow-sm">
-          <div className="inline-flex items-center gap-2 bg-red-100 border border-red-300 text-red-800 px-3 py-1 rounded-full text-xs font-black animate-pulse">
-            <span className="w-2 h-2 rounded-full bg-red-600 animate-ping"></span>
-            {lang === 'bn' ? 'ড্র চলছে • DRAW IN PROGRESS' : lang === 'hi' ? 'ड्रा प्रगति पर है • DRAW IN PROGRESS' : 'DRAW IN PROGRESS'}
-          </div>
-          <h3 className="text-xl sm:text-2xl font-black text-slate-900">
-            {lang === 'bn' ? `${currentSlotInfo.time} রেজাল্ট শিট আপলোড হচ্ছে` : lang === 'hi' ? `${currentSlotInfo.time} रिजल्ट शीट अपलोड हो रही है` : `${currentSlotInfo.time} Result Sheet Uploading`}
-          </h3>
-          <p className="text-xs text-slate-600">
-            {lang === 'bn'
-              ? 'সরকারি ডিরেক্টরেট শিট স্ক্যান সম্পন্ন হচ্ছে। কয়েক সেকেন্ডের মধ্যে নম্বর প্রদর্শিত হবে।'
-              : lang === 'hi'
-              ? 'सरकारी निदेशालय शीट स्कैन हो रही है। कुछ ही पलों में नंबर दिखाई देंगे।'
-              : 'Official Directorate result sheet scanning in progress. Winning numbers will appear momentarily.'}
-          </p>
-        </div>
+       ) : activeStatus === 'DRAWING' ? (
+        <LiveDrawProgressCard
+          slot={activeSlot}
+          slotTime={currentSlotInfo.time}
+          drawName={currentDraw?.draw_name || `DEAR ${activeSlot}`}
+          lang={lang}
+        />
       ) : (
         /* UPCOMING PENDING CARD */
         <div className="bg-slate-50 border border-slate-200 rounded-2xl p-5 text-center space-y-3">
