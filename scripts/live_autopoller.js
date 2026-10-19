@@ -316,11 +316,25 @@ async function processSlot(dateStr, slot) {
       };
       saveLiveDraws(db);
 
+      // Trigger instant Telegram broadcast for 1st Prize (Zero delay alert)
+      try {
+        await sendTelegramResultPost({ dateStr, slot, prizeData: db[dateStr][slot] });
+      } catch (tgErr) {
+        console.warn('[Poller] Fast-release Telegram warning:', tgErr.message);
+      }
+
       // Trigger instant OneSignal push for 1st Prize
       try {
         await sendOneSignalResultPush({ dateStr, slot, prizeData: db[dateStr][slot] });
       } catch (pushErr) {
         console.warn('[Poller] Fast-release push warning:', pushErr.message);
+      }
+
+      // Ping Search Engines immediately for 1st Prize
+      try {
+        await pingSearchEngines(dateStr, slot);
+      } catch (pingErr) {
+        console.warn('[Poller] Fast-release SEO ping warning:', pingErr.message);
       }
     }
   }

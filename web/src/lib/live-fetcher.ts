@@ -51,15 +51,7 @@ export async function checkAndFetchLiveSlot(
     };
   }
 
-  // If draw just started (e.g. within first 5 minutes of draw hour)
-  if (dateStr === todayStr && currentHour === targetHour && currentMin < 5) {
-    return {
-      slot,
-      status: 'DRAWING'
-    };
-  }
-
-  // Attempt live upstream detection from official feeds
+  // Attempt live upstream detection from official feeds immediately without artificial delay
   try {
     const [year, month, day] = dateStr.split('-');
     const dateKey = `${day}-${month}-${year}`;
@@ -70,7 +62,7 @@ export async function checkAndFetchLiveSlot(
       headers: {
         'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
       },
-      signal: AbortSignal.timeout(6000)
+      signal: AbortSignal.timeout(3000)
     });
 
     if (res.ok) {

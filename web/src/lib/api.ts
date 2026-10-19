@@ -5,6 +5,7 @@
 
 import { getVerifiedDrawsByDate, getVerifiedDraw, searchVerifiedPrizes } from './verified-draws';
 import { getISTDateString, getISTNow } from './lottery-utils';
+import { checkAndFetchLiveSlot } from './live-fetcher';
 
 const WORKER_BASE = import.meta.env.WORKER_API_BASE || 'http://127.0.0.1:8787';
 
@@ -39,12 +40,13 @@ export interface DrawItem {
 
 /**
  * Fetch latest draws (today's 1PM, 6PM, 8PM official records)
+ * Enhanced with instant upstream live edge-detection for zero-delay publishing.
  */
 export async function fetchLatestDraws(): Promise<DrawItem[]> {
   try {
     const res = await fetch(`${WORKER_BASE}/api/results/latest`, {
       headers: { 'Accept': 'application/json' },
-      signal: AbortSignal.timeout(2000)
+      signal: AbortSignal.timeout(1500)
     });
     if (res.ok) {
       const data = await res.json();
@@ -53,22 +55,81 @@ export async function fetchLatestDraws(): Promise<DrawItem[]> {
       }
     }
   } catch (e) {
-    // Graceful fallback to verified official results
+    // Graceful fallback to verified official results + live edge check
   }
 
   const istNow = getISTNow();
   const todayStr = getISTDateString(istNow);
-  return getVerifiedDrawsByDate(todayStr, istNow) as unknown as DrawItem[];
+  const currentHour = istNow.getHours();
+  let draws = getVerifiedDrawsByDate(todayStr, istNow) as unknown as DrawItem[];
+
+  // Real-time Edge Detection for Today's Active Drawing Slots
+  const slotsToCheck: Array<'1PM' | '6PM' | '8PM'> = [];
+  if (currentHour >= 13) slotsToCheck.push('1PM');
+  if (currentHour >= 18) slotsToCheck.push('6PM');
+  if (currentHour >= 20) slotsToCheck.push('8PM');
+
+  for (const s of slotsToCheck) {
+    const slotIdx = draws.findIndex(d => d.id === `${todayStr}-${s}` || d.draw_time?.includes(s.replace('PM', '')));
+    const existing = slotIdx >= 0 ? draws[slotIdx] : null;
+    const hasFirstPrize = Boolean(existing?.parsed_data?.prizes?.first_prize?.number || existing?.prizes?.first_prize?.number);
+
+    if (!hasFirstPrize) {
+      try {
+        const live = await checkAndFetchLiveSlot(todayStr, s, istNow);
+        if (live.status === 'RESULT_OUT' && live.first_prize?.number) {
+          const resolvedDraw: DrawItem = {
+            id: `${todayStr}-${s}`,
+            draw_date: todayStr,
+            draw_time: s === '1PM' ? '1:00 PM' : s === '6PM' ? '6:00 PM' : '8:00 PM',
+            draw_name: `DEAR ${s}`,
+            draw_number: '50',
+            status: 'DECLARED',
+            checksum: `live_${todayStr}_${s}`,
+            source_url: live.imageUrl || `/results/${todayStr}/${s.toLowerCase()}.jpg`,
+            raw_json: JSON.stringify(live.prizes),
+            prizes: live.prizes,
+            parsed_data: {
+              draw_id: `${todayStr}-${s}`,
+              draw_date: todayStr,
+              draw_time: s === '1PM' ? '1:00 PM' : s === '6PM' ? '6:00 PM' : '8:00 PM',
+              draw_name: `DEAR ${s}`,
+              status: 'DECLARED',
+              prizes: live.prizes
+            }
+          };
+
+          if (slotIdx >= 0) {
+            draws[slotIdx] = resolvedDraw;
+          } else {
+            draws.push(resolvedDraw);
+          }
+        }
+      } catch (err) {
+        // Continue gracefully
+      }
+    }
+  }
+
+  return draws;
 }
 
 /**
  * Fetch draws for a specific date (100% official verified winning records)
  */
 export async function fetchDrawsByDate(dateStr: string): Promise<DrawItem[]> {
+  const istNow = getISTNow();
+  const todayStr = getISTDateString(istNow);
+
+  // If asking for today, use fetchLatestDraws with live edge detection
+  if (dateStr === todayStr) {
+    return fetchLatestDraws();
+  }
+
   try {
     const res = await fetch(`${WORKER_BASE}/api/results/date/${dateStr}`, {
       headers: { 'Accept': 'application/json' },
-      signal: AbortSignal.timeout(2000)
+      signal: AbortSignal.timeout(1500)
     });
     if (res.ok) {
       const data = await res.json();
@@ -80,7 +141,6 @@ export async function fetchDrawsByDate(dateStr: string): Promise<DrawItem[]> {
     // Fallback
   }
 
-  const istNow = getISTNow();
   return getVerifiedDrawsByDate(dateStr, istNow) as unknown as DrawItem[];
 }
 

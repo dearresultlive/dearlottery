@@ -2,11 +2,15 @@ name: Scheduled Dear Lottery Ingestion Pipeline
 
 on:
   schedule:
-    # 1:00 PM to 1:45 PM IST  = 07:30 to 08:15 UTC
-    # 6:00 PM to 6:45 PM IST  = 12:30 to 13:15 UTC
-    # 8:00 PM to 8:45 PM IST  = 14:30 to 15:15 UTC
-    - cron: '30,35,40,45,50,55 7,12,14 * * *'
-    - cron: '0,5,10,15 8,13,15 * * *'
+    # 1:00 PM IST draw: Pre-warm at 12:58 PM IST (07:28 UTC), with backups
+    - cron: '28,35,45,55 7 * * *'
+    - cron: '5,15,35 8 * * *'
+    # 6:00 PM IST draw: Pre-warm at 5:58 PM IST (12:28 UTC), with backups
+    - cron: '28,35,45,55 12 * * *'
+    - cron: '5,15,35 13 * * *'
+    # 8:00 PM IST draw: Pre-warm at 7:58 PM IST (14:28 UTC), with backups
+    - cron: '28,35,45,55 14 * * *'
+    - cron: '5,15,35 15 * * *'
   workflow_dispatch:
     inputs:
       slot:
@@ -24,6 +28,10 @@ on:
         required: false
         default: ''
 
+concurrency:
+  group: dearlottery-scrape
+  cancel-in-progress: false
+
 jobs:
   scrape-and-publish:
     runs-on: ubuntu-latest
@@ -38,10 +46,9 @@ jobs:
         with:
           node-version: 20
 
-      - name: Install Node Dependencies
+      - name: Fast Install Poller Dependencies
         run: |
           npm install
-          cd web && npm install
 
       - name: Execute Autonomous Live Poller
         env:
@@ -82,6 +89,7 @@ jobs:
       - name: Build Astro Frontend
         run: |
           cd web
+          npm install
           npm run build
 
       - name: Deploy Frontend to Cloudflare Pages
