@@ -66,14 +66,6 @@ interface HotNumberCard {
   reasonBn: string;
 }
 
-const SEM_OPTIONS = [
-  { count: 5, labelBn: '৫ সেম', labelHi: '५ सेम', labelEn: '5 Sem', price: 35, popular: true },
-  { count: 10, labelBn: '১০ সেম', labelHi: '१० सेम', labelEn: '10 Sem', price: 70, popular: false },
-  { count: 25, labelBn: '২৫ সেম', labelHi: '२५ सेम', labelEn: '25 Sem', price: 175, popular: false },
-  { count: 50, labelBn: '৫০ সেম', labelHi: '५० सेम', labelEn: '50 Sem', price: 350, popular: false },
-  { count: 100, labelBn: '১০০ সেম', labelHi: '१०० सेम', labelEn: '100 Sem', price: 700, popular: false }
-];
-
 // Authentic Dear scheme names mapped by day of the week & slot
 function getSchemeName(dateStr: string, slot: '1PM' | '6PM' | '8PM'): string {
   try {
@@ -125,17 +117,19 @@ function RealPaperTicket({
   evalRes,
   onDelete,
   onCopy,
-  onAddSem,
   isCopied,
-  lang
+  lang,
+  isSelected,
+  onSelect
 }: {
   ticket: LuckyTicket;
   evalRes: any;
   onDelete: (id: string) => void;
   onCopy: (id: string, text: string) => void;
-  onAddSem?: (id: string, delta: number) => void;
   isCopied: boolean;
   lang: string;
+  isSelected?: boolean;
+  onSelect?: (id: string) => void;
 }) {
   const schemeName = getSchemeName(ticket.date, ticket.slot);
   const formattedDate = ticket.date.split('-').reverse().join('/');
@@ -173,19 +167,22 @@ function RealPaperTicket({
   const netTicketPnl = evalRes.isWin ? evalRes.prizeAmount - ticketCost : -ticketCost;
 
   return (
-    <div className={`rounded-xl border-2 ${theme.border} ${
-      sem > 1 
-        ? 'shadow-[3px_3px_0px_#94a3b8,6px_6px_0px_#cbd5e1]' 
-        : 'shadow-md'
-    } overflow-hidden font-sans select-none transition-transform hover:scale-[1.01]`}>
+    <div 
+      onClick={() => onSelect && onSelect(ticket.id)}
+      className={`relative ${theme.bg} rounded-xl border-2 ${
+        isSelected ? 'border-amber-500 ring-2 ring-amber-400 shadow-md' : theme.border
+      } ${
+        sem > 1 
+          ? 'shadow-[3px_3px_0px_#94a3b8,6px_6px_0px_#cbd5e1]' 
+          : 'shadow-md'
+      } overflow-hidden font-sans select-none transition-all hover:scale-[1.005] ${onSelect ? 'cursor-pointer' : ''}`}
+    >
       
-      {/* AUTHENTIC PAPER TICKET SLIP CONTAINER */}
-      <div className={`relative ${theme.bg} overflow-hidden`}>
-        {/* Semicircle perforation notch cutouts on top and bottom divider */}
-        <div className="absolute left-[64px] sm:left-[78px] -top-2.5 w-5 h-5 rounded-full bg-slate-100 border-b-2 border-slate-300 z-20 pointer-events-none"></div>
-        <div className="absolute left-[64px] sm:left-[78px] -bottom-2.5 w-5 h-5 rounded-full bg-slate-100 border-t-2 border-slate-300 z-20 pointer-events-none"></div>
+      {/* Semicircle perforation notch cutouts on top and bottom divider */}
+      <div className="absolute left-[64px] sm:left-[78px] -top-2.5 w-5 h-5 rounded-full bg-slate-100 border-b-2 border-slate-300 z-20 pointer-events-none"></div>
+      <div className="absolute left-[64px] sm:left-[78px] -bottom-2.5 w-5 h-5 rounded-full bg-slate-100 border-t-2 border-slate-300 z-20 pointer-events-none"></div>
 
-        <div className="flex items-stretch min-h-[148px] sm:min-h-[160px]">
+      <div className="flex items-stretch min-h-[148px] sm:min-h-[160px]">
         
         {/* LEFT COUNTERFOIL STUB (Perforated) */}
         <div className={`w-[64px] sm:w-[78px] shrink-0 border-r-2 border-dashed border-slate-300 ${theme.stubBg} flex flex-col justify-between items-center py-2 px-1 text-center relative z-10`}>
@@ -230,6 +227,12 @@ function RealPaperTicket({
                 <span className="bg-amber-500 text-white font-black text-[8px] px-1.5 py-0.2 rounded shrink-0">
                   {sem} SEM
                 </span>
+                {isSelected && (
+                  <span className="bg-amber-600 text-white font-black text-[8px] px-1.5 py-0.2 rounded shrink-0 flex items-center gap-0.5 shadow-2xs">
+                    <span>✓</span>
+                    <span>{lang === 'bn' ? 'সিলেক্টেড' : 'ACTIVE'}</span>
+                  </span>
+                )}
               </div>
               <div className="flex items-center gap-1 text-[9px] sm:text-[10px] font-bold text-slate-600 mt-0.5">
                 <span className="text-red-700 font-black">{schemeName}</span>
@@ -238,30 +241,8 @@ function RealPaperTicket({
               </div>
             </div>
 
-            {/* Quick Actions (Sem Stepper, Copy & Delete) */}
+            {/* Quick Actions (Copy & Delete) */}
             <div className="flex items-center gap-1 shrink-0">
-              {onAddSem && (
-                <div className="flex items-center bg-black/5 rounded-lg p-0.5 border border-black/10 gap-0.5">
-                  {sem > 5 && (
-                    <button
-                      type="button"
-                      onClick={() => onAddSem(ticket.id, -5)}
-                      className="px-1.5 py-0.5 rounded text-[9px] font-black bg-white hover:bg-slate-200 text-slate-700 shadow-2xs active:scale-95 transition-all cursor-pointer"
-                      title="Reduce 5 Sem (-₹35)"
-                    >
-                      -5
-                    </button>
-                  )}
-                  <button
-                    type="button"
-                    onClick={() => onAddSem(ticket.id, 5)}
-                    className="px-2 py-0.5 rounded text-[9px] font-black bg-emerald-600 hover:bg-emerald-700 text-white shadow-2xs active:scale-95 transition-all flex items-center gap-0.5 cursor-pointer"
-                    title="Add 5 more Sem (+₹35)"
-                  >
-                    <span>+5 Sem</span>
-                  </button>
-                </div>
-              )}
 
               <button
                 type="button"
@@ -388,81 +369,6 @@ function RealPaperTicket({
 
       </div>
 
-      </div>
-
-      {/* SEPARATE HIGH-VISIBILITY SEM ACTION BAR */}
-      {onAddSem && (
-        <div className="bg-slate-900 border-t-2 border-slate-800 p-2 sm:p-2.5 flex flex-col sm:flex-row items-center justify-between gap-2 text-white">
-          <div className="flex items-center gap-2 w-full sm:w-auto">
-            <span className="text-base sm:text-lg shrink-0">🏷️</span>
-            <div className="min-w-0">
-              <div className="flex items-center gap-1.5 flex-wrap">
-                <span className="text-xs font-black text-amber-400">
-                  {lang === 'bn' ? 'সেম পরিবর্তন:' : lang === 'hi' ? 'सेम बदलें:' : 'Adjust Sem:'}
-                </span>
-                <span className="bg-amber-400 text-slate-950 px-2 py-0.5 rounded font-mono font-black text-xs shadow-2xs">
-                  {sem} SEM
-                </span>
-                <span className="text-slate-300 font-mono text-xs font-bold">
-                  ({lang === 'bn' ? 'খরচ' : lang === 'hi' ? 'लागत' : 'Cost'}: ₹{ticketCost})
-                </span>
-              </div>
-              <p className="text-[10px] text-slate-400 truncate">
-                {lang === 'bn' 
-                  ? 'প্রতি ৫ সেম = ₹৩৫ • সেম বাড়ালে সব প্রাইজ সমপরিমাণে বৃদ্ধি পাবে' 
-                  : lang === 'hi'
-                  ? 'प्रति ५ सेम = ₹३५ • सेम बढ़ाने पर प्राइज मनी बढ़ेगी'
-                  : '₹35 per 5 Sem • Winning prize multiplies with Sem'}
-              </p>
-            </div>
-          </div>
-
-          <div className="flex items-center gap-1.5 w-full sm:w-auto justify-end flex-wrap">
-            {sem > 5 && (
-              <button
-                type="button"
-                onClick={() => onAddSem(ticket.id, -5)}
-                className="flex-1 sm:flex-none px-3 py-1.5 rounded-lg text-xs font-black bg-rose-600 hover:bg-rose-500 text-white shadow-xs active:scale-95 transition-all flex items-center justify-center gap-1 cursor-pointer"
-                title="Reduce 5 Sem (-₹35)"
-              >
-                <span>{lang === 'bn' ? '−৫ সেম' : lang === 'hi' ? '−५ सेम' : '−5 Sem'}</span>
-                <span className="text-[10px] opacity-80 font-mono">(-₹35)</span>
-              </button>
-            )}
-
-            <button
-              type="button"
-              onClick={() => onAddSem(ticket.id, 5)}
-              className="flex-1 sm:flex-none px-3 py-1.5 rounded-lg text-xs font-black bg-emerald-600 hover:bg-emerald-500 text-white shadow-xs active:scale-95 transition-all flex items-center justify-center gap-1 cursor-pointer"
-              title="Add 5 Sem (+₹35)"
-            >
-              <span>{lang === 'bn' ? '+৫ সেম' : lang === 'hi' ? '+५ सेम' : '+5 Sem'}</span>
-              <span className="text-[10px] text-emerald-200 font-mono">(+₹35)</span>
-            </button>
-
-            <button
-              type="button"
-              onClick={() => onAddSem(ticket.id, 10)}
-              className="flex-1 sm:flex-none px-3 py-1.5 rounded-lg text-xs font-black bg-blue-600 hover:bg-blue-500 text-white shadow-xs active:scale-95 transition-all flex items-center justify-center gap-1 cursor-pointer"
-              title="Add 10 Sem (+₹70)"
-            >
-              <span>{lang === 'bn' ? '+১০ সেম' : lang === 'hi' ? '+১০ सेम' : '+10 Sem'}</span>
-              <span className="text-[10px] text-blue-200 font-mono">(+₹70)</span>
-            </button>
-
-            <button
-              type="button"
-              onClick={() => onAddSem(ticket.id, 25)}
-              className="flex-1 sm:flex-none px-3 py-1.5 rounded-lg text-xs font-black bg-purple-600 hover:bg-purple-500 text-white shadow-xs active:scale-95 transition-all flex items-center justify-center gap-1 cursor-pointer"
-              title="Add 25 Sem (+₹175)"
-            >
-              <span>{lang === 'bn' ? '+২৫ সেম' : lang === 'hi' ? '+२५ सेम' : '+25 Sem'}</span>
-              <span className="text-[10px] text-purple-200 font-mono">(+₹175)</span>
-            </button>
-          </div>
-        </div>
-      )}
-
     </div>
   );
 }
@@ -486,8 +392,7 @@ export default function DemoPlayModule({ initialDraws = [] }: DemoPlayModuleProp
   const [selectedDate, setSelectedDate] = useState<string>(todayStr);
   const [selectedSlot, setSelectedSlot] = useState<'1PM' | '6PM' | '8PM'>(nextUpcoming.slot);
 
-  // Sem Selection (Default 5 Sem - Standard Retail Purchase!)
-  const [selectedSem, setSelectedSem] = useState<number>(5);
+  // Active ticket focused in the Single Sem Controller
   const [activeTicketIdForSem, setActiveTicketIdForSem] = useState<string | null>(null);
 
   const [copiedTicketId, setCopiedTicketId] = useState<string | null>(null);
@@ -820,7 +725,7 @@ export default function DemoPlayModule({ initialDraws = [] }: DemoPlayModuleProp
     }
   };
 
-  // Quick Random Lucky Ticket generator (Adds selectedSem count)
+  // Quick Random Lucky Ticket generator (Adds 5 Sem retail standard)
   const handleQuickTicket = () => {
     const currentSlotCount = myTickets.filter(
       t => t.date === selectedDate && t.slot === selectedSlot
@@ -845,7 +750,7 @@ export default function DemoPlayModule({ initialDraws = [] }: DemoPlayModuleProp
     const lead = String(Math.floor(Math.random() * 9) + 1);
     const num = `${lead}${m}${end.slice(-2)}`;
 
-    addTicket(s, num, selectedSem);
+    addTicket(s, num, 5);
   };
 
   // Copy helper
@@ -869,6 +774,9 @@ export default function DemoPlayModule({ initialDraws = [] }: DemoPlayModuleProp
   // Delete ticket
   const handleDeleteTicket = (id: string) => {
     saveTickets(myTickets.filter(t => t.id !== id));
+    if (activeTicketIdForSem === id) {
+      setActiveTicketIdForSem(null);
+    }
   };
 
   // Clear slot tickets
@@ -1221,69 +1129,38 @@ export default function DemoPlayModule({ initialDraws = [] }: DemoPlayModuleProp
       {/* 4. Ticket Generator Controls with 1-Tap Sem Selector */}
       <div className="bg-white border border-slate-200 rounded-2xl p-3 sm:p-4 shadow-sm space-y-3">
         
-        {/* SEM SELECTION STEPPER BUTTONS (CHOOSE SEM BEFORE PRINTING) */}
-        <div className="bg-gradient-to-r from-amber-50 to-orange-50 border border-amber-200/90 p-2.5 rounded-xl space-y-2">
-          <div className="flex items-center justify-between text-xs">
-            <div className="flex items-center gap-1.5 min-w-0">
-              <span className="text-base shrink-0">🏷️</span>
-              <div>
-                <span className="font-black text-amber-950 block text-[11px] sm:text-xs">
-                  {lang === 'bn' 
-                    ? 'সেম নির্বাচন করুন (Choose Sem):' 
-                    : lang === 'hi' 
-                    ? 'सेम चुनें (Choose Sem):' 
-                    : 'Choose Ticket Sem:'}
-                </span>
-                <span className="text-[10px] text-amber-900/80 block truncate">
-                  {lang === 'bn'
-                    ? 'সর্বনিম্ন ৫ সেম (₹৩৫) • সেম বাড়ালে সব প্রাইজ আনুপাতিক হারে বৃদ্ধি পায়'
-                    : lang === 'hi'
-                    ? 'न्यूनतम ५ सेम (₹३५) • सेम बढ़ाने पर सभी प्राइज मनी बढ़ती है'
-                    : 'Min 5 Sem (₹35) • Prize money multiplies with Sem'}
-                </span>
-              </div>
-            </div>
-            <div className="flex items-center gap-1.5 shrink-0">
-              <span className={`font-mono font-black text-[10px] px-2 py-0.5 rounded-md border shadow-2xs ${
-                activeGameTickets.length >= 5
-                  ? 'bg-amber-600 text-white border-amber-700'
-                  : 'bg-white text-slate-800 border-amber-300'
-              }`}>
-                {activeGameTickets.length}/5
+        {/* 5 SEM RETAIL STANDARD BADGE & 5-BOOKLET LIMIT COUNTER */}
+        <div className="flex items-center justify-between gap-2 bg-gradient-to-r from-amber-50 to-orange-50 border border-amber-200/90 p-2.5 rounded-xl text-xs">
+          <div className="flex items-center gap-1.5 min-w-0">
+            <span className="text-base shrink-0">📚</span>
+            <div className="min-w-0">
+              <span className="font-black text-amber-950 block text-[11px] sm:text-xs">
+                {lang === 'bn' 
+                  ? 'স্ট্যান্ডার্ড ৫ সেম (₹৩৫) • লিমিট: সর্বোচ্চ ৫ বুকলেট' 
+                  : 'Standard 5 Sem (₹35) • Limit: Max 5 Booklets'}
               </span>
-              <span className="bg-amber-600 text-white font-mono font-black text-xs px-2.5 py-1 rounded-lg shrink-0 shadow-2xs">
-                {selectedSem} SEM • ₹{selectedSem * 7}
+              <span className="text-[10px] text-amber-900/80 block truncate">
+                {lang === 'bn'
+                  ? 'টিকিট নেওয়ার পর নিচে আলাদা বাটনে সেম বাড়ানো বা কমানো যায়'
+                  : 'Adjust Sem quantity easily using the dedicated controller below'}
               </span>
             </div>
           </div>
-
-          {/* 1-Tap Separate Sem Stepper Buttons */}
-          <div className="grid grid-cols-5 gap-1 sm:gap-1.5 pt-0.5">
-            {SEM_OPTIONS.map(opt => {
-              const isSel = selectedSem === opt.count;
-              const lbl = lang === 'bn' ? opt.labelBn : lang === 'hi' ? opt.labelHi : opt.labelEn;
-              return (
-                <button
-                  key={opt.count}
-                  type="button"
-                  onClick={() => setSelectedSem(opt.count)}
-                  className={`py-1.5 sm:py-2 px-1 rounded-xl text-center font-mono transition-all cursor-pointer border ${
-                    isSel
-                      ? 'bg-amber-600 text-white border-amber-700 shadow-sm ring-2 ring-amber-400 scale-[1.02] font-black'
-                      : 'bg-white hover:bg-amber-100/70 text-slate-800 border-amber-200 font-bold'
-                  }`}
-                >
-                  <div className="text-[11px] sm:text-xs leading-tight">{lbl}</div>
-                  <div className={`text-[9px] sm:text-[10px] mt-0.5 ${isSel ? 'text-amber-100 font-bold' : 'text-slate-500 font-semibold'}`}>
-                    ₹{opt.price}
-                  </div>
-                </button>
-              );
-            })}
+          <div className="flex items-center gap-1.5 shrink-0">
+            <span className={`font-mono font-black text-[10px] px-2 py-0.5 rounded-md border shadow-2xs ${
+              activeGameTickets.length >= 5
+                ? 'bg-amber-600 text-white border-amber-700'
+                : 'bg-white text-slate-800 border-amber-300'
+            }`}>
+              {activeGameTickets.length}/5
+            </span>
+            <span className="bg-amber-600 text-white font-mono font-black text-xs px-2.5 py-1 rounded-lg shrink-0 shadow-2xs">
+              5 SEM • ₹35
+            </span>
           </div>
         </div>
 
-        {/* 1-Click Quick Ticket Button (Uses selectedSem) */}
+        {/* 1-Click Quick Ticket Button (Adds 5 Sem) */}
         <button
           type="button"
           onClick={handleQuickTicket}
@@ -1298,11 +1175,7 @@ export default function DemoPlayModule({ initialDraws = [] }: DemoPlayModuleProp
           <span>
             {activeGameTickets.length >= 5
               ? (lang === 'bn' ? '৫/৫ বুকলেট পূর্ণ (নিচে সেম বৃদ্ধি করুন)' : '5/5 Booklets Full (Add Sem below)')
-              : (lang === 'bn' 
-                  ? `কুইক লাকি টিকিট নিন (${selectedSem} সেম • ₹${selectedSem * 7})` 
-                  : lang === 'hi'
-                  ? `क्विक लकी टिकट लें (${selectedSem} सेम • ₹${selectedSem * 7})`
-                  : `Print Quick Lucky Ticket (${selectedSem} Sem • ₹${selectedSem * 7})`)}
+              : (lang === 'bn' ? 'কুইক লাকি টিকিট নিন (৫ সেম • ₹৩৫)' : 'Print Quick Lucky Ticket (5 Sem • ₹35)')}
           </span>
         </button>
 
@@ -1310,7 +1183,7 @@ export default function DemoPlayModule({ initialDraws = [] }: DemoPlayModuleProp
         <form 
           onSubmit={(e) => {
             e.preventDefault();
-            addTicket(manualSeries, manualNumber, selectedSem);
+            addTicket(manualSeries, manualNumber, 5);
           }} 
           className="flex items-center gap-1.5 pt-1 border-t border-slate-100"
         >
@@ -1336,11 +1209,7 @@ export default function DemoPlayModule({ initialDraws = [] }: DemoPlayModuleProp
             type="submit"
             className="bg-blue-700 hover:bg-blue-800 text-white font-black text-xs sm:text-sm px-3.5 py-2 rounded-xl shadow-xs transition-all active:scale-95 shrink-0 cursor-pointer"
           >
-            {lang === 'bn' 
-              ? `+ প্রিন্ট (${selectedSem} সেম)` 
-              : lang === 'hi' 
-              ? `+ प्रिंट (${selectedSem} सेम)` 
-              : `+ Print (${selectedSem} Sem)`}
+            {lang === 'bn' ? '+ প্রিন্ট (৫ সেম)' : '+ Print (5 Sem)'}
           </button>
         </form>
 
@@ -1411,60 +1280,6 @@ export default function DemoPlayModule({ initialDraws = [] }: DemoPlayModuleProp
                         : `Invested: ₹${purchaseFeedback.ticketCost} • P/L will settle live once ${purchaseFeedback.ticket.slot} draw results are out.`}
                     </div>
                   )}
-
-                  {/* Quick Separate Sem Adjustment Stepper Buttons */}
-                  <div className="mt-2.5 pt-2 border-t border-white/20 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
-                    <span className="text-[11px] font-bold text-white/90 flex items-center gap-1">
-                      <span>⚡</span>
-                      <span>
-                        {lang === 'bn' 
-                          ? 'এই টিকিটের সেম পরিবর্তন করুন:' 
-                          : lang === 'hi' 
-                          ? 'इस टिकट का सेम बदलें:' 
-                          : 'Adjust Sem for this ticket:'}
-                      </span>
-                    </span>
-                    <div className="flex items-center gap-1.5 w-full sm:w-auto justify-end flex-wrap">
-                      {purchaseFeedback.totalSem > 5 && (
-                        <button
-                          type="button"
-                          onClick={() => handleAddSemToTicket(purchaseFeedback.ticket.id, -5)}
-                          className="px-2.5 py-1 rounded-lg bg-rose-600 hover:bg-rose-500 text-white text-xs font-black cursor-pointer shadow-xs active:scale-95 transition-all flex items-center gap-1"
-                          title="Reduce 5 Sem (-₹35)"
-                        >
-                          <span>{lang === 'bn' ? '−৫ সেম' : lang === 'hi' ? '−५ सेम' : '−5 Sem'}</span>
-                          <span className="text-[10px] opacity-80 font-mono">(-₹35)</span>
-                        </button>
-                      )}
-                      <button
-                        type="button"
-                        onClick={() => handleAddSemToTicket(purchaseFeedback.ticket.id, 5)}
-                        className="px-2.5 py-1 rounded-lg bg-emerald-500 hover:bg-emerald-400 text-slate-950 text-xs font-black cursor-pointer shadow-xs active:scale-95 transition-all flex items-center gap-1"
-                        title="Add 5 Sem (+₹35)"
-                      >
-                        <span>{lang === 'bn' ? '+৫ সেম' : lang === 'hi' ? '+५ सेम' : '+5 Sem'}</span>
-                        <span className="text-[10px] text-emerald-950 font-bold font-mono">(+₹35)</span>
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => handleAddSemToTicket(purchaseFeedback.ticket.id, 10)}
-                        className="px-2.5 py-1 rounded-lg bg-amber-400 hover:bg-amber-300 text-slate-950 text-xs font-black cursor-pointer shadow-xs active:scale-95 transition-all flex items-center gap-1"
-                        title="Add 10 Sem (+₹70)"
-                      >
-                        <span>{lang === 'bn' ? '+১০ সেম' : lang === 'hi' ? '+১০ सेम' : '+10 Sem'}</span>
-                        <span className="text-[10px] text-amber-950 font-bold font-mono">(+₹70)</span>
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => handleAddSemToTicket(purchaseFeedback.ticket.id, 25)}
-                        className="px-2.5 py-1 rounded-lg bg-purple-500 hover:bg-purple-400 text-white text-xs font-black cursor-pointer shadow-xs active:scale-95 transition-all flex items-center gap-1"
-                        title="Add 25 Sem (+₹175)"
-                      >
-                        <span>{lang === 'bn' ? '+২৫ সেম' : lang === 'hi' ? '+२५ सेम' : '+25 Sem'}</span>
-                        <span className="text-[10px] text-purple-100 font-mono">(+₹175)</span>
-                      </button>
-                    </div>
-                  </div>
                 </div>
               </div>
 
@@ -1646,21 +1461,36 @@ export default function DemoPlayModule({ initialDraws = [] }: DemoPlayModuleProp
                 </div>
               </div>
               
-              {/* If more than 1 ticket, ticket switcher dropdown */}
+              {/* If more than 1 ticket, quick 1-tap ticket switcher pill buttons */}
               {activeGameTickets.length > 1 && (
-                <div className="flex items-center gap-1 text-[11px] font-bold text-slate-700 bg-white border border-amber-300 rounded-lg p-1 shrink-0">
-                  <span className="text-slate-500 text-[10px] px-1">{lang === 'bn' ? 'টিকিট:' : lang === 'hi' ? 'टिकट:' : 'Ticket:'}</span>
-                  <select 
-                    value={activeTicketIdForSem || activeGameTickets[0].id}
-                    onChange={(e) => setActiveTicketIdForSem(e.target.value)}
-                    className="bg-transparent font-mono font-black text-slate-900 outline-none cursor-pointer text-xs"
-                  >
-                    {activeGameTickets.map(t => (
-                      <option key={t.id} value={t.id}>
-                        {t.series} {t.number} ({t.sem || 5} Sem)
-                      </option>
-                    ))}
-                  </select>
+                <div className="flex items-center gap-1.5 overflow-x-auto pb-1 pt-0.5">
+                  <span className="text-[10px] font-bold text-slate-600 shrink-0">
+                    {lang === 'bn' ? 'টিকিট বাছুন:' : lang === 'hi' ? 'टिकट चुनें:' : 'Select Ticket:'}
+                  </span>
+                  <div className="flex items-center gap-1.5 flex-wrap">
+                    {activeGameTickets.map(t => {
+                      const isTarget = (activeTicketIdForSem || activeGameTickets[0]?.id) === t.id;
+                      return (
+                        <button
+                          key={t.id}
+                          type="button"
+                          onClick={() => setActiveTicketIdForSem(t.id)}
+                          className={`px-2.5 py-1 rounded-lg text-xs font-mono font-bold transition-all cursor-pointer flex items-center gap-1.5 ${
+                            isTarget
+                              ? 'bg-amber-600 text-white shadow-xs ring-2 ring-amber-400 font-black'
+                              : 'bg-white text-slate-700 border border-amber-200 hover:bg-amber-50'
+                          }`}
+                        >
+                          <span>{t.series} {t.number}</span>
+                          <span className={`text-[10px] px-1 py-0.2 rounded font-black ${
+                            isTarget ? 'bg-amber-800 text-white' : 'bg-slate-100 text-slate-700'
+                          }`}>
+                            {t.sem || 5} Sem
+                          </span>
+                        </button>
+                      );
+                    })}
+                  </div>
                 </div>
               )}
             </div>
@@ -1759,9 +1589,10 @@ export default function DemoPlayModule({ initialDraws = [] }: DemoPlayModuleProp
                 evalRes={evaluateTicket(ticket)}
                 onDelete={handleDeleteTicket}
                 onCopy={handleCopyTicket}
-                onAddSem={handleAddSemToTicket}
                 isCopied={copiedTicketId === ticket.id}
                 lang={lang}
+                isSelected={(activeTicketIdForSem || activeGameTickets[0]?.id) === ticket.id}
+                onSelect={setActiveTicketIdForSem}
               />
             ))}
           </div>
@@ -1883,10 +1714,10 @@ export default function DemoPlayModule({ initialDraws = [] }: DemoPlayModuleProp
                     {copiedTicketId === `hot-${idx}` ? '✓' : '📋'}
                   </button>
 
-                  {/* Add Sem Button */}
+                  {/* Add 5 Sem Button */}
                   <button
                     type="button"
-                    onClick={() => addTicket(item.series, item.number, selectedSem)}
+                    onClick={() => addTicket(item.series, item.number, 5)}
                     className={`px-2.5 py-1.5 rounded-lg font-black text-xs shadow-2xs active:scale-95 transition-all flex items-center gap-1 cursor-pointer ${
                       isWinner
                         ? 'bg-emerald-600 hover:bg-emerald-700 text-white ring-1 ring-emerald-400'
@@ -1894,12 +1725,12 @@ export default function DemoPlayModule({ initialDraws = [] }: DemoPlayModuleProp
                     }`}
                     title={
                       currentSem > 0 
-                        ? (lang === 'bn' ? `${item.number} নম্বরে আরও +${selectedSem} সেম নিন (মোট: ${currentSem + selectedSem} সেম)` : `Add +${selectedSem} more Sem to ${item.number} (Total: ${currentSem + selectedSem} Sem)`)
-                        : (lang === 'bn' ? `${selectedSem} সেম টিকিট নিন` : `Add ${selectedSem} Sem ticket`)
+                        ? (lang === 'bn' ? `${item.number} নম্বরে আরও +৫ সেম নিন` : `Add +5 more Sem to ${item.number}`)
+                        : (lang === 'bn' ? '৫ সেম টিকিট নিন' : 'Add 5 Sem ticket')
                     }
                   >
                     <span>+</span>
-                    <span>{selectedSem} Sem</span>
+                    <span>5 Sem</span>
                   </button>
                 </div>
               </div>
