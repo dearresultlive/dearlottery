@@ -2035,6 +2035,17 @@
         "9003",
         "9842"
       ]
+    },
+    "8PM": {
+      "first_prize": {
+        "series": "63K",
+        "number": "56346"
+      },
+      "consolation_prize_amount": 1000,
+      "second_prize": [],
+      "third_prize": [],
+      "fourth_prize": [],
+      "fifth_prize": []
     }
   }
 }
