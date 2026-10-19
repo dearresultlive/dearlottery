@@ -138,6 +138,64 @@ export default function LiveResultsTabs({
     }
   }, [hasTodayResults, isYesterdayPage, initialSlot, todayDateStr, yesterdayDateStr, todayStr]);
 
+  // Auto-transition to current drawing slot when draw time arrives without manual refresh
+  useEffect(() => {
+    if (isYesterdayPage || initialSlot) return;
+
+    const checkLiveTransition = () => {
+      const istNow = getISTNow();
+      const hour = istNow.getHours();
+      const min = istNow.getMinutes();
+      const totalMin = hour * 60 + min;
+
+      // 1:00 PM draw window (780 min to 820 min = 1:00 PM to 1:40 PM)
+      if (totalMin >= 780 && totalMin < 820) {
+        if (activeDateStr !== todayStr || activeSlot !== '1PM') {
+          const is1pmDeclared = drawsList.some(d => 
+            d.draw_date === todayStr && 
+            (d.draw_time?.includes('1') || d.id?.includes('1PM')) &&
+            Boolean(d.parsed_data?.prizes?.first_prize?.number || d.prizes?.first_prize?.number)
+          );
+          if (!is1pmDeclared || activeDateStr === yesterdayDateStr) {
+            setActiveDateStr(todayStr);
+            setActiveSlot('1PM');
+          }
+        }
+      }
+      // 6:00 PM draw window (1080 min to 1120 min = 6:00 PM to 6:40 PM)
+      else if (totalMin >= 1080 && totalMin < 1120) {
+        if (activeDateStr !== todayStr || activeSlot !== '6PM') {
+          const is6pmDeclared = drawsList.some(d => 
+            d.draw_date === todayStr && 
+            (d.draw_time?.includes('6') || d.id?.includes('6PM')) &&
+            Boolean(d.parsed_data?.prizes?.first_prize?.number || d.prizes?.first_prize?.number)
+          );
+          if (!is6pmDeclared) {
+            setActiveDateStr(todayStr);
+            setActiveSlot('6PM');
+          }
+        }
+      }
+      // 8:00 PM draw window (1200 min to 1240 min = 8:00 PM to 8:40 PM)
+      else if (totalMin >= 1200 && totalMin < 1240) {
+        if (activeDateStr !== todayStr || activeSlot !== '8PM') {
+          const is8pmDeclared = drawsList.some(d => 
+            d.draw_date === todayStr && 
+            (d.draw_time?.includes('8') || d.id?.includes('8PM')) &&
+            Boolean(d.parsed_data?.prizes?.first_prize?.number || d.prizes?.first_prize?.number)
+          );
+          if (!is8pmDeclared) {
+            setActiveDateStr(todayStr);
+            setActiveSlot('8PM');
+          }
+        }
+      }
+    };
+
+    const interval = setInterval(checkLiveTransition, 1000);
+    return () => clearInterval(interval);
+  }, [activeDateStr, activeSlot, drawsList, todayStr, yesterdayDateStr, isYesterdayPage, initialSlot]);
+
   // Listen for auto-polling zero-refresh event from DrawCountdown
   useEffect(() => {
     const handleNewResult = (e: any) => {
