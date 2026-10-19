@@ -16,6 +16,8 @@ const yesterdayDateStr = getISTDateString(yesterday);
 const analytics = await fetchFrequencyAnalytics();
 const draws = await fetchLatestDraws();
 const yesterdayDraws = await fetchDrawsByDate(yesterdayDateStr);
+const checkerDraws = [...draws, ...yesterdayDraws];
+
 const targetFaqItems = [
   {
     question: "What is a Middle Number (মিডিল) in Dear Lottery?",
