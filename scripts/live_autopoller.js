@@ -143,15 +143,18 @@ async function checkNagalandLotteryResults(dateStr, slot) {
     const blocks = html.match(/<div class=['"]dls-update[\s\S]*?<\/div>\s*<\/div>/gi) || [];
     for (const b of blocks) {
       if (b.includes('dls-success') && (b.includes(slotAnchor) || b.includes(slotText))) {
-        if (b.toLowerCase().includes('published') && (b.includes(shortDate) || b.includes(dateStr))) {
           const imgMatch = b.match(/<img[^>]+src=['"]([^'"]+)['"]/i);
+          const imgUrl = imgMatch ? imgMatch[1] : null;
+          const slotSuffix = slot === '1PM' ? '_1' : slot === '6PM' ? '_6' : '_8';
+          if (imgUrl && !imgUrl.includes(slotSuffix) && !imgUrl.toLowerCase().includes(slot.toLowerCase())) {
+            continue;
+          }
           const nameMatch = b.match(/Dear\s*<strong>(.*?)<\/strong>/i) || b.match(/Dear\s*([a-zA-Z]+)\s*Weekly/i);
           return {
             declared: true,
-            imageUrl: imgMatch ? imgMatch[1] : null,
+            imageUrl: imgUrl,
             drawName: nameMatch ? `DEAR ${nameMatch[1].toUpperCase()}` : `DEAR ${slot}`
           };
-        }
       }
     }
   } catch (e) {}
@@ -233,12 +236,13 @@ function parseOcrLines(lines, slot, dateStr, sambadFirstPrize) {
  */
 async function processSlot(dateStr, slot) {
   const istDate = getISTDate();
-  const currentHour = istDate.getHours();
+  const currentTotalMin = istDate.getHours() * 60 + istDate.getMinutes();
   const targetHour = SLOT_HOURS[slot];
+  const targetTotalMin = targetHour * 60;
 
-  // If slot is in the future
-  if (currentHour < targetHour) {
-    const diffHours = targetHour - currentHour;
+  // If slot is in the distant future (more than 5 mins before draw)
+  if (currentTotalMin < targetTotalMin - 5) {
+    const diffHours = ((targetTotalMin - currentTotalMin) / 60).toFixed(1);
     console.log(`[Poller] ${dateStr} [${slot}] is UPCOMING in ~${diffHours}h (scheduled for ${targetHour}:00 IST). Waiting...`);
     return false;
   }
