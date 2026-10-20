@@ -2191,7 +2191,8 @@
         "8106",
         "8728",
         "9685"
-      ]
+      ],
+      "telegram_sent": true
     },
     "6PM": {
       "first_prize": {
@@ -2202,7 +2203,8 @@
       "second_prize": [],
       "third_prize": [],
       "fourth_prize": [],
-      "fifth_prize": []
+      "fifth_prize": [],
+      "telegram_sent": true
     },
     "8PM": {
       "first_prize": {
@@ -2213,7 +2215,8 @@
       "second_prize": [],
       "third_prize": [],
       "fourth_prize": [],
-      "fifth_prize": []
+      "fifth_prize": [],
+      "telegram_sent": true
     }
   }
 }

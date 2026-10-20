@@ -39,6 +39,40 @@ export function getCurrentSlot(d: Date = getISTNow()): '1PM' | '6PM' | '8PM' {
 }
 
 /**
+ * Check sambadlottery.com for instant text-based 1st prize numbers.
+ * High-speed, Cloudflare-friendly upstream mirror (bypasses Cloudflare Error 1106).
+ */
+async function checkSambadLottery(slot: '1PM' | '6PM' | '8PM'): Promise<{ declared: boolean; series: string; number: string } | null> {
+  try {
+    const res = await fetch('https://sambadlottery.com/', {
+      headers: {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/129.0.0.0 Safari/537.36',
+        'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8'
+      }
+    });
+    if (!res.ok) return null;
+    const html = await res.text();
+    const descMatch = html.match(/<meta[^>]*name=["']description["'][^>]*content=["']([^"']+)["']/i);
+    const textToSearch = (descMatch ? descMatch[1] : '') + ' ' + html;
+
+    const slotLabel = slot === '1PM' ? '1 PM' : slot === '6PM' ? '6 PM' : '8 PM';
+    // Matches e.g. "1 PM 92L 34346", "6 PM: 93J 82467", "8 PM · 45A 25672"
+    const reg = new RegExp(slotLabel + '[:\\s·\\-]+([0-9]{1,2}[A-Z])\\s+([0-9]{5})', 'i');
+    const m = textToSearch.match(reg);
+    if (m) {
+      return {
+        declared: true,
+        series: m[1].toUpperCase(),
+        number: m[2]
+      };
+    }
+  } catch (err: any) {
+    console.warn('[EdgePoller] sambadlottery.com fetch error:', err?.message || err);
+  }
+  return null;
+}
+
+/**
  * Autonomous Edge Poller:
  * Queries upstream official Lottery Sambad feeds directly from Cloudflare's edge network,
  * checks for newly declared results, updates D1 database in 1 second, broadcasts to Telegram,
@@ -76,76 +110,88 @@ export async function pollAndIngestLiveDraw(
     }
   }
 
-  // 2. Fetch from Nagaland Lottery Results official portal & Lottery Sambad
+  // 2. Fetch from Nagaland Lottery Results, SambadLottery mirror & Lottery Sambad in parallel
   const [year, month, day] = dateStr.split('-');
   const dateKey = `${day}-${month}-${year}`;
   const slotKey = slot.toLowerCase();
 
   let nagalandResult: { declared: boolean; imageUrl?: string; drawName?: string } | null = null;
-  try {
-    const nRes = await fetch('https://www.nagalandlotteryresults.com/', {
-      headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36' }
-    });
-    if (nRes.ok) {
-      const nHtml = await nRes.text();
-      const slotText = slot === '1PM' ? '1 PM' : slot === '6PM' ? '6 PM' : '8 PM';
-      const slotAnchor = slot === '1PM' ? 'dear1pm' : slot === '6PM' ? 'dear6pm' : 'dear8pm';
-      const blocks = nHtml.match(/<div class=['"]dls-update[\s\S]*?<\/div>\s*<\/div>/gi) || [];
-      for (const b of blocks) {
-        if (b.includes('dls-success') && (b.includes(slotAnchor) || b.includes(slotText))) {
-          const imgMatch = b.match(/<img[^>]+src=['"]([^'"]+)['"]/i);
-          const imgUrl = imgMatch ? imgMatch[1] : undefined;
-          const slotSuffix = slot === '1PM' ? '_1' : slot === '6PM' ? '_6' : '_8';
-          if (imgUrl && !imgUrl.includes(slotSuffix) && !imgUrl.toLowerCase().includes(slot.toLowerCase()) && !imgUrl.includes('WA00')) {
-            continue;
-          }
-          const nameMatch = b.match(/Dear\s*<strong>(.*?)<\/strong>/i) || b.match(/Dear\s*([a-zA-Z]+)\s*Weekly/i);
-          nagalandResult = {
-            declared: true,
-            imageUrl: imgUrl,
-            drawName: nameMatch ? `DEAR ${nameMatch[1].toUpperCase()}` : `DEAR ${slot}`
-          };
-          console.log(`[EdgePoller] 🟢 Nagaland portal verified published: ${nagalandResult.drawName} (${nagalandResult.imageUrl})`);
-          break;
-        }
-      }
-    }
-  } catch (nErr: any) {
-    console.warn('[EdgePoller] Nagaland check error:', nErr?.message || nErr);
-  }
-
-  // Check Lottery Sambad official feed
-  let html = '';
+  let sambadLotteryRes: { declared: boolean; series: string; number: string } | null = null;
   let card: any = null;
-  try {
-    const res = await fetch('https://lottery.sambad.com/', {
-      headers: {
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/129.0.0.0 Safari/537.36',
-        'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8'
+
+  const [nRes, sLotteryRes, sRes] = await Promise.allSettled([
+    // Check Nagaland Lottery Results portal for official signed sheet
+    (async () => {
+      try {
+        const res = await fetch('https://www.nagalandlotteryresults.com/', {
+          headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36' }
+        });
+        if (res.ok) {
+          const nHtml = await res.text();
+          const slotText = slot === '1PM' ? '1 PM' : slot === '6PM' ? '6 PM' : '8 PM';
+          const slotAnchor = slot === '1PM' ? 'dear1pm' : slot === '6PM' ? 'dear6pm' : 'dear8pm';
+          const blocks = nHtml.match(/<div class=['"]dls-update[\s\S]*?<\/div>\s*<\/div>/gi) || [];
+          for (const b of blocks) {
+            if (b.includes('dls-success') && (b.includes(slotAnchor) || b.includes(slotText))) {
+              const imgMatch = b.match(/<img[^>]+src=['"]([^'"]+)['"]/i);
+              const imgUrl = imgMatch ? imgMatch[1] : undefined;
+              const slotSuffix = slot === '1PM' ? '_1' : slot === '6PM' ? '_6' : '_8';
+              if (imgUrl && !imgUrl.includes(slotSuffix) && !imgUrl.toLowerCase().includes(slot.toLowerCase()) && !imgUrl.includes('WA00')) {
+                continue;
+              }
+              const nameMatch = b.match(/Dear\s*<strong>(.*?)<\/strong>/i) || b.match(/Dear\s*([a-zA-Z]+)\s*Weekly/i);
+              return {
+                declared: true,
+                imageUrl: imgUrl,
+                drawName: nameMatch ? `DEAR ${nameMatch[1].toUpperCase()}` : `DEAR ${slot}`
+              };
+            }
+          }
+        }
+      } catch (nErr: any) {
+        console.warn('[EdgePoller] Nagaland check error:', nErr?.message || nErr);
       }
-    });
-    if (res.ok) {
-      html = await res.text();
-      const match = html.match(/var\s+datesCards\s*=\s*(\{[\s\S]*?\});/);
-      if (match) {
-        const datesCards = JSON.parse(match[1]);
-        const cards = datesCards[dateKey] || [];
-        card = cards.find((c: any) => c.slotkey && c.slotkey.toLowerCase() === slotKey);
+      return null;
+    })(),
+
+    // Check sambadlottery.com (Cloudflare-friendly, instant 1st prize numbers)
+    checkSambadLottery(slot),
+
+    // Check lottery.sambad.com
+    (async () => {
+      try {
+        const res = await fetch('https://lottery.sambad.com/', {
+          headers: {
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/129.0.0.0 Safari/537.36',
+            'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8'
+          }
+        });
+        if (res.ok) {
+          const html = await res.text();
+          const match = html.match(/var\s+datesCards\s*=\s*(\{[\s\S]*?\});/);
+          if (match) {
+            const datesCards = JSON.parse(match[1]);
+            const cards = datesCards[dateKey] || [];
+            return cards.find((c: any) => c.slotkey && c.slotkey.toLowerCase() === slotKey);
+          }
+        }
+      } catch (err: any) {
+        console.warn('[EdgePoller] Sambad check error:', err?.message || err);
       }
-    }
-  } catch (err: any) {
-    console.warn('[EdgePoller] Sambad check error:', err?.message || err);
+      return null;
+    })()
+  ]);
+
+  if (nRes.status === 'fulfilled' && nRes.value) {
+    nagalandResult = nRes.value;
+    console.log(`[EdgePoller] 🟢 Nagaland portal verified published: ${nagalandResult.drawName} (${nagalandResult.imageUrl})`);
   }
-
-  const isDeclared = (card && card.num && card.num.trim()) || nagalandResult?.declared;
-
-  if (!isDeclared) {
-    return {
-      ingested: false,
-      dateStr,
-      slot,
-      message: `Result for ${dateStr} [${slot}] has NOT been published yet on official portals`
-    };
+  if (sLotteryRes.status === 'fulfilled' && sLotteryRes.value) {
+    sambadLotteryRes = sLotteryRes.value;
+    console.log(`[EdgePoller] 🟢 SambadLottery portal detected: 1st Prize ${sambadLotteryRes.series} ${sambadLotteryRes.number}`);
+  }
+  if (sRes.status === 'fulfilled' && sRes.value) {
+    card = sRes.value;
   }
 
   // 3. Extract verified winning numbers & metadata
@@ -162,14 +208,29 @@ export async function pollAndIngestLiveDraw(
     number = parts.length > 1 ? parts[1] : parts[0];
     if (card.name) drawName = `DEAR ${card.name.toUpperCase()}`;
     if (card.drawno) drawNumber = card.drawno;
+  } else if (sambadLotteryRes && sambadLotteryRes.number) {
+    series = sambadLotteryRes.series;
+    number = sambadLotteryRes.number;
   }
+
+  const isDeclared = Boolean(number) || Boolean(nagalandResult?.declared);
+
+  if (!isDeclared || !number) {
+    return {
+      ingested: false,
+      dateStr,
+      slot,
+      message: `Result for ${dateStr} [${slot}] has NOT been published yet on official portals`
+    };
+  }
+
   if (!imageUrl) {
     imageUrl = `https://lottery.sambad.com/images/mobile/lottery-sambad-${slotKey}-${dateKey}.webp`;
   }
 
   console.log(`[EdgePoller] 🎉 NEW RESULT DETECTED: ${drawName} [${slot}] -> 1st Prize ${series} ${number}`);
 
-  // 4. Construct payload for D1
+  // 4. Construct payload for D1 with telegram_sent: true
   const drawTime = slot === '1PM' ? '1:00 PM' : slot === '6PM' ? '6:00 PM' : '8:00 PM';
   const rawJson = JSON.stringify({
     status: 'DECLARED',
@@ -181,6 +242,7 @@ export async function pollAndIngestLiveDraw(
     source_url: imageUrl,
     image_r2_url: imageUrl,
     pdf_r2_url: pdfUrl,
+    telegram_sent: true,
     prizes: {
       first_prize: { series, number },
       consolation_prize_amount: 1000,

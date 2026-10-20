@@ -372,9 +372,32 @@ async function processSlot(dateStr, slot) {
   // Check existing local cache
   const db = loadLiveDraws();
   const dayDb = db[dateStr] || {};
-  if (dayDb[slot] && dayDb[slot].first_prize?.number && dayDb[slot].second_prize?.length >= 8) {
-    console.log(`[Poller] ${dateStr} [${slot}] already verified: 1st Prize ${dayDb[slot].first_prize.series} ${dayDb[slot].first_prize.number}.`);
-    return true;
+  if (dayDb[slot] && dayDb[slot].first_prize?.number) {
+    if (dayDb[slot].telegram_sent && dayDb[slot].second_prize?.length >= 8) {
+      console.log(`[Poller] ${dateStr} [${slot}] already fully verified: 1st Prize ${dayDb[slot].first_prize.series} ${dayDb[slot].first_prize.number}.`);
+      return true;
+    }
+  }
+
+  // Cross-system deduplication: check if Cloudflare Worker Edge Poller already declared & sent Telegram
+  let alreadyTelegrammed = Boolean(dayDb[slot]?.telegram_sent);
+  if (!alreadyTelegrammed) {
+    try {
+      const edgeRes = await fetch(`https://dear-lottery-api.dearresultlive.workers.dev/api/results/draw/${dateStr}-${slot}`, {
+        signal: AbortSignal.timeout(3000)
+      });
+      if (edgeRes.ok) {
+        const edgeJson = await edgeRes.json();
+        const edgeDraw = edgeJson?.draw?.parsed_data;
+        if (edgeDraw?.status === 'DECLARED' && edgeDraw?.prizes?.first_prize?.number) {
+          console.log(`[Poller] ℹ️ Cloudflare Edge has already declared 1st Prize: ${edgeDraw.prizes.first_prize.series} ${edgeDraw.prizes.first_prize.number}.`);
+          if (edgeDraw.telegram_sent) {
+            alreadyTelegrammed = true;
+            console.log(`[Poller] ℹ️ Cloudflare Edge has already broadcasted this draw to Telegram. Suppressing duplicate.`);
+          }
+        }
+      }
+    } catch (edgeErr) {}
   }
 
   console.log(`[Poller] Querying upstream portals for ${dateStr} [${slot}]...`);
@@ -438,7 +461,8 @@ async function processSlot(dateStr, slot) {
         third_prize: dayDb[slot]?.third_prize || [],
         fourth_prize: dayDb[slot]?.fourth_prize || [],
         fifth_prize: dayDb[slot]?.fifth_prize || [],
-        draw_name: sambadRes.drawName || `DEAR ${slot}`
+        draw_name: sambadRes.drawName || `DEAR ${slot}`,
+        telegram_sent: alreadyTelegrammed
       };
       saveLiveDraws(db);
 
@@ -449,11 +473,19 @@ async function processSlot(dateStr, slot) {
         console.warn('[Poller] Fast-release Worker API sync warning:', syncErr.message);
       }
 
-      // Trigger instant Telegram broadcast for 1st Prize (Zero delay alert)
-      try {
-        await sendTelegramResultPost({ dateStr, slot, prizeData: db[dateStr][slot] });
-      } catch (tgErr) {
-        console.warn('[Poller] Fast-release Telegram warning:', tgErr.message);
+      // Trigger instant Telegram broadcast for 1st Prize (Zero delay alert) ONLY if not already sent
+      if (!alreadyTelegrammed) {
+        try {
+          console.log(`[Poller] 📢 Broadcasting 1st Prize to Telegram...`);
+          await sendTelegramResultPost({ dateStr, slot, prizeData: db[dateStr][slot] });
+          db[dateStr][slot].telegram_sent = true;
+          alreadyTelegrammed = true;
+          saveLiveDraws(db);
+        } catch (tgErr) {
+          console.warn('[Poller] Fast-release Telegram warning:', tgErr.message);
+        }
+      } else {
+        console.log(`[Poller] Telegram already sent for ${dateStr} [${slot}]. Skipping duplicate Fast-Release broadcast.`);
       }
 
       // Trigger instant OneSignal push for 1st Prize
@@ -510,6 +542,9 @@ async function processSlot(dateStr, slot) {
     return false;
   }
 
+  // Mark telegram_sent flag
+  prizeData.telegram_sent = alreadyTelegrammed || Boolean(db[dateStr]?.[slot]?.telegram_sent);
+
   // Update live_draws.json
   if (!db[dateStr]) db[dateStr] = {};
   db[dateStr][slot] = prizeData;
@@ -536,11 +571,19 @@ async function processSlot(dateStr, slot) {
     console.warn('[Poller] OneSignal push warning:', pushErr.message);
   }
 
-  // Automatically broadcast verified draw results to official Telegram channel @dearresultlive
-  try {
-    await sendTelegramResultPost({ dateStr, slot, prizeData });
-  } catch (tgErr) {
-    console.warn('[Poller] Telegram broadcast warning:', tgErr.message);
+  // Broadcast verified draw results to official Telegram channel @dearresultlive ONLY if not already sent!
+  if (!prizeData.telegram_sent) {
+    try {
+      console.log(`[Poller] 📢 Broadcasting verified full OCR result to Telegram...`);
+      await sendTelegramResultPost({ dateStr, slot, prizeData });
+      prizeData.telegram_sent = true;
+      db[dateStr][slot].telegram_sent = true;
+      saveLiveDraws(db);
+    } catch (tgErr) {
+      console.warn('[Poller] Telegram broadcast warning:', tgErr.message);
+    }
+  } else {
+    console.log(`[Poller] ℹ️ Telegram alert already broadcasted for ${dateStr} [${slot}]. Suppressing duplicate Stage 2 broadcast.`);
   }
   return true;
 }
