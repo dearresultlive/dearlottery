@@ -73,6 +73,41 @@ async function checkSambadLottery(slot: '1PM' | '6PM' | '8PM'): Promise<{ declar
 }
 
 /**
+ * Check nagalandlotterysambad.com for instant text-based 1st prize numbers.
+ * Fast mirror that updates within 8-12 minutes of draw time.
+ */
+async function checkNagalandLotterySambad(slot: '1PM' | '6PM' | '8PM'): Promise<{ declared: boolean; series: string; number: string } | null> {
+  try {
+    const res = await fetch('https://nagalandlotterysambad.com/', {
+      headers: {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/129.0.0.0 Safari/537.36',
+        'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8'
+      }
+    });
+    if (!res.ok) return null;
+    const html = await res.text();
+    const cls = slot === '1PM' ? 'draw-1pm' : slot === '6PM' ? 'draw-6pm' : 'draw-8pm';
+    const reg = new RegExp(cls + '[\\s\\S]*?data-number=["\']([^"\']+)["\']', 'i');
+    const m = html.match(reg);
+    if (m && m[1]) {
+      const parts = m[1].trim().split(/\s+/);
+      const series = parts.length > 1 ? parts[0].toUpperCase() : '';
+      const number = parts.length > 1 ? parts[1] : parts[0];
+      if (/^\d{5}$/.test(number)) {
+        return {
+          declared: true,
+          series,
+          number
+        };
+      }
+    }
+  } catch (err: any) {
+    console.warn('[EdgePoller] nagalandlotterysambad.com fetch error:', err?.message || err);
+  }
+  return null;
+}
+
+/**
  * Autonomous Edge Poller:
  * Queries upstream official Lottery Sambad feeds directly from Cloudflare's edge network,
  * checks for newly declared results, updates D1 database in 1 second, broadcasts to Telegram,
@@ -117,9 +152,10 @@ export async function pollAndIngestLiveDraw(
 
   let nagalandResult: { declared: boolean; imageUrl?: string; drawName?: string } | null = null;
   let sambadLotteryRes: { declared: boolean; series: string; number: string } | null = null;
+  let nSambadRes: { declared: boolean; series: string; number: string } | null = null;
   let card: any = null;
 
-  const [nRes, sLotteryRes, sRes] = await Promise.allSettled([
+  const [nRes, sLotteryRes, nSambadSettled, sRes] = await Promise.allSettled([
     // Check Nagaland Lottery Results portal for official signed sheet
     (async () => {
       try {
@@ -154,8 +190,11 @@ export async function pollAndIngestLiveDraw(
       return null;
     })(),
 
-    // Check sambadlottery.com (Cloudflare-friendly, instant 1st prize numbers)
+    // Check sambadlottery.com (Cloudflare-friendly, instant 1st prize numbers ~8-12 min)
     checkSambadLottery(slot),
+
+    // Check nagalandlotterysambad.com (Independent fast mirror ~8-12 min)
+    checkNagalandLotterySambad(slot),
 
     // Check lottery.sambad.com
     (async () => {
@@ -190,6 +229,10 @@ export async function pollAndIngestLiveDraw(
     sambadLotteryRes = sLotteryRes.value;
     console.log(`[EdgePoller] 🟢 SambadLottery portal detected: 1st Prize ${sambadLotteryRes.series} ${sambadLotteryRes.number}`);
   }
+  if (nSambadSettled.status === 'fulfilled' && nSambadSettled.value) {
+    nSambadRes = nSambadSettled.value;
+    console.log(`[EdgePoller] 🟢 NagalandLotterySambad portal detected: 1st Prize ${nSambadRes.series} ${nSambadRes.number}`);
+  }
   if (sRes.status === 'fulfilled' && sRes.value) {
     card = sRes.value;
   }
@@ -211,6 +254,9 @@ export async function pollAndIngestLiveDraw(
   } else if (sambadLotteryRes && sambadLotteryRes.number) {
     series = sambadLotteryRes.series;
     number = sambadLotteryRes.number;
+  } else if (nSambadRes && nSambadRes.number) {
+    series = nSambadRes.series;
+    number = nSambadRes.number;
   }
 
   const isDeclared = Boolean(number) || Boolean(nagalandResult?.declared);
