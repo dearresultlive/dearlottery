@@ -7,7 +7,7 @@ import { getVerifiedDrawsByDate, getVerifiedDraw, searchVerifiedPrizes } from '.
 import { getISTDateString, getISTNow } from './lottery-utils';
 import { checkAndFetchLiveSlot } from './live-fetcher';
 
-const WORKER_BASE = import.meta.env.WORKER_API_BASE || 'http://127.0.0.1:8787';
+const WORKER_BASE = import.meta.env.WORKER_API_BASE || 'https://dear-lottery-api.dearresultlive.workers.dev';
 
 export interface DrawItem {
   id: string;
