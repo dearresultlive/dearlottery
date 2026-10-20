@@ -26,23 +26,24 @@ export function getISTDateString(d: Date = getISTNow()): string {
   return `${y}-${m}-${day}`;
 }
 
-export function getCurrentSlot(d: Date = getISTNow()): '1PM' | '6PM' | '8PM' {
+export function getCurrentSlot(d: Date = getISTNow()): '1PM' | '6PM' | '8PM' | null {
   const h = d.getHours();
   const m = d.getMinutes();
   const totalMin = h * 60 + m;
-  // 1:00 PM is 780 min. Window up to 15:00 (900 min) -> 1PM
-  if (totalMin < 900) return '1PM';
-  // 6:00 PM is 1080 min. Window up to 19:50 (1190 min) -> 6PM
-  if (totalMin < 1190) return '6PM';
-  // 8:00 PM is 1200 min -> 8PM
-  return '8PM';
+  // 1:00 PM draw window: 12:55 PM to 5:45 PM IST (775 to 1065 min)
+  if (totalMin >= 775 && totalMin < 1070) return '1PM';
+  // 6:00 PM draw window: 5:55 PM to 7:45 PM IST (1075 to 1185 min)
+  if (totalMin >= 1075 && totalMin < 1190) return '6PM';
+  // 8:00 PM draw window: 7:55 PM to 11:45 PM IST (1195 to 1425 min)
+  if (totalMin >= 1195 && totalMin <= 1435) return '8PM';
+  return null;
 }
 
 /**
  * Check sambadlottery.com for instant text-based 1st prize numbers.
  * High-speed, Cloudflare-friendly upstream mirror (bypasses Cloudflare Error 1106).
  */
-async function checkSambadLottery(slot: '1PM' | '6PM' | '8PM'): Promise<{ declared: boolean; series: string; number: string } | null> {
+async function checkSambadLottery(dateStr: string, slot: '1PM' | '6PM' | '8PM'): Promise<{ declared: boolean; series: string; number: string } | null> {
   try {
     const res = await fetch('https://sambadlottery.com/', {
       headers: {
@@ -53,12 +54,19 @@ async function checkSambadLottery(slot: '1PM' | '6PM' | '8PM'): Promise<{ declar
     if (!res.ok) return null;
     const html = await res.text();
     const descMatch = html.match(/<meta[^>]*name=["']description["'][^>]*content=["']([^"']+)["']/i);
-    const textToSearch = (descMatch ? descMatch[1] : '') + ' ' + html;
+    const desc = descMatch ? descMatch[1] : '';
+
+    // Verify date on the page matches dateStr
+    const [year, month, day] = dateStr.split('-');
+    const dotDate = `${day}.${month}.${year}`;
+    const dashDate = `${day}-${month}-${year}`;
+    if (!desc.includes(dotDate) && !desc.includes(dashDate) && !html.includes(dotDate) && !html.includes(dashDate)) {
+      return null;
+    }
 
     const slotLabel = slot === '1PM' ? '1 PM' : slot === '6PM' ? '6 PM' : '8 PM';
-    // Matches e.g. "1 PM 92L 34346", "6 PM: 93J 82467", "8 PM · 45A 25672"
     const reg = new RegExp(slotLabel + '[:\\s·\\-]+([0-9]{1,2}[A-Z])\\s+([0-9]{5})', 'i');
-    const m = textToSearch.match(reg);
+    const m = desc.match(reg);
     if (m) {
       return {
         declared: true,
@@ -76,7 +84,7 @@ async function checkSambadLottery(slot: '1PM' | '6PM' | '8PM'): Promise<{ declar
  * Check nagalandlotterysambad.com for instant text-based 1st prize numbers.
  * Fast mirror that updates within 8-12 minutes of draw time.
  */
-async function checkNagalandLotterySambad(slot: '1PM' | '6PM' | '8PM'): Promise<{ declared: boolean; series: string; number: string } | null> {
+async function checkNagalandLotterySambad(dateStr: string, slot: '1PM' | '6PM' | '8PM'): Promise<{ declared: boolean; series: string; number: string } | null> {
   try {
     const res = await fetch('https://nagalandlotterysambad.com/', {
       headers: {
@@ -86,9 +94,25 @@ async function checkNagalandLotterySambad(slot: '1PM' | '6PM' | '8PM'): Promise<
     });
     if (!res.ok) return null;
     const html = await res.text();
+
+    const [year, month, day] = dateStr.split('-');
+    const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    const monthName = months[parseInt(month, 10) - 1];
+    const expectedDate = `${parseInt(day, 10)} ${monthName} ${year}`; // e.g. "20 Oct 2026"
+
     const cls = slot === '1PM' ? 'draw-1pm' : slot === '6PM' ? 'draw-6pm' : 'draw-8pm';
-    const reg = new RegExp(cls + '[\\s\\S]*?data-number=["\']([^"\']+)["\']', 'i');
-    const m = html.match(reg);
+    const slideReg = new RegExp('<div class="[^"]*' + cls + '[\\s\\S]*?</div>\\s*</div>', 'i');
+    const slideMatch = html.match(slideReg);
+    if (!slideMatch) return null;
+    const slideHtml = slideMatch[0];
+
+    // Check if the slide contains expected date
+    if (!slideHtml.includes(expectedDate)) {
+      return null;
+    }
+
+    const reg = /data-number=["']([^"']+)["']/i;
+    const m = slideHtml.match(reg);
     if (m && m[1]) {
       const parts = m[1].trim().split(/\s+/);
       const series = parts.length > 1 ? parts[0].toUpperCase() : '';
@@ -122,6 +146,16 @@ export async function pollAndIngestLiveDraw(
   const istDate = getISTNow();
   const dateStr = targetDate || getISTDateString(istDate);
   const slot = targetSlot || getCurrentSlot(istDate);
+
+  if (!slot) {
+    return {
+      ingested: false,
+      dateStr,
+      slot: '1PM',
+      message: `Outside official draw hours (Draws occur at 1:00 PM, 6:00 PM, 8:00 PM IST). Sleeping edge poller.`
+    };
+  }
+
   const drawId = `${dateStr}-${slot}`;
 
   console.log(`[EdgePoller] Checking slot: ${slot} for ${dateStr}...`);
@@ -191,10 +225,10 @@ export async function pollAndIngestLiveDraw(
     })(),
 
     // Check sambadlottery.com (Cloudflare-friendly, instant 1st prize numbers ~8-12 min)
-    checkSambadLottery(slot),
+    checkSambadLottery(dateStr, slot),
 
     // Check nagalandlotterysambad.com (Independent fast mirror ~8-12 min)
-    checkNagalandLotterySambad(slot),
+    checkNagalandLotterySambad(dateStr, slot),
 
     // Check lottery.sambad.com directly
     (async () => {
@@ -225,7 +259,8 @@ export async function pollAndIngestLiveDraw(
       if (!env.SAMBAD_RELAY_URL) return null;
       try {
         const res = await fetch(env.SAMBAD_RELAY_URL, {
-          signal: AbortSignal.timeout(6000)
+          redirect: 'follow',
+          signal: AbortSignal.timeout(10000)
         });
         if (res.ok) {
           const json = await res.json() as any;
