@@ -155,7 +155,7 @@ export async function pollAndIngestLiveDraw(
   let nSambadRes: { declared: boolean; series: string; number: string } | null = null;
   let card: any = null;
 
-  const [nRes, sLotteryRes, nSambadSettled, sRes] = await Promise.allSettled([
+  const [nRes, sLotteryRes, nSambadSettled, sRes, relaySettled] = await Promise.allSettled([
     // Check Nagaland Lottery Results portal for official signed sheet
     (async () => {
       try {
@@ -196,7 +196,7 @@ export async function pollAndIngestLiveDraw(
     // Check nagalandlotterysambad.com (Independent fast mirror ~8-12 min)
     checkNagalandLotterySambad(slot),
 
-    // Check lottery.sambad.com
+    // Check lottery.sambad.com directly
     (async () => {
       try {
         const res = await fetch('https://lottery.sambad.com/', {
@@ -218,6 +218,30 @@ export async function pollAndIngestLiveDraw(
         console.warn('[EdgePoller] Sambad check error:', err?.message || err);
       }
       return null;
+    })(),
+
+    // Check Google Apps Script / External Relay for direct lottery.sambad.com feed
+    (async () => {
+      if (!env.SAMBAD_RELAY_URL) return null;
+      try {
+        const res = await fetch(env.SAMBAD_RELAY_URL, {
+          signal: AbortSignal.timeout(6000)
+        });
+        if (res.ok) {
+          const json = await res.json() as any;
+          if (json?.datesCards) {
+            const cards = json.datesCards[dateKey] || [];
+            const found = cards.find((c: any) => c.slotkey && c.slotkey.toLowerCase() === slotKey);
+            if (found && found.num && found.num.trim()) {
+              console.log(`[EdgePoller] ⚡ Direct Relay detected official Sambad draw: ${found.num}`);
+              return found;
+            }
+          }
+        }
+      } catch (err: any) {
+        console.warn('[EdgePoller] Sambad Relay warning:', err?.message || err);
+      }
+      return null;
     })()
   ]);
 
@@ -233,7 +257,11 @@ export async function pollAndIngestLiveDraw(
     nSambadRes = nSambadSettled.value;
     console.log(`[EdgePoller] 🟢 NagalandLotterySambad portal detected: 1st Prize ${nSambadRes.series} ${nSambadRes.number}`);
   }
-  if (sRes.status === 'fulfilled' && sRes.value) {
+  if (relaySettled.status === 'fulfilled' && relaySettled.value) {
+    card = relaySettled.value;
+    console.log(`[EdgePoller] 🎯 Direct Sambad Relay result locked: ${card.num}`);
+  }
+  if (!card && sRes.status === 'fulfilled' && sRes.value) {
     card = sRes.value;
   }
 

@@ -12,6 +12,7 @@ export interface Env {
   TELEGRAM_BOT_TOKEN?: string;
   TELEGRAM_CHAT_ID?: string;
   GITHUB_TOKEN?: string;
+  SAMBAD_RELAY_URL?: string;
 }
 
 export interface DrawRecord {
