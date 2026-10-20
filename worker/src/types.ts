@@ -9,6 +9,9 @@ export interface Env {
   ONESIGNAL_REST_KEY?: string;
   GOOGLE_CLIENT_EMAIL?: string;
   GOOGLE_PRIVATE_KEY?: string;
+  TELEGRAM_BOT_TOKEN?: string;
+  TELEGRAM_CHAT_ID?: string;
+  GITHUB_TOKEN?: string;
 }
 
 export interface DrawRecord {

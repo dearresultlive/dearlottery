@@ -2,15 +2,15 @@ name: Scheduled Dear Lottery Ingestion Pipeline
 
 on:
   schedule:
-    # 1:00 PM IST draw: Pre-warm at 12:58 PM IST (07:28 UTC), with backups
-    - cron: '28,35,45,55 7 * * *'
-    - cron: '5,15,35 8 * * *'
-    # 6:00 PM IST draw: Pre-warm at 5:58 PM IST (12:28 UTC), with backups
-    - cron: '28,35,45,55 12 * * *'
-    - cron: '5,15,35 13 * * *'
-    # 8:00 PM IST draw: Pre-warm at 7:58 PM IST (14:28 UTC), with backups
-    - cron: '28,35,45,55 14 * * *'
-    - cron: '5,15,35 15 * * *'
+    # 1:00 PM IST draw: Results drop ~1:08-1:15 PM IST (07:38-07:45 UTC)
+    - cron: '38,42,46,50,55 7 * * *'
+    - cron: '0,5,15 8 * * *'
+    # 6:00 PM IST draw: Results drop ~6:08-6:15 PM IST (12:38-12:45 UTC)
+    - cron: '38,42,46,50,55 12 * * *'
+    - cron: '0,5,15 13 * * *'
+    # 8:00 PM IST draw: Results drop ~8:08-8:15 PM IST (14:38-14:45 UTC)
+    - cron: '38,42,46,50,55 14 * * *'
+    - cron: '0,5,15 15 * * *'
   workflow_dispatch:
     inputs:
       slot:
@@ -30,7 +30,7 @@ on:
 
 concurrency:
   group: dearlottery-scrape
-  cancel-in-progress: false
+  cancel-in-progress: true
 
 jobs:
   scrape-and-publish:
@@ -52,7 +52,7 @@ jobs:
 
       - name: Execute Autonomous Live Poller
         env:
-          WORKER_API_URL: ${{ secrets.WORKER_API_URL || 'https://api.dearresultlive.in/api/results' }}
+          WORKER_API_URL: ${{ secrets.WORKER_API_URL || 'https://dear-lottery-api.dearresultlive.workers.dev/api/results' }}
           WORKER_API_KEY: ${{ secrets.WORKER_API_KEY || 'dear_lottery_secret_key_prod_2026' }}
           ONESIGNAL_APP_ID: ${{ secrets.ONESIGNAL_APP_ID }}
           ONESIGNAL_API_KEY: ${{ secrets.ONESIGNAL_API_KEY }}
@@ -74,26 +74,35 @@ jobs:
           node scripts/live_autopoller.js $SLOT_ARG $DATE_ARG
 
       - name: Commit and Push Verified Results to Repository
+        id: git-commit
         run: |
           git config --global user.name "github-actions[bot]"
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
           git add web/src/data/live_draws.json web/public/results/
-          git diff --quiet && git diff --staged --quiet || (git commit -m "chore(auto): update official draw results" && git push)
+          if git diff --staged --quiet; then
+            echo "has_changes=false" >> $GITHUB_OUTPUT
+          else
+            git commit -m "chore(auto): update official draw results"
+            git push
+            echo "has_changes=true" >> $GITHUB_OUTPUT
+          fi
 
       - name: Instant IndexNow & Search Engine Ping
+        if: steps.git-commit.outputs.has_changes == 'true'
         env:
           GOOGLE_SERVICE_ACCOUNT_JSON: ${{ secrets.GOOGLE_SERVICE_ACCOUNT_JSON }}
         run: |
           node scripts/seo_pinger.js
 
       - name: Build Astro Frontend
+        if: steps.git-commit.outputs.has_changes == 'true'
         run: |
           cd web
           npm install
           npm run build
 
       - name: Deploy Frontend to Cloudflare Pages
-        if: success()
+        if: steps.git-commit.outputs.has_changes == 'true'
         uses: cloudflare/wrangler-action@v3
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}

@@ -232,6 +232,128 @@ function parseOcrLines(lines, slot, dateStr, sambadFirstPrize) {
 }
 
 /**
+ * Direct Atomic Synchronization with Cloudflare Edge API and D1 Database
+ */
+async function syncWithCloudflareWorker(dateStr, slot, prizeData, sourceUrl) {
+  const workerBase = process.env.WORKER_API_URL || 'https://dear-lottery-api.dearresultlive.workers.dev/api/results';
+  const apiKey = process.env.WORKER_API_KEY || 'dear_lottery_secret_key_prod_2026';
+
+  const drawId = `${dateStr}-${slot}`;
+  const drawTime = slot === '1PM' ? '1:00 PM' : slot === '6PM' ? '6:00 PM' : '8:00 PM';
+  const drawName = prizeData.draw_name || `DEAR ${slot}`;
+
+  const prizes = [];
+  if (prizeData.first_prize?.number) {
+    prizes.push({
+      draw_id: drawId,
+      prize_rank: '1st',
+      prize_amount: 10000000,
+      ticket_number: prizeData.first_prize.number,
+      last_digits: prizeData.first_prize.number.slice(-4),
+      series: prizeData.first_prize.series || null
+    });
+  }
+  if (Array.isArray(prizeData.second_prize)) {
+    for (const num of prizeData.second_prize) {
+      prizes.push({
+        draw_id: drawId,
+        prize_rank: '2nd',
+        prize_amount: 10000,
+        ticket_number: num,
+        last_digits: num.slice(-4),
+        series: null
+      });
+    }
+  }
+  if (Array.isArray(prizeData.third_prize)) {
+    for (const num of prizeData.third_prize) {
+      prizes.push({
+        draw_id: drawId,
+        prize_rank: '3rd',
+        prize_amount: 500,
+        ticket_number: num,
+        last_digits: num.slice(-4),
+        series: null
+      });
+    }
+  }
+  if (Array.isArray(prizeData.fourth_prize)) {
+    for (const num of prizeData.fourth_prize) {
+      prizes.push({
+        draw_id: drawId,
+        prize_rank: '4th',
+        prize_amount: 250,
+        ticket_number: num,
+        last_digits: num.slice(-4),
+        series: null
+      });
+    }
+  }
+  if (Array.isArray(prizeData.fifth_prize)) {
+    for (const num of prizeData.fifth_prize) {
+      prizes.push({
+        draw_id: drawId,
+        prize_rank: '5th',
+        prize_amount: 120,
+        ticket_number: num,
+        last_digits: num.slice(-4),
+        series: null
+      });
+    }
+  }
+
+  const rawJson = JSON.stringify({
+    status: 'DECLARED',
+    draw_id: drawId,
+    draw_date: dateStr,
+    draw_time: drawTime,
+    draw_name: drawName,
+    source_url: sourceUrl || '',
+    image_r2_url: prizeData.image_r2_url || sourceUrl || '',
+    pdf_r2_url: prizeData.pdf_r2_url || '',
+    prizes: {
+      first_prize: prizeData.first_prize || {},
+      consolation_prize_amount: 1000,
+      second_prize: prizeData.second_prize || [],
+      third_prize: prizeData.third_prize || [],
+      fourth_prize: prizeData.fourth_prize || [],
+      fifth_prize: prizeData.fifth_prize || []
+    }
+  });
+
+  const payload = {
+    draw: {
+      id: drawId,
+      draw_date: dateStr,
+      draw_time: drawTime,
+      draw_name: drawName,
+      source_url: sourceUrl || '',
+      checksum: `auto_${drawId}_${Date.now()}`,
+      raw_json: rawJson
+    },
+    prizes
+  };
+
+  try {
+    const res = await fetch(workerBase, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-API-KEY': apiKey
+      },
+      body: JSON.stringify(payload)
+    });
+    if (res.ok) {
+      console.log(`[Poller] ⚡ Successfully synced ${drawId} (${prizes.length} prizes) with Cloudflare D1 Edge API!`);
+    } else {
+      console.warn(`[Poller] Worker API sync HTTP ${res.status}:`, await res.text());
+    }
+  } catch (err) {
+    console.warn(`[Poller] Worker API sync warning:`, err.message);
+  }
+}
+
+/**
  * Process a single slot check and ingest if published
  */
 async function processSlot(dateStr, slot) {
@@ -320,6 +442,13 @@ async function processSlot(dateStr, slot) {
       };
       saveLiveDraws(db);
 
+      // Immediately sync with Cloudflare D1 Edge API so results are live on website instantly
+      try {
+        await syncWithCloudflareWorker(dateStr, slot, db[dateStr][slot], sourceUrl);
+      } catch (syncErr) {
+        console.warn('[Poller] Fast-release Worker API sync warning:', syncErr.message);
+      }
+
       // Trigger instant Telegram broadcast for 1st Prize (Zero delay alert)
       try {
         await sendTelegramResultPost({ dateStr, slot, prizeData: db[dateStr][slot] });
@@ -386,6 +515,13 @@ async function processSlot(dateStr, slot) {
   db[dateStr][slot] = prizeData;
   saveLiveDraws(db);
 
+  // Sync complete OCR prize distribution with Cloudflare D1 Edge API
+  try {
+    await syncWithCloudflareWorker(dateStr, slot, prizeData, sourceUrl);
+  } catch (syncErr) {
+    console.warn('[Poller] Full OCR Worker API sync warning:', syncErr.message);
+  }
+
   console.log(`[Poller] ✅ AUTOMATED INGESTION COMPLETE for ${dateStr} [${slot}]!`);
   try {
     await pingSearchEngines(dateStr, slot);
@@ -437,7 +573,7 @@ async function main() {
   console.log(`  Date: ${dateStr} | Mode: ${modeLabel}`);
   console.log(`=======================================================`);
 
-  const maxAttempts = isWatch ? Infinity : (isCi ? 100 : 1);
+  const maxAttempts = isWatch ? Infinity : (isCi ? 12 : 1);
   const sleepMs = 15000; // 15s interval for rapid ~15-second response to official releases
 
   for (let attempt = 1; attempt <= maxAttempts; attempt++) {
