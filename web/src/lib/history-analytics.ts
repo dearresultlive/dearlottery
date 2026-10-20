@@ -587,3 +587,86 @@ export function getTopFrequentMiddles(limit: number = 10, horizon: '1Y' | '3Y' |
       lastSeenDate: val.lastDate
     }));
 }
+
+export interface Recurring4DigitStat {
+  ticket_number: string;
+  occurrences: number;
+  last_seen_date: string;
+}
+
+/**
+ * Returns Top N Most Frequently Repeating 4-digit Numbers across official gazettes
+ */
+export function getTopRecurring4DigitNumbers(limit: number = 10, horizon: '1Y' | '3Y' | '5Y' = '3Y'): Recurring4DigitStat[] {
+  const draws = getAllHistoricalDraws();
+  const { cutoff1Y, cutoff3Y, cutoff5Y } = getCutoffDates();
+  const cutoff = horizon === '1Y' ? cutoff1Y : horizon === '3Y' ? cutoff3Y : cutoff5Y;
+  const counts: Record<string, { count: number; lastDate: string }> = {};
+
+  for (const item of draws) {
+    if (item.date < cutoff) continue;
+    const { date, prizes } = item;
+    const add4 = (num: any) => {
+      if (!num) return;
+      const clean = String(num).replace(/\D/g, '');
+      const last4 = clean.length >= 4 ? clean.slice(-4) : '';
+      if (last4.length === 4) {
+        if (!counts[last4]) counts[last4] = { count: 0, lastDate: date };
+        counts[last4].count += 1;
+      }
+    };
+
+    if (prizes.first_prize?.number) add4(prizes.first_prize.number);
+    if (Array.isArray(prizes.second_prize)) prizes.second_prize.forEach(add4);
+    if (Array.isArray(prizes.third_prize)) prizes.third_prize.forEach(add4);
+    if (Array.isArray(prizes.fourth_prize)) prizes.fourth_prize.forEach(add4);
+    if (Array.isArray(prizes.fifth_prize)) prizes.fifth_prize.forEach(add4);
+  }
+
+  return Object.entries(counts)
+    .filter(([_, val]) => val.count > 1)
+    .sort((a, b) => b[1].count - a[1].count)
+    .slice(0, limit)
+    .map(([number, val]) => ({
+      ticket_number: number,
+      occurrences: val.count,
+      last_seen_date: val.lastDate
+    }));
+}
+
+/**
+ * Returns Top N Cold/Overdue 4-digit Numbers that have appeared only once
+ */
+export function getCold4DigitNumbers(limit: number = 10): Recurring4DigitStat[] {
+  const draws = getAllHistoricalDraws();
+  const counts: Record<string, { count: number; lastDate: string }> = {};
+
+  for (const item of draws) {
+    const { date, prizes } = item;
+    const add4 = (num: any) => {
+      if (!num) return;
+      const clean = String(num).replace(/\D/g, '');
+      const last4 = clean.length >= 4 ? clean.slice(-4) : '';
+      if (last4.length === 4) {
+        if (!counts[last4]) counts[last4] = { count: 0, lastDate: date };
+        counts[last4].count += 1;
+      }
+    };
+
+    if (prizes.first_prize?.number) add4(prizes.first_prize.number);
+    if (Array.isArray(prizes.second_prize)) prizes.second_prize.forEach(add4);
+    if (Array.isArray(prizes.third_prize)) prizes.third_prize.forEach(add4);
+    if (Array.isArray(prizes.fourth_prize)) prizes.fourth_prize.forEach(add4);
+    if (Array.isArray(prizes.fifth_prize)) prizes.fifth_prize.forEach(add4);
+  }
+
+  return Object.entries(counts)
+    .filter(([_, val]) => val.count === 1)
+    .sort((a, b) => a[1].lastDate.localeCompare(b[1].lastDate))
+    .slice(0, limit)
+    .map(([number, val]) => ({
+      ticket_number: number,
+      occurrences: 1,
+      last_seen_date: val.lastDate
+    }));
+}

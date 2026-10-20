@@ -1,7 +1,12 @@
 import React, { useState, useMemo } from 'react';
 import { useLanguage } from '../lib/i18n';
 import { getISTDateString, getNextUpcomingDraw } from '../lib/lottery-utils';
-import { getTopFrequentEndings, getTopFrequentMiddles } from '../lib/history-analytics';
+import {
+  getTopFrequentEndings,
+  getTopFrequentMiddles,
+  getTopRecurring4DigitNumbers,
+  getCold4DigitNumbers
+} from '../lib/history-analytics';
 
 interface TargetNumbersToolProps {
   initialMatrix?: Array<{ digit: string; position: number; count: number }>;
@@ -28,6 +33,22 @@ export default function TargetNumbersTool({
   // 10-year official gazette frequency records
   const topEndings = useMemo(() => getTopFrequentEndings(10), []);
   const topMiddles = useMemo(() => getTopFrequentMiddles(10), []);
+  const calculatedHot4 = useMemo(() => getTopRecurring4DigitNumbers(10), []);
+  const calculatedCold4 = useMemo(() => getCold4DigitNumbers(10), []);
+
+  const displayHot4 = useMemo(() => {
+    if (initialHot && initialHot.length > 0 && initialHot.some(h => h.occurrences > 1)) {
+      return initialHot;
+    }
+    return calculatedHot4;
+  }, [initialHot, calculatedHot4]);
+
+  const displayCold4 = useMemo(() => {
+    if (initialCold && initialCold.length > 0 && initialCold.some(c => c.last_seen_date && c.last_seen_date < '2026-01-01')) {
+      return initialCold;
+    }
+    return calculatedCold4;
+  }, [initialCold, calculatedCold4]);
 
   // Statistical patterns derived from 5,478 official Dear Lottery gazette draws (2021–2026)
   const slotData = useMemo(() => {
@@ -471,7 +492,7 @@ export default function TargetNumbersTool({
               </div>
 
               <div className="grid grid-cols-2 sm:grid-cols-5 gap-2">
-                {(fourDigitSubTab === 'hot' ? initialHot : initialCold).slice(0, 10).map((item, idx) => (
+                {(fourDigitSubTab === 'hot' ? displayHot4 : displayCold4).slice(0, 10).map((item, idx) => (
                   <button
                     key={idx}
                     type="button"
@@ -485,13 +506,15 @@ export default function TargetNumbersTool({
                       {item.ticket_number}
                     </div>
                     <div className="mt-1 flex items-center justify-center gap-1">
-                      <span className={`text-[10px] font-bold px-2 py-0.2 rounded-full border ${
-                        fourDigitSubTab === 'hot'
-                          ? 'bg-amber-100 text-amber-900 border-amber-200'
-                          : 'bg-blue-100 text-blue-900 border-blue-200'
-                      }`}>
-                        {item.occurrences}x {lang === 'bn' ? 'বার' : 'drawn'}
-                      </span>
+                      {fourDigitSubTab === 'hot' ? (
+                        <span className="text-[10px] font-bold px-2 py-0.2 rounded-full border bg-amber-100 text-amber-900 border-amber-200">
+                          {item.occurrences}x {lang === 'bn' ? 'বার এসেছে' : 'hits'}
+                        </span>
+                      ) : (
+                        <span className="text-[10px] font-bold px-2 py-0.2 rounded-full border bg-blue-100 text-blue-900 border-blue-200 font-mono">
+                          {lang === 'bn' ? 'শেষ ড্র:' : 'Last:'} {item.last_seen_date ? item.last_seen_date.slice(0, 7) : '2021'}
+                        </span>
+                      )}
                     </div>
                   </button>
                 ))}
