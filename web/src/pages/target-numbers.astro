@@ -1,22 +1,13 @@
 ---
 import Layout from '../layouts/Layout.astro';
 import TargetNumbersTool from '../components/TargetNumbersTool';
-import AnalyticsModule from '../components/AnalyticsModule';
-import TicketChecker from '../components/TicketChecker';
-import { fetchFrequencyAnalytics, fetchLatestDraws, fetchDrawsByDate } from '../lib/api';
+import { fetchFrequencyAnalytics } from '../lib/api';
 import { getISTDateString, getISTNow } from '../lib/lottery-utils';
 
 const istNow = getISTNow();
 const todayDateStr = getISTDateString(istNow);
 
-const yesterday = new Date(istNow);
-yesterday.setDate(yesterday.getDate() - 1);
-const yesterdayDateStr = getISTDateString(yesterday);
-
 const analytics = await fetchFrequencyAnalytics();
-const draws = await fetchLatestDraws();
-const yesterdayDraws = await fetchDrawsByDate(yesterdayDateStr);
-const checkerDraws = [...draws, ...yesterdayDraws];
 
 const targetFaqItems = [
   {
@@ -49,66 +40,29 @@ const targetFaqItems = [
       <span class="text-slate-900 font-bold">Target & Hot Numbers (টার্গেট ও হট নম্বর)</span>
     </nav>
 
-    {/* Target & Hot Numbers Header Banner */}
-    <div class="bg-gradient-to-r from-amber-50 via-white to-amber-50 border border-amber-300 rounded-2xl p-3.5 sm:p-5 text-center shadow-xs">
+    {/* Clean, Focused Header */}
+    <div class="bg-gradient-to-r from-amber-500/10 via-white to-blue-500/10 border border-slate-200/90 rounded-2xl p-4 sm:p-5 text-center shadow-xs">
       <span class="inline-flex items-center gap-1.5 bg-amber-500 text-white text-[10px] sm:text-xs font-black px-2.5 py-0.5 rounded-full uppercase tracking-wider">
         <span>🎯</span>
         <span class="lang-en">Daily Analysis • টার্গেট ও হট নম্বর</span>
         <span class="lang-bn">টার্গেট ও হট নম্বর</span>
         <span class="lang-hi">टारगेट और हॉट नंबर</span>
       </span>
-      <h1 class="text-base sm:text-2xl font-black text-slate-900 mt-1.5">
+      <h1 class="text-base sm:text-xl font-black text-slate-900 mt-1.5">
         <span class="lang-en">Dear Lottery Target & Hot Numbers Today ({todayDateStr})</span>
         <span class="lang-bn">আজকের ডিয়ার লটারি টার্গেট ও হট নম্বর ({todayDateStr})</span>
         <span class="lang-hi">आज का डियर लॉटरी टारगेट और हॉट नंबर ({todayDateStr})</span>
       </h1>
       <p class="text-[11px] sm:text-xs text-slate-600 mt-1 max-w-xl mx-auto">
-        <span class="lang-en">Statistical hot middle pairs, high-frequency endings, 30-day repeat numbers, and positional digit frequency heatmaps.</span>
-        <span class="lang-bn">পরিসংখ্যান ভিত্তিক মিডিল নম্বর, শেষ ২-ডিজিট, বিগত ৩০ দিনের বেশি বার আসা হট নম্বর ও পজিশনাল ডিজিট হিটম্যাপ।</span>
-        <span class="lang-hi">सांख्यिकी आधारित मिडिल नंबर, अंतिम 2-अंक, पिछले 30 दिनों के हॉट नंबर्स और पोजिशनल डिजिट हीटमैप।</span>
+        <span class="lang-en">Official statistical middle pairs, high-frequency endings, 30-day repeats, and digit heatmaps.</span>
+        <span class="lang-bn">পরিসংখ্যান ভিত্তিক মিডিল নম্বর, শেষ ২-ডিজিট, বিগত ৩০ দিনের হট নম্বর ও পজিশনাল হিটম্যাপ।</span>
+        <span class="lang-hi">सांख्यिकी आधारित मिडिल नंबर, अंतिम 2-अंक, हॉट नंबर्स और हीटमैप।</span>
       </p>
-
-      {/* Quick Jump In-Page Navigation Pills */}
-      <div class="flex items-center justify-center gap-2 pt-3 flex-wrap text-xs font-black">
-        <a
-          href="#target-tool"
-          class="bg-amber-100 hover:bg-amber-200 text-amber-900 px-3 py-1.5 rounded-xl border border-amber-300 transition-all active:scale-95"
-        >
-          🎯 <span class="lang-en">Daily Targets</span><span class="lang-bn">আজকের টার্গেট</span><span class="lang-hi">आज के टारगेट</span>
-        </a>
-        <a
-          href="#hot-numbers"
-          class="bg-blue-100 hover:bg-blue-200 text-blue-900 px-3 py-1.5 rounded-xl border border-blue-300 transition-all active:scale-95"
-        >
-          🔥 <span class="lang-en">Hot Numbers & Heatmap</span><span class="lang-bn">হট নম্বর ও হিটম্যাপ</span><span class="lang-hi">हॉट नंबर्स व हीटमैप</span>
-        </a>
-        <a
-          href="/analytics"
-          class="bg-indigo-100 hover:bg-indigo-200 text-indigo-900 px-3 py-1.5 rounded-xl border border-indigo-300 transition-all active:scale-95"
-        >
-          📊 <span class="lang-en">5Y Analytics</span><span class="lang-bn">৫ বছরের হিস্ট্রি</span><span class="lang-hi">5 साल का इतिहास</span>
-        </a>
-        <a
-          href="/lucky-ticket"
-          class="bg-emerald-100 hover:bg-emerald-200 text-emerald-900 px-3 py-1.5 rounded-xl border border-emerald-300 transition-all active:scale-95"
-        >
-          🎟️ <span class="lang-en">Lucky Ticket</span><span class="lang-bn">লাকি টিকিট</span><span class="lang-hi">लकी टिकट</span>
-        </a>
-      </div>
     </div>
 
-    {/* 1. Primary Target Numbers Module (Slot Switcher, Hot Middles, High-Frequency Endings, Generator) */}
+    {/* Primary Unified Target & Intelligence Tool */}
     <section id="target-tool">
       <TargetNumbersTool
-        client:load
-        initialMatrix={analytics.matrix}
-        initialHot={analytics.hotNumbers}
-      />
-    </section>
-
-    {/* 2. 30-Day Hot Numbers, Cold Numbers & Positional Digit Heatmap */}
-    <section id="hot-numbers">
-      <AnalyticsModule
         client:load
         initialMatrix={analytics.matrix}
         initialHot={analytics.hotNumbers}
@@ -116,54 +70,80 @@ const targetFaqItems = [
       />
     </section>
 
-    {/* 3. Quick Ticket Checker */}
-    <section id="checker">
-      <TicketChecker client:load initialDraws={checkerDraws} variant="slim" />
-    </section>
+    {/* Sleek Ticket Checker Direct Link Banner */}
+    <div class="bg-gradient-to-r from-blue-50 via-white to-indigo-50 border border-blue-200/90 rounded-2xl p-3.5 sm:p-4 flex flex-col sm:flex-row items-center justify-between gap-3 shadow-xs">
+      <div class="flex items-center gap-3 text-center sm:text-left">
+        <div class="w-10 h-10 rounded-xl bg-blue-100 border border-blue-200 flex items-center justify-center text-lg flex-shrink-0">
+          🔍
+        </div>
+        <div>
+          <h4 class="text-xs sm:text-sm font-black text-slate-900">
+            আজকের টিকিট কিনেছেন? ফলাফল চেক করুন (Check Ticket)
+          </h4>
+          <p class="text-[11px] text-slate-600">
+            ১ম, ২য়, ৩য়, ৪র্থ ও ৫ম পুরস্কারসহ আপনার টিকিটের নম্বর মাত্র ১ সেকেন্ডে মিলিয়ে নিন।
+          </p>
+        </div>
+      </div>
+      <a
+        href="/checker"
+        class="inline-flex items-center gap-1.5 bg-blue-700 hover:bg-blue-800 text-white font-black text-xs px-4 py-2 rounded-xl shadow-xs transition-all active:scale-95 whitespace-nowrap self-stretch sm:self-auto justify-center"
+      >
+        <span>টিকিট চেক করুন ➔</span>
+      </a>
+    </div>
 
-    {/* 4. Comprehensive Guide on Lottery Target & Hot Numbers */}
-    <section class="bg-white border border-slate-200 rounded-2xl p-4 sm:p-6 text-slate-700 space-y-4 shadow-sm text-xs leading-relaxed">
-      <h2 class="text-base sm:text-xl font-black text-slate-900">
+    {/* Comprehensive Guide on Lottery Target & Hot Numbers */}
+    <section class="bg-white border border-slate-200/90 rounded-2xl p-4 sm:p-6 text-slate-700 space-y-4 shadow-xs text-xs leading-relaxed">
+      <h2 class="text-sm sm:text-base font-black text-slate-900 border-b border-slate-100 pb-2">
         About Dear Lottery Target & Hot Numbers (কমন, টার্গেট ও হট নম্বর)
       </h2>
       <p>
         In Indian state lotteries like Nagaland State Lotteries and Sikkim State Lotteries, lottery ticket buyers analyze past draw frequency patterns and hot repeating digits before purchasing tickets at authorized retail counters.
       </p>
 
-      <div class="space-y-2 border-t border-slate-100 pt-3">
-        <h3 class="font-bold text-slate-900 text-xs sm:text-sm">What is a "Middle Number" (মিডিল নম্বর)?</h3>
+      <div class="space-y-1.5 border-t border-slate-100 pt-3">
+        <h3 class="font-bold text-slate-900 text-xs">What is a "Middle Number" (মিডিল নম্বর)?</h3>
         <p class="text-slate-600">
           Dear Lottery tickets feature a series code and a 5-digit number (e.g., <strong>84D 29813</strong>). The 2nd and 3rd digits (e.g. <strong>98</strong>) are commonly referred to as the <em>Middle Number (মিডিল)</em> by local retailers and players. Retail tickets are bundled and traded by middle sets (e.g. 50-middle, 80-middle).
         </p>
       </div>
 
-      <div class="space-y-2 border-t border-slate-100 pt-3">
-        <h3 class="font-bold text-slate-900 text-xs sm:text-sm">How to Choose Tickets Strategically:</h3>
+      <div class="space-y-1.5 border-t border-slate-100 pt-3">
+        <h3 class="font-bold text-slate-900 text-xs">How to Choose Tickets Strategically:</h3>
         <ul class="list-disc list-inside space-y-1 text-slate-600">
           <li><strong>Study Repeating Endings:</strong> 5th prize winners (₹120) contain 100 winning 4-digit numbers every draw. Certain last 2-digit patterns appear in consecutive cycles.</li>
-          <li><strong>Match Hot Positional Trends:</strong> Review the <a href="#hot-numbers" class="text-blue-700 underline font-bold">Digit Frequency Heatmap</a> above to see which digits (0-9) appear most frequently in each position.</li>
+          <li><strong>Match Hot Positional Trends:</strong> Review the Digit Frequency Heatmap tab above to see which digits (0-9) appear most frequently in each position.</li>
           <li><strong>Practice Risk-Free with Lucky Ticket:</strong> Test your number theories for free in our <a href="/lucky-ticket" class="text-blue-700 underline font-bold">Dear Lottery Lucky Ticket</a> paper simulator before buying physical tickets.</li>
-          <li><strong>Play Responsibly:</strong> Each lottery draw machine uses independent air-mix balls. No algorithm or person can predict results with 100% certainty. Only spend what you can afford for entertainment.</li>
         </ul>
       </div>
 
       <div class="border-t border-slate-100 pt-3 flex flex-wrap gap-2 justify-center">
         <a
           href="/lucky-ticket"
-          class="inline-flex items-center gap-1.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs px-4 py-2.5 rounded-xl shadow-xs transition-all"
+          class="inline-flex items-center gap-1.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs px-4 py-2 rounded-xl shadow-xs transition-all"
         >
           <span>🎟️</span>
           <span>Print Lucky Ticket (লাকি টিকিট)</span>
         </a>
         <a
           href="/"
-          class="inline-flex items-center gap-1.5 bg-blue-700 hover:bg-blue-800 text-white font-bold text-xs px-4 py-2.5 rounded-xl shadow-xs transition-all"
+          class="inline-flex items-center gap-1.5 bg-blue-700 hover:bg-blue-800 text-white font-bold text-xs px-4 py-2 rounded-xl shadow-xs transition-all"
         >
           <span>👈</span>
           <span>View Today's Live Draw Results (আজকের লাইভ রেজাল্ট)</span>
         </a>
       </div>
     </section>
+
+    {/* Single Authoritative Statistical Disclaimer */}
+    <div class="bg-amber-50/70 border border-amber-200 rounded-xl p-3 text-[11px] text-amber-900 leading-relaxed text-center sm:text-left flex items-start gap-2.5">
+      <span class="text-base flex-shrink-0">⚠️</span>
+      <p>
+        <strong class="font-bold">সতর্কতা ও দায়িত্বশীল খেলার পরামর্শ (Disclaimer):</strong>{' '}
+        এই টার্গেট নম্বর ও পরিসংখ্যান বিগত সরকারি গেজেট ও ড্র-এর ফ্রিকোয়েন্সি বিশ্লেষণের ভিত্তিতে প্রস্তুত। ডিয়ার লটারির প্রতিটি ড্র স্বাধীন যান্ত্রিক র্যান্ডম সিলেকশনের মাধ্যমে অনুষ্ঠিত হয়। লটারি সম্পূর্ণ ভাগ্যের খেলা, কোনো সিস্টেম ভবিষ্যৎ ড্র-এর ১০০% নিশ্চয়তা দিতে পারে না। দায়িত্বশীলভাবে খেলুন।
+      </p>
+    </div>
 
   </div>
 </Layout>
