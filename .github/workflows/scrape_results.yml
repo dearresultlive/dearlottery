@@ -108,7 +108,7 @@ jobs:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           workingDirectory: 'web'
-          command: 'pages deploy dist --project-name=dear-lottery-web'
+          command: 'pages deploy dist --project-name=dearlottery'
 
       - name: Verify Health & Artifacts
         if: always()

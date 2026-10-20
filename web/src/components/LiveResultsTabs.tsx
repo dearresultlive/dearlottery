@@ -85,9 +85,34 @@ export default function LiveResultsTabs({
   const [showTextTables, setShowTextTables] = useState<boolean>(true);
   const [copiedLink, setCopiedLink] = useState<boolean>(false);
   const [slotCountdown, setSlotCountdown] = useState(getSlotCountdown('1PM'));
+  const [upcoming1pmCountdown, setUpcoming1pmCountdown] = useState(getSlotCountdown('1PM'));
   const [isSyncing, setIsSyncing] = useState<boolean>(false);
+  const userOverrodeRef = useRef<boolean>(false);
+
+  const getSmartTodaySlot = (): '1PM' | '6PM' | '8PM' => {
+    const istNow = getISTNow();
+    const h = istNow.getHours();
+    const m = istNow.getMinutes();
+    const totalMin = h * 60 + m;
+    if (totalMin < 1050) return '1PM'; // Before 5:30 PM, focus on 1PM
+    if (totalMin < 1170) return '6PM'; // Before 7:30 PM, focus on 6PM
+    return '8PM';
+  };
+
+  const handleGoToToday = () => {
+    userOverrodeRef.current = true;
+    setActiveDateStr(todayStr);
+    const targetSlot = getSmartTodaySlot();
+    setActiveSlot(targetSlot);
+    if (typeof window !== 'undefined' && window.history) {
+      const url = new URL(window.location.href);
+      url.searchParams.delete('date');
+      window.history.replaceState({}, '', url.toString());
+    }
+  };
 
   const handleSlotSelect = (slotKey: '1PM' | '6PM' | '8PM') => {
+    userOverrodeRef.current = true;
     setActiveSlot(slotKey);
     if (typeof navigator !== 'undefined' && (navigator as any).vibrate) {
       (navigator as any).vibrate(10);
@@ -98,9 +123,12 @@ export default function LiveResultsTabs({
     setDrawsList(draws);
   }, [draws]);
 
-  // Update countdown every second for active upcoming slot
+  // Update countdown every second for active upcoming slot and next 1PM draw
   useEffect(() => {
-    const update = () => setSlotCountdown(getSlotCountdown(activeSlot));
+    const update = () => {
+      setSlotCountdown(getSlotCountdown(activeSlot));
+      setUpcoming1pmCountdown(getSlotCountdown('1PM'));
+    };
     update();
     const timer = setInterval(update, 1000);
     return () => clearInterval(timer);
@@ -131,6 +159,8 @@ export default function LiveResultsTabs({
       setActiveSlot('8PM');
       return;
     }
+    if (userOverrodeRef.current) return;
+
     const istNow = getISTNow();
     const hour = istNow.getHours();
     if (!hasTodayResults && hour < 13) {
@@ -415,7 +445,11 @@ export default function LiveResultsTabs({
       return;
     }
 
+    userOverrodeRef.current = true;
     setActiveDateStr(selectedValue);
+    if (selectedValue === todayStr) {
+      setActiveSlot(getSmartTodaySlot());
+    }
 
     // Update browser URL query without full page reload for shareability
     if (typeof window !== 'undefined' && window.history) {
@@ -491,16 +525,16 @@ export default function LiveResultsTabs({
               </span>
               <span className="text-[10px] text-emerald-800 font-medium block">
                 {lang === 'bn'
-                  ? `আজকের ১:০০ দুপুর ড্র শুরু হতে বাকি: ${slotCountdown.hours}ঘণ্টা ${slotCountdown.minutes}মিনিট`
+                  ? `আজকের ১:০০ দুপুর ড্র শুরু হতে বাকি: ${upcoming1pmCountdown.hours > 0 ? `${upcoming1pmCountdown.hours}ঘণ্টা ` : ''}${upcoming1pmCountdown.minutes}মিনিট`
                   : lang === 'hi'
-                  ? `आज का दोपहर 1:00 बजे का ड्रॉ शुरू होने में शेष: ${slotCountdown.hours}घंटे ${slotCountdown.minutes}मिनट`
-                  : `Next draw today at 1:00 PM (starts in ${slotCountdown.hours}h ${slotCountdown.minutes}m)`}
+                  ? `आज का दोपहर 1:00 बजे का ड्रॉ शुरू होने में शेष: ${upcoming1pmCountdown.hours > 0 ? `${upcoming1pmCountdown.hours}घंटे ` : ''}${upcoming1pmCountdown.minutes}मिनट`
+                  : `Next draw today at 1:00 PM (starts in ${upcoming1pmCountdown.hours > 0 ? `${upcoming1pmCountdown.hours}h ` : ''}${upcoming1pmCountdown.minutes}m)`}
               </span>
             </div>
           </div>
           <button
             type="button"
-            onClick={() => handleDateChange(todayStr)}
+            onClick={handleGoToToday}
             className="bg-emerald-700 hover:bg-emerald-800 text-white font-black text-[11px] px-2.5 py-1.5 rounded-lg shadow-2xs ml-2 flex-shrink-0 active:scale-95 transition-all"
           >
             {lang === 'bn' ? 'আজকের ড্র ➔' : lang === 'hi' ? 'आज का ड्रॉ ➔' : "Today's Draw ➔"}
@@ -532,7 +566,7 @@ export default function LiveResultsTabs({
           </div>
           <button
             type="button"
-            onClick={() => handleDateChange(todayStr)}
+            onClick={handleGoToToday}
             className="bg-blue-700 hover:bg-blue-800 text-white font-black text-[11px] px-2.5 py-1.5 rounded-lg shadow-2xs ml-2 flex-shrink-0 active:scale-95 transition-all"
           >
             {lang === 'bn' ? 'আজকের ড্র ➔' : lang === 'hi' ? 'आज का ड्रॉ ➔' : "Today's Draw ➔"}
