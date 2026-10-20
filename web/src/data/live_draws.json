@@ -2203,6 +2203,17 @@
       "third_prize": [],
       "fourth_prize": [],
       "fifth_prize": []
+    },
+    "8PM": {
+      "first_prize": {
+        "series": "45A",
+        "number": "25672"
+      },
+      "consolation_prize_amount": 1000,
+      "second_prize": [],
+      "third_prize": [],
+      "fourth_prize": [],
+      "fifth_prize": []
     }
   }
 }
