@@ -41,6 +41,94 @@ app.get('/api/health', (c) => {
   });
 });
 
+app.get('/api/test-suite', async (c) => {
+  const results: any = {
+    timestamp: new Date().toISOString(),
+    tests: {}
+  };
+
+  // Test 1: Google Apps Script Relay connectivity from Cloudflare Edge
+  const relayStart = Date.now();
+  try {
+    if (!c.env.SAMBAD_RELAY_URL) {
+      results.tests.sambadRelay = { status: 'FAILED', error: 'SAMBAD_RELAY_URL not configured' };
+    } else {
+      const res = await fetch(c.env.SAMBAD_RELAY_URL, { redirect: 'follow', signal: AbortSignal.timeout(10000) });
+      const latency = Date.now() - relayStart;
+      if (res.ok) {
+        const json = await res.json() as any;
+        const cardsCount = json?.datesCards ? Object.keys(json.datesCards).length : 0;
+        results.tests.sambadRelay = {
+          status: 'PASSED',
+          latencyMs: latency,
+          httpStatus: res.status,
+          success: json.success,
+          availableDateKeys: cardsCount,
+          sampleCard: json?.datesCards?.['20-10-2026']?.[0] || null
+        };
+      } else {
+        results.tests.sambadRelay = { status: 'FAILED', httpStatus: res.status, latencyMs: latency };
+      }
+    }
+  } catch (err: any) {
+    results.tests.sambadRelay = { status: 'FAILED', error: err.message, latencyMs: Date.now() - relayStart };
+  }
+
+  // Test 2: sambadlottery.com Mirror connectivity from Cloudflare Edge
+  const m1Start = Date.now();
+  try {
+    const res = await fetch('https://sambadlottery.com/', {
+      headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36' },
+      signal: AbortSignal.timeout(6000)
+    });
+    const latency = Date.now() - m1Start;
+    results.tests.sambadMirror = {
+      status: res.ok ? 'PASSED' : 'FAILED',
+      httpStatus: res.status,
+      latencyMs: latency
+    };
+  } catch (err: any) {
+    results.tests.sambadMirror = { status: 'FAILED', error: err.message, latencyMs: Date.now() - m1Start };
+  }
+
+  // Test 3: nagalandlotterysambad.com Mirror connectivity from Cloudflare Edge
+  const m2Start = Date.now();
+  try {
+    const res = await fetch('https://nagalandlotterysambad.com/', {
+      headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36' },
+      signal: AbortSignal.timeout(6000)
+    });
+    const latency = Date.now() - m2Start;
+    results.tests.nagalandMirror = {
+      status: res.ok ? 'PASSED' : 'FAILED',
+      httpStatus: res.status,
+      latencyMs: latency
+    };
+  } catch (err: any) {
+    results.tests.nagalandMirror = { status: 'FAILED', error: err.message, latencyMs: Date.now() - m2Start };
+  }
+
+  // Test 4: D1 Database performance from Cloudflare Edge
+  const d1Start = Date.now();
+  try {
+    const row = await c.env.DB.prepare('SELECT COUNT(*) as totalDraws FROM draws').first<{ totalDraws: number }>();
+    const latency = Date.now() - d1Start;
+    results.tests.d1Database = {
+      status: 'PASSED',
+      latencyMs: latency,
+      totalDrawsInDb: row?.totalDraws || 0
+    };
+  } catch (err: any) {
+    results.tests.d1Database = { status: 'FAILED', error: err.message, latencyMs: Date.now() - d1Start };
+  }
+
+  // Overall Verdict
+  const allPassed = Object.values(results.tests).every((t: any) => t.status === 'PASSED');
+  results.allSystemsOperational = allPassed;
+
+  return c.json(results, allPassed ? 200 : 500);
+});
+
 // ============================================================================
 // 2. Data Ingestion Endpoint (POST /api/results)
 // Secured with API Key. Triggers D1 atomic insert, IndexNow, and OneSignal.
