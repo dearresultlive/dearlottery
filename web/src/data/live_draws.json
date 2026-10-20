@@ -2192,6 +2192,17 @@
         "8728",
         "9685"
       ]
+    },
+    "6PM": {
+      "first_prize": {
+        "series": "93J",
+        "number": "82467"
+      },
+      "consolation_prize_amount": 1000,
+      "second_prize": [],
+      "third_prize": [],
+      "fourth_prize": [],
+      "fifth_prize": []
     }
   }
 }
