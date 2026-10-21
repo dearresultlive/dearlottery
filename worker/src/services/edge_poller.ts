@@ -305,7 +305,7 @@ export async function pollAndIngestLiveDraw(
   let number = '';
   let drawName = nagalandResult?.drawName || `DEAR ${slot}`;
   let drawNumber = '50';
-  let imageUrl = nagalandResult?.imageUrl || `https://lottery.sambad.com/images/mobile/lottery-sambad-${slotKey}-${dateKey}.webp`;
+  let imageUrl = nagalandResult?.imageUrl || `https://lottery.sambad.com/images/lottery-sambad-${slotKey}-${dateKey}.jpg`;
   let pdfUrl = `https://lottery.sambad.com/pdf/lottery-sambad-${slotKey}-${dateKey}.pdf`;
 
   if (card && card.num && card.num.trim()) {
@@ -334,13 +334,14 @@ export async function pollAndIngestLiveDraw(
   }
 
   if (!imageUrl) {
-    imageUrl = `https://lottery.sambad.com/images/mobile/lottery-sambad-${slotKey}-${dateKey}.webp`;
+    imageUrl = `https://lottery.sambad.com/images/lottery-sambad-${slotKey}-${dateKey}.jpg`;
   }
 
   console.log(`[EdgePoller] 🎉 NEW RESULT DETECTED: ${drawName} [${slot}] -> 1st Prize ${series} ${number}`);
 
-  // 4. Construct payload for D1 with telegram_sent: true
+  // 4. Construct payload for D1 with carrier-safe Edge Image Proxy
   const drawTime = slot === '1PM' ? '1:00 PM' : slot === '6PM' ? '6:00 PM' : '8:00 PM';
+  const proxySheetUrl = `/api/sheet-image?date=${dateStr}&slot=${slotKey}`;
   const rawJson = JSON.stringify({
     status: 'DECLARED',
     draw_id: drawId,
@@ -349,7 +350,7 @@ export async function pollAndIngestLiveDraw(
     draw_name: drawName,
     draw_number: drawNumber,
     source_url: imageUrl,
-    image_r2_url: imageUrl,
+    image_r2_url: proxySheetUrl,
     pdf_r2_url: pdfUrl,
     telegram_sent: true,
     prizes: {

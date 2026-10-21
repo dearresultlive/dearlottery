@@ -78,7 +78,8 @@ export async function checkAndFetchLiveSlot(
           const series = parts.length > 1 ? parts[0].toUpperCase() : '';
           const number = parts.length > 1 ? parts[1] : parts[0];
 
-          const sambadSheetUrl = `https://lottery.sambad.com/images/mobile/lottery-sambad-${slotKey}-${dateKey}.webp`;
+          const sambadSheetUrl = `https://lottery.sambad.com/images/lottery-sambad-${slotKey}-${dateKey}.jpg`;
+          const proxySheetUrl = `/api/sheet-image?date=${dateStr}&slot=${slotKey}`;
           const sambadPdfUrl = `https://lottery.sambad.com/pdf/lottery-sambad-${slotKey}-${dateKey}.pdf`;
 
           const newlyFoundDraw = {
@@ -88,7 +89,7 @@ export async function checkAndFetchLiveSlot(
             third_prize: [],
             fourth_prize: [],
             fifth_prize: [],
-            image_r2_url: sambadSheetUrl,
+            image_r2_url: proxySheetUrl,
             pdf_r2_url: sambadPdfUrl,
             source_url: sambadSheetUrl
           };
@@ -100,7 +101,7 @@ export async function checkAndFetchLiveSlot(
             slot,
             status: 'RESULT_OUT',
             first_prize: { series, number },
-            imageUrl: sambadSheetUrl,
+            imageUrl: proxySheetUrl,
             prizes: newlyFoundDraw
           };
         }

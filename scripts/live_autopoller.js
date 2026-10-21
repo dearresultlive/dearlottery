@@ -110,7 +110,7 @@ async function checkLotterySambad(dateStr, slot) {
         number: parts.length > 1 ? parts[1] : parts[0],
         drawName: card.name ? `DEAR ${card.name.toUpperCase()}` : `DEAR ${slot}`,
         drawNumber: card.drawno || '50',
-        imageUrl: `https://lottery.sambad.com/images/mobile/lottery-sambad-${slotKey}-${dateKey}.webp`,
+        imageUrl: `https://lottery.sambad.com/images/lottery-sambad-${slotKey}-${dateKey}.jpg`,
         pdfUrl: `https://lottery.sambad.com/pdf/lottery-sambad-${slotKey}-${dateKey}.pdf`
       };
     }
@@ -309,8 +309,8 @@ async function syncWithCloudflareWorker(dateStr, slot, prizeData, sourceUrl) {
     draw_time: drawTime,
     draw_name: drawName,
     source_url: sourceUrl || '',
-    image_r2_url: prizeData.image_r2_url || sourceUrl || '',
-    pdf_r2_url: prizeData.pdf_r2_url || '',
+    image_r2_url: `/api/sheet-image?date=${dateStr}&slot=${slot.toLowerCase()}`,
+    pdf_r2_url: prizeData.pdf_r2_url || `/pdf/${dateStr}/${slot.toLowerCase()}.pdf`,
     prizes: {
       first_prize: prizeData.first_prize || {},
       consolation_prize_amount: 1000,

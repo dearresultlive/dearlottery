@@ -394,8 +394,11 @@ export default function LiveResultsTabs({
 
   const pdfUrl = `/pdf/${activeDateStr}/${activeSlot.toLowerCase()}.pdf`;
   const sheetSvgUrl = `/api/gazette-sheet.svg?date=${activeDateStr}&slot=${activeSlot.toLowerCase()}`;
+  const proxySheetUrl = `/api/sheet-image?date=${activeDateStr}&slot=${activeSlot.toLowerCase()}`;
   const activeSheetUrl = hasPrizes
-    ? (currentDraw?.image_r2_url || `/results/${activeDateStr}/${activeSlot.toLowerCase()}.jpg`)
+    ? (currentDraw?.image_r2_url && !currentDraw.image_r2_url.includes('lottery.sambad.com')
+        ? currentDraw.image_r2_url
+        : proxySheetUrl)
     : sheetSvgUrl;
 
   const dateLabel = isToday

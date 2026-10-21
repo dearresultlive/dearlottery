@@ -333,6 +333,130 @@ app.get('/api/archive/*', async (c) => {
 });
 
 // ============================================================================
+// 8b. High-Res Official Sheet Image Proxy (GET /api/sheet-image & GET /api/sheet-image/:date/:slot)
+// Sub-200ms Edge Proxy: Streams high-resolution official gazette JPG/WebP
+// ============================================================================
+const handleSheetImage = async (c: any) => {
+  const dateParam = c.req.query('date') || c.req.param('date');
+  const slotParam = c.req.query('slot') || c.req.param('slot') || '1pm';
+
+  // Compute current IST date and slot if not provided
+  const now = new Date();
+  const utcTime = now.getTime() + now.getTimezoneOffset() * 60000;
+  const istDate = new Date(utcTime + 5.5 * 3600000);
+  const dateStr = dateParam || `${istDate.getFullYear()}-${String(istDate.getMonth() + 1).padStart(2, '0')}-${String(istDate.getDate()).padStart(2, '0')}`;
+  
+  const normSlot = slotParam.toLowerCase().replace(/[^0-9a-z]/g, '');
+  const slotKey = normSlot.includes('6') ? '6pm' : normSlot.includes('8') ? '8pm' : '1pm';
+
+  const [year, month, day] = dateStr.split('-');
+  const dateKey = `${day}-${month}-${year}`;
+
+  // Check Cloudflare Cache
+  const cacheUrl = new URL(c.req.url);
+  cacheUrl.searchParams.sort();
+  const cacheKey = new Request(cacheUrl.toString(), c.req.raw);
+  const cache = (caches as any).default;
+
+  try {
+    const cachedResponse = await cache.match(cacheKey);
+    if (cachedResponse) {
+      const response = new Response(cachedResponse.body, cachedResponse);
+      response.headers.set('X-Proxy-Cache', 'HIT');
+      return response;
+    }
+  } catch (cacheErr) {
+    // Continue if cache match fails
+  }
+
+  // Upstream Candidate Waterfall:
+  // 1. High-Res Desktop Gazette JPEG (1202x1650, sharp legibility)
+  // 2. Mobile Gazette WebP
+  const candidateUrls = [
+    `https://lottery.sambad.com/images/lottery-sambad-${slotKey}-${dateKey}.jpg`,
+    `https://lottery.sambad.com/images/mobile/lottery-sambad-${slotKey}-${dateKey}.webp`
+  ];
+
+  for (const targetUrl of candidateUrls) {
+    try {
+      const upstreamRes = await fetch(targetUrl, {
+        headers: {
+          'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/129.0.0.0 Safari/537.36',
+          'Accept': 'image/avif,image/webp,image/apng,image/svg+xml,image/*,*/*;q=0.8',
+          'Referer': 'https://lottery.sambad.com/'
+        },
+        signal: AbortSignal.timeout(6000)
+      });
+
+      if (upstreamRes.ok) {
+        const contentType = upstreamRes.headers.get('content-type') || (targetUrl.endsWith('.webp') ? 'image/webp' : 'image/jpeg');
+        const imageBytes = await upstreamRes.arrayBuffer();
+
+        const headers = new Headers({
+          'Content-Type': contentType,
+          'Content-Length': String(imageBytes.byteLength),
+          'Cache-Control': 'public, max-age=86400, s-maxage=604800, stale-while-revalidate=2592000',
+          'Access-Control-Allow-Origin': '*',
+          'X-Proxy-Cache': 'MISS',
+          'X-Proxy-Source': 'lottery.sambad.com',
+          'Vary': 'Accept'
+        });
+
+        const imageResponse = new Response(imageBytes, { status: 200, headers });
+
+        if (c.executionCtx) {
+          c.executionCtx.waitUntil(cache.put(cacheKey, imageResponse.clone()));
+        }
+
+        return imageResponse;
+      }
+    } catch (e) {
+      // Continue to next candidate
+    }
+  }
+
+  // Check D1 for any alternative official signed gazette image (e.g. from nagalandlotteryresults)
+  try {
+    const drawId = `${dateStr}-${slotKey.toUpperCase()}`;
+    const draw = await getDrawById(c.env.DB, drawId);
+    if (draw?.raw_json) {
+      const parsed = JSON.parse(draw.raw_json);
+      const altUrl = parsed.source_url || parsed.image_r2_url;
+      if (altUrl && typeof altUrl === 'string' && altUrl.startsWith('http') && !altUrl.includes('lottery.sambad.com') && !altUrl.includes('/api/sheet-image')) {
+        const altRes = await fetch(altUrl, {
+          headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36' },
+          signal: AbortSignal.timeout(6000)
+        });
+        if (altRes.ok) {
+          const contentType = altRes.headers.get('content-type') || 'image/jpeg';
+          const altBytes = await altRes.arrayBuffer();
+          const headers = new Headers({
+            'Content-Type': contentType,
+            'Content-Length': String(altBytes.byteLength),
+            'Cache-Control': 'public, max-age=86400, s-maxage=604800, stale-while-revalidate=2592000',
+            'Access-Control-Allow-Origin': '*'
+          });
+          const altResponse = new Response(altBytes, { status: 200, headers });
+          if (c.executionCtx) {
+            c.executionCtx.waitUntil(cache.put(cacheKey, altResponse.clone()));
+          }
+          return altResponse;
+        }
+      }
+    }
+  } catch (d1Err) {
+    // Continue
+  }
+
+  // Fallback: Redirect to Frontend SVG Gazette Sheet
+  const frontendBase = c.env.FRONTEND_URL || 'https://dearresultlive.in';
+  return c.redirect(`${frontendBase}/api/gazette-sheet.svg?date=${dateStr}&slot=${slotKey}`, 302);
+};
+
+app.get('/api/sheet-image', handleSheetImage);
+app.get('/api/sheet-image/:date/:slot', handleSheetImage);
+
+// ============================================================================
 // 9. Edge OCR / Raw Text Parse Endpoint (POST /api/ocr/parse)
 // ============================================================================
 app.post('/api/ocr/parse', async (c) => {
