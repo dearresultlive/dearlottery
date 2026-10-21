@@ -2243,6 +2243,18 @@
       "fourth_prize": [],
       "fifth_prize": [],
       "telegram_sent": true
+    },
+    "8PM": {
+      "first_prize": {
+        "series": "95C",
+        "number": "36853"
+      },
+      "consolation_prize_amount": 1000,
+      "second_prize": [],
+      "third_prize": [],
+      "fourth_prize": [],
+      "fifth_prize": [],
+      "telegram_sent": true
     }
   }
 }
