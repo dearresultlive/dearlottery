@@ -16,11 +16,23 @@ for (let i = 1; i <= 30; i++) {
   const dayName = d.toLocaleDateString('en-IN', { weekday: 'long' });
   datesList.push({ date: iso, displayDate: display, dayName });
 }
+
+const oldResultsFaqItems = [
+  {
+    question: "ডিয়ার লটারির পুরনো রেজাল্ট (Dear Lottery Old Result) কীভাবে চেক করবেন?",
+    answer: "এই পেজে বিগত ৩০ দিনের প্রতিটি তারিখের ১:০০ PM মর্নিং, ৬:০০ PM ডে এবং ৮:০০ PM নাইট ড্র-এর লিঙ্ক দেওয়া রয়েছে। যেকোনো তারিখে ক্লিক করলেই সেই দিনের সম্পূর্ণ অফিসিয়াল গেজেট শিট ও ১ম পুরস্কারের তালিকা দেখতে পারবেন।"
+  },
+  {
+    question: "পুরনো লটারির প্রাইজ কতদিনের মধ্যে দাবি করা যায়?",
+    answer: "নাগাল্যান্ড স্টেট লটারি বিধিমালার অধীনে ফলাফল ঘোষণার তারিখ থেকে ৩০ দিনের মধ্যে আসল অবিকৃত টিকিটসহ সরকার অনুমোদিত লটারি ডিলার বা ডিরেক্টরেটে প্রাইজ দাবি করতে হয়।"
+  }
+];
 ---
 
 <Layout
-  title="Dear Lottery Old Result Archive (Past 30 Days) | Lottery Sambad"
-  description="Check Dear Lottery old results and past winning sheets for the last 30 days. Daily 1:00 PM Morning, 6:00 PM Day, and 8:00 PM Night 1st prize ₹1 Crore numbers."
+  title="Dear Lottery Old Result (পুরনো লটারি রেজাল্ট) • 1PM, 6PM, 8PM Archive | Lottery Sambad"
+  description="Download Dear Lottery old results and past Gazette sheets (1:00 PM, 6:00 PM, 8:00 PM). Check official winning numbers for Nagaland & Sikkim lotteries."
+  faqItems={oldResultsFaqItems}
 >
   <div class="max-w-4xl mx-auto px-2 sm:px-4 py-3 sm:py-6 space-y-4 sm:space-y-6">
     
