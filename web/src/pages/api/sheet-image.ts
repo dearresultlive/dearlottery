@@ -20,10 +20,36 @@ export const GET: APIRoute = async ({ request }) => {
   const [year, month, day] = dateParam.split('-');
   const dateKey = `${day}-${month}-${year}`;
 
+  // 0. Priority 0: Check if static gazette sheet is already cached locally on origin (Instant <15ms)
+  try {
+    const originStaticUrl = new URL(`/results/${dateParam}/${slotKey}.jpg`, request.url).toString();
+    const staticRes = await fetch(originStaticUrl, {
+      signal: AbortSignal.timeout(2000)
+    });
+    if (staticRes.ok) {
+      const contentType = staticRes.headers.get('content-type') || 'image/jpeg';
+      if (contentType.startsWith('image/')) {
+        const imageBytes = await staticRes.arrayBuffer();
+        return new Response(imageBytes, {
+          status: 200,
+          headers: {
+            'Content-Type': contentType,
+            'Content-Length': String(imageBytes.byteLength),
+            'Cache-Control': 'public, max-age=86400, s-maxage=604800, stale-while-revalidate=2592000',
+            'Access-Control-Allow-Origin': '*',
+            'X-Proxy-Origin': 'Local-Static-Asset'
+          }
+        });
+      }
+    }
+  } catch (staticErr) {
+    // Continue to live relays
+  }
+
   const sambadJpgUrl = `https://lottery.sambad.com/images/lottery-sambad-${slotKey}-${dateKey}.jpg`;
   const sambadWebpUrl = `https://lottery.sambad.com/images/mobile/lottery-sambad-${slotKey}-${dateKey}.webp`;
 
-  // 1. Attempt Google Apps Script Relay (bypasses Cloudflare Error 403 on Sambad)
+  // 1. Priority 1: Attempt Google Apps Script Relay (bypasses Cloudflare Error 403 on Sambad)
   try {
     const relayRes = await fetch(`${RELAY_BASE}?img=${encodeURIComponent(sambadJpgUrl)}`, {
       redirect: 'follow',
@@ -53,7 +79,7 @@ export const GET: APIRoute = async ({ request }) => {
     // Continue to direct candidates
   }
 
-  // 2. Direct upstream waterfall candidates
+  // 2. Priority 2: Direct upstream waterfall candidates
   const candidateUrls = [
     sambadJpgUrl,
     sambadWebpUrl,
@@ -92,7 +118,7 @@ export const GET: APIRoute = async ({ request }) => {
     }
   }
 
-  // 3. Resilient Fallback: Authentic Vector SVG Gazette Replica
+  // 3. Priority 3: Resilient Fallback: Authentic Vector SVG Gazette Replica
   // Guarantees zero broken images and authentic Indian newspaper gazette appearance
   const draw = getVerifiedDraw(dateParam, slotUpper, istNow);
   const hasRealPrizes = Boolean(draw.status === 'DECLARED' && draw.prizes?.first_prize?.number);
