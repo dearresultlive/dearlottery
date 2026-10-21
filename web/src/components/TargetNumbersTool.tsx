@@ -5,7 +5,8 @@ import {
   getTopFrequentEndings,
   getTopFrequentMiddles,
   getTopRecurring4DigitNumbers,
-  getCold4DigitNumbers
+  getCold4DigitNumbers,
+  getCalculatedDigitFrequencyMatrix
 } from '../lib/history-analytics';
 
 interface TargetNumbersToolProps {
@@ -49,6 +50,29 @@ export default function TargetNumbersTool({
     }
     return calculatedCold4;
   }, [initialCold, calculatedCold4]);
+
+  // Positional Digit Heatmap (grounded in real official gazette data)
+  const calculatedMatrix = useMemo(() => getCalculatedDigitFrequencyMatrix('30D'), []);
+  const displayMatrix = useMemo(() => {
+    if (initialMatrix && initialMatrix.length === 50 && initialMatrix.some(m => m.count > 50)) {
+      return initialMatrix;
+    }
+    return calculatedMatrix;
+  }, [initialMatrix, calculatedMatrix]);
+
+  const topDigitPerPosition = useMemo(() => {
+    const map: Record<number, { digit: string; count: number }> = {};
+    for (let pos = 1; pos <= 5; pos++) {
+      const colEntries = displayMatrix.filter(m => m.position === pos);
+      colEntries.sort((a, b) => b.count - a.count);
+      if (colEntries.length > 0) {
+        map[pos] = { digit: colEntries[0].digit, count: colEntries[0].count };
+      }
+    }
+    return map;
+  }, [displayMatrix]);
+
+  const maxMatrixCount = Math.max(...displayMatrix.map(m => m.count), 30);
 
   // Statistical patterns derived from 5,478 official Dear Lottery gazette draws (2021–2026)
   const slotData = useMemo(() => {
@@ -122,7 +146,6 @@ export default function TargetNumbersTool({
   // Matrix variables for Heatmap
   const positions = [1, 2, 3, 4, 5];
   const digits = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9'];
-  const maxMatrixCount = Math.max(...initialMatrix.map(m => m.count), 30);
 
   return (
     <div className="space-y-4">
@@ -555,19 +578,23 @@ export default function TargetNumbersTool({
                           {d}
                         </td>
                         {positions.map((pos) => {
-                          const entry = initialMatrix.find(m => m.digit === d && m.position === pos);
+                          const entry = displayMatrix.find(m => m.digit === d && m.position === pos);
                           const count = entry ? entry.count : 0;
+                          const isTop = topDigitPerPosition[pos]?.digit === d;
                           const ratio = Math.min(count / maxMatrixCount, 1);
-                          const isHigh = ratio > 0.65;
+                          const isHigh = ratio > 0.88 || isTop;
 
                           return (
                             <td key={pos} className="py-1.5 px-2 text-center">
-                              <span className={`inline-block font-bold text-xs px-2 py-0.5 rounded-md ${
-                                isHigh
-                                  ? 'bg-amber-100 text-amber-900 font-black border border-amber-300'
-                                  : 'bg-slate-100 text-slate-700'
+                              <span className={`inline-flex items-center justify-center gap-1 font-bold text-xs px-2 py-0.5 rounded-md ${
+                                isTop
+                                  ? 'bg-amber-400/20 text-amber-950 font-black border border-amber-400 shadow-2xs'
+                                  : isHigh
+                                  ? 'bg-amber-100 text-amber-900 border border-amber-200'
+                                  : 'bg-slate-100/80 text-slate-700'
                               }`}>
-                                {count}
+                                {isTop && <span className="text-[10px]">🔥</span>}
+                                <span>{count}</span>
                               </span>
                             </td>
                           );

@@ -670,3 +670,48 @@ export function getCold4DigitNumbers(limit: number = 10): Recurring4DigitStat[] 
       last_seen_date: val.lastDate
     }));
 }
+
+/**
+ * Returns Positional Digit Frequency Matrix across 5 positions for digits 0-9
+ * Computed from real 5,478-draw gazette archives.
+ */
+export function getCalculatedDigitFrequencyMatrix(horizon: '30D' | '1Y' | '5Y' = '30D'): Array<{ digit: string; position: number; count: number }> {
+  const draws = getAllHistoricalDraws();
+  const { cutoff1Y, cutoff5Y } = getCutoffDates();
+
+  let cutoff = cutoff1Y;
+  if (horizon === '30D') {
+    const d = new Date();
+    d.setDate(d.getDate() - 35);
+    cutoff = d.toISOString().split('T')[0];
+  } else if (horizon === '5Y') {
+    cutoff = cutoff5Y;
+  }
+
+  const matrix: Array<{ digit: string; position: number; count: number }> = [];
+  for (let pos = 1; pos <= 5; pos++) {
+    for (let d = 0; d <= 9; d++) {
+      matrix.push({ digit: String(d), position: pos, count: 0 });
+    }
+  }
+
+  for (const item of draws) {
+    if (item.date < cutoff) continue;
+    const { prizes } = item;
+    const addNum = (num: any) => {
+      if (!num) return;
+      const clean = String(num).replace(/\D/g, '');
+      if (clean.length !== 5) return;
+      for (let i = 0; i < 5; i++) {
+        const digit = clean[i];
+        const entry = matrix.find(m => m.position === i + 1 && m.digit === digit);
+        if (entry) entry.count++;
+      }
+    };
+
+    if (prizes.first_prize?.number) addNum(prizes.first_prize.number);
+    if (Array.isArray(prizes.second_prize)) prizes.second_prize.forEach(addNum);
+  }
+
+  return matrix;
+}
