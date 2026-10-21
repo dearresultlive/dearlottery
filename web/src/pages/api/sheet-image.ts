@@ -21,23 +21,26 @@ export const GET: APIRoute = async ({ request }) => {
   // Upstream candidate waterfall:
   // 1. High-Res JPEG (1202x1650 official sheet)
   // 2. Mobile WebP (compressed official sheet)
-  // 3. Cloudflare Worker Edge Proxy
+  // 3. Worker API Proxy
   const candidateUrls = [
     `https://lottery.sambad.com/images/lottery-sambad-${slotKey}-${dateKey}.jpg`,
     `https://lottery.sambad.com/images/mobile/lottery-sambad-${slotKey}-${dateKey}.webp`,
     `https://dear-lottery-api.dearresultlive.workers.dev/api/sheet-image?date=${dateParam}&slot=${slotKey}`
   ];
 
+  const debugLog: string[] = [];
+
   for (const targetUrl of candidateUrls) {
     try {
       const upstreamRes = await fetch(targetUrl, {
         headers: {
           'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/129.0.0.0 Safari/537.36',
-          'Accept': 'image/avif,image/webp,image/apng,image/svg+xml,image/*,*/*;q=0.8',
-          'Referer': 'https://lottery.sambad.com/'
+          'Accept': 'image/avif,image/webp,image/apng,image/svg+xml,image/*,*/*;q=0.8'
         },
-        signal: AbortSignal.timeout(5000)
+        signal: AbortSignal.timeout(6000)
       });
+
+      debugLog.push(`${targetUrl.split('/').pop()} => ${upstreamRes.status}`);
 
       if (upstreamRes.ok) {
         const contentType = upstreamRes.headers.get('content-type') || (targetUrl.endsWith('.webp') ? 'image/webp' : 'image/jpeg');
@@ -57,8 +60,8 @@ export const GET: APIRoute = async ({ request }) => {
           });
         }
       }
-    } catch (err) {
-      // Continue to next candidate
+    } catch (err: any) {
+      debugLog.push(`${targetUrl.split('/').pop()} => ERR: ${err?.message || err}`);
     }
   }
 
@@ -82,7 +85,8 @@ export const GET: APIRoute = async ({ request }) => {
       'Content-Type': 'image/svg+xml; charset=utf-8',
       'Cache-Control': isPending ? 'public, max-age=15, stale-while-revalidate=30' : 'public, max-age=3600, s-maxage=86400',
       'Access-Control-Allow-Origin': '*',
-      'X-Proxy-Fallback': 'SVG-Replica'
+      'X-Proxy-Fallback': 'SVG-Replica',
+      'X-Debug-Log': debugLog.join(' | ')
     }
   });
 };
