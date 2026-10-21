@@ -2231,6 +2231,18 @@
       "fourth_prize": [],
       "fifth_prize": [],
       "telegram_sent": true
+    },
+    "6PM": {
+      "first_prize": {
+        "series": "96H",
+        "number": "47731"
+      },
+      "consolation_prize_amount": 1000,
+      "second_prize": [],
+      "third_prize": [],
+      "fourth_prize": [],
+      "fifth_prize": [],
+      "telegram_sent": true
     }
   }
 }
