@@ -1219,7 +1219,7 @@ export default function DemoPlayModule({ initialDraws = [] }: DemoPlayModuleProp
                     title={`Generate ticket with middle ${mid}`}
                   >
                     <span className="text-amber-600 text-[10px]">#</span>
-                    <span>{mid} মিডিল</span>
+                    <span>{mid} {lang === 'bn' ? 'মিডিল' : lang === 'hi' ? 'मिडिल' : 'Middle'}</span>
                   </button>
                 ))}
               </div>
@@ -1405,10 +1405,10 @@ export default function DemoPlayModule({ initialDraws = [] }: DemoPlayModuleProp
               <div className="pt-1 border-t border-slate-800/80 flex items-center justify-between text-[10px]">
                 <span className="text-slate-400">
                   {gameStats.isPending
-                    ? (lang === 'bn' ? 'ড্র-এর ফলাফল প্রকাশ হলে প্রফিট হিসাব হবে' : 'P/L settles after official draw')
+                    ? (lang === 'bn' ? 'ড্র-এর ফলাফল প্রকাশ হলে প্রফিট হিসাব হবে' : lang === 'hi' ? 'ड्रॉ रिजल्ट के बाद लाभ तय होगा' : 'P/L settles after official draw')
                     : gameStats.netPnl > 0
-                    ? `🎉 লাভ: +₹${formatINR(gameStats.netPnl)}`
-                    : `ক্ষতি: -₹${formatINR(Math.abs(gameStats.netPnl))}`}
+                    ? (lang === 'bn' ? `🎉 লাভ: +₹${formatINR(gameStats.netPnl)}` : lang === 'hi' ? `🎉 लाभ: +₹${formatINR(gameStats.netPnl)}` : `🎉 Profit: +₹${formatINR(gameStats.netPnl)}`)
+                    : (lang === 'bn' ? `ক্ষতি: -₹${formatINR(Math.abs(gameStats.netPnl))}` : lang === 'hi' ? `हानि: -₹${formatINR(Math.abs(gameStats.netPnl))}` : `Loss: -₹${formatINR(Math.abs(gameStats.netPnl))}`)}
                 </span>
 
                 <button
@@ -1416,7 +1416,7 @@ export default function DemoPlayModule({ initialDraws = [] }: DemoPlayModuleProp
                   onClick={() => setShowGlobalStats(!showGlobalStats)}
                   className="text-amber-400 hover:text-amber-300 font-bold underline cursor-pointer"
                 >
-                  {showGlobalStats ? (lang === 'bn' ? '▲ লাইফটাইম হিসেব লুকান' : '▲ Hide All-Time') : (lang === 'bn' ? '▼ লাইফটাইম হিসেব দেখুন' : '▼ View All-Time Stats')}
+                  {showGlobalStats ? (lang === 'bn' ? '▲ লাইফটাইম হিসেব লুকান' : lang === 'hi' ? '▲ लाइफटाइम हिसाब छिपाएं' : '▲ Hide All-Time') : (lang === 'bn' ? '▼ লাইফটাইম হিসেব দেখুন' : lang === 'hi' ? '▼ लाइफटाइम हिसाब देखें' : '▼ View All-Time Stats')}
                 </button>
               </div>
 
@@ -1424,23 +1424,23 @@ export default function DemoPlayModule({ initialDraws = [] }: DemoPlayModuleProp
               {showGlobalStats && (
                 <div className="bg-white/5 rounded-xl p-2.5 border border-white/10 space-y-1.5 animate-fadeIn">
                   <div className="text-[10px] font-bold text-amber-300">
-                    {lang === 'bn' ? '📊 সর্বমোট লাইফটাইম পরিসংখ্যান (সব দিন মিলিয়ে):' : '📊 Lifetime Overall Statistics (All-Time):'}
+                    {lang === 'bn' ? '📊 সর্বমোট লাইফটাইম পরিসংখ্যান (সব দিন মিলিয়ে):' : lang === 'hi' ? '📊 कुल लाइफटाइम आंकड़े:' : '📊 Lifetime Overall Statistics (All-Time):'}
                   </div>
                   <div className="grid grid-cols-4 gap-1.5 text-center text-xs">
                     <div className="bg-black/20 p-1.5 rounded">
-                      <span className="text-[8px] text-slate-400 block">মোট টিকিট</span>
+                      <span className="text-[8px] text-slate-400 block">{lang === 'bn' ? 'মোট টিকিট' : lang === 'hi' ? 'कुल टिकट' : 'Total Tickets'}</span>
                       <span className="font-mono font-bold text-slate-200">{myTickets.length} ({globalStats.totalSemAll} Sem)</span>
                     </div>
                     <div className="bg-black/20 p-1.5 rounded">
-                      <span className="text-[8px] text-slate-400 block">মোট খরচ</span>
+                      <span className="text-[8px] text-slate-400 block">{lang === 'bn' ? 'মোট খরচ' : lang === 'hi' ? 'कुल लागत' : 'Total Cost'}</span>
                       <span className="font-mono font-bold text-slate-200">₹{globalStats.totalCostAll}</span>
                     </div>
                     <div className="bg-black/20 p-1.5 rounded">
-                      <span className="text-[8px] text-slate-400 block">মোট জয়</span>
+                      <span className="text-[8px] text-slate-400 block">{lang === 'bn' ? 'মোট জয়' : lang === 'hi' ? 'कुल जीत' : 'Total Won'}</span>
                       <span className="font-mono font-bold text-emerald-400">₹{formatINR(globalStats.totalReturns)}</span>
                     </div>
                     <div className="bg-black/20 p-1.5 rounded">
-                      <span className="text-[8px] text-slate-400 block">লাইফটাইম P/L</span>
+                      <span className="text-[8px] text-slate-400 block">{lang === 'bn' ? 'লাইফটাইম P/L' : lang === 'hi' ? 'लाइफटाइम P/L' : 'Lifetime P/L'}</span>
                       <span className={`font-mono font-bold ${globalStats.overallNetPnl >= 0 ? 'text-emerald-400' : 'text-rose-400'}`}>
                         {globalStats.overallNetPnl >= 0 ? `+₹${formatINR(globalStats.overallNetPnl)}` : `-₹${formatINR(Math.abs(globalStats.overallNetPnl))}`}
                       </span>
@@ -1570,8 +1570,10 @@ export default function DemoPlayModule({ initialDraws = [] }: DemoPlayModuleProp
                     }}
                     className="shrink-0 px-2 py-0.5 rounded-lg text-xs font-mono font-black bg-white hover:bg-amber-100 active:scale-95 border border-amber-300 text-amber-950 transition-all flex items-center gap-1 cursor-pointer shadow-2xs"
                   >
-                    <span>{mid}</span>
-                    <span className="text-[9px] text-amber-700 font-sans">+৫ সেম</span>
+                    <span>{mid} {lang === 'bn' ? 'মিডিল' : lang === 'hi' ? 'मिडिल' : 'Middle'}</span>
+                    <span className="text-[9px] text-amber-700 font-sans">
+                      {lang === 'bn' ? '+৫ সেম' : lang === 'hi' ? '+५ सेम' : '+5 Sem'}
+                    </span>
                   </button>
                 ))}
               </div>
