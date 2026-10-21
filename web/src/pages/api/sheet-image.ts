@@ -5,6 +5,8 @@ import { getISTDateString, getISTNow } from '../../lib/lottery-utils';
 
 export const prerender = false;
 
+const RELAY_BASE = 'https://script.google.com/macros/s/AKfycbzPpSKnFJ9AQaJI05q7foByTEPq4iwVySDR591yFkeAaY0s65EpKyfkPkFz8cM5mcOh/exec';
+
 export const GET: APIRoute = async ({ request }) => {
   const url = new URL(request.url);
   const istNow = getISTNow();
@@ -18,17 +20,45 @@ export const GET: APIRoute = async ({ request }) => {
   const [year, month, day] = dateParam.split('-');
   const dateKey = `${day}-${month}-${year}`;
 
-  // Upstream candidate waterfall:
-  // 1. High-Res JPEG (1202x1650 official sheet)
-  // 2. Mobile WebP (compressed official sheet)
-  // 3. Worker API Proxy
+  const sambadJpgUrl = `https://lottery.sambad.com/images/lottery-sambad-${slotKey}-${dateKey}.jpg`;
+  const sambadWebpUrl = `https://lottery.sambad.com/images/mobile/lottery-sambad-${slotKey}-${dateKey}.webp`;
+
+  // 1. Attempt Google Apps Script Relay (bypasses Cloudflare Error 403 on Sambad)
+  try {
+    const relayRes = await fetch(`${RELAY_BASE}?img=${encodeURIComponent(sambadJpgUrl)}`, {
+      redirect: 'follow',
+      signal: AbortSignal.timeout(6000)
+    });
+    if (relayRes.ok) {
+      const json = (await relayRes.json()) as any;
+      if (json && json.success && json.base64) {
+        const binaryString = atob(json.base64);
+        const bytes = new Uint8Array(binaryString.length);
+        for (let i = 0; i < binaryString.length; i++) {
+          bytes[i] = binaryString.charCodeAt(i);
+        }
+        return new Response(bytes, {
+          status: 200,
+          headers: {
+            'Content-Type': json.contentType || 'image/jpeg',
+            'Content-Length': String(bytes.byteLength),
+            'Cache-Control': 'public, max-age=86400, s-maxage=604800, stale-while-revalidate=2592000',
+            'Access-Control-Allow-Origin': '*',
+            'X-Proxy-Origin': 'GoogleAppsScript-Relay'
+          }
+        });
+      }
+    }
+  } catch (relayErr) {
+    // Continue to direct candidates
+  }
+
+  // 2. Direct upstream waterfall candidates
   const candidateUrls = [
-    `https://lottery.sambad.com/images/lottery-sambad-${slotKey}-${dateKey}.jpg`,
-    `https://lottery.sambad.com/images/mobile/lottery-sambad-${slotKey}-${dateKey}.webp`,
+    sambadJpgUrl,
+    sambadWebpUrl,
     `https://dear-lottery-api.dearresultlive.workers.dev/api/sheet-image?date=${dateParam}&slot=${slotKey}`
   ];
-
-  const debugLog: string[] = [];
 
   for (const targetUrl of candidateUrls) {
     try {
@@ -37,14 +67,11 @@ export const GET: APIRoute = async ({ request }) => {
           'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/129.0.0.0 Safari/537.36',
           'Accept': 'image/avif,image/webp,image/apng,image/svg+xml,image/*,*/*;q=0.8'
         },
-        signal: AbortSignal.timeout(6000)
+        signal: AbortSignal.timeout(5000)
       });
-
-      debugLog.push(`${targetUrl.split('/').pop()} => ${upstreamRes.status}`);
 
       if (upstreamRes.ok) {
         const contentType = upstreamRes.headers.get('content-type') || (targetUrl.endsWith('.webp') ? 'image/webp' : 'image/jpeg');
-        // Verify it is an image and not an HTML error
         if (contentType.startsWith('image/')) {
           const imageBytes = await upstreamRes.arrayBuffer();
           return new Response(imageBytes, {
@@ -60,12 +87,13 @@ export const GET: APIRoute = async ({ request }) => {
           });
         }
       }
-    } catch (err: any) {
-      debugLog.push(`${targetUrl.split('/').pop()} => ERR: ${err?.message || err}`);
+    } catch (err) {
+      // Continue to next candidate
     }
   }
 
-  // If official sheet image is not published yet, serve authentic vector SVG gazette replica
+  // 3. Resilient Fallback: Authentic Vector SVG Gazette Replica
+  // Guarantees zero broken images and authentic Indian newspaper gazette appearance
   const draw = getVerifiedDraw(dateParam, slotUpper, istNow);
   const hasRealPrizes = Boolean(draw.status === 'DECLARED' && draw.prizes?.first_prize?.number);
   const isPending = !hasRealPrizes;
@@ -85,8 +113,7 @@ export const GET: APIRoute = async ({ request }) => {
       'Content-Type': 'image/svg+xml; charset=utf-8',
       'Cache-Control': isPending ? 'public, max-age=15, stale-while-revalidate=30' : 'public, max-age=3600, s-maxage=86400',
       'Access-Control-Allow-Origin': '*',
-      'X-Proxy-Fallback': 'SVG-Replica',
-      'X-Debug-Log': debugLog.join(' | ')
+      'X-Proxy-Fallback': 'SVG-Replica'
     }
   });
 };
