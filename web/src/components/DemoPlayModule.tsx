@@ -14,6 +14,7 @@ import {
   getTopFrequentEndings,
   fetchClient5YearArchive
 } from '../lib/history-analytics';
+import { fetchDrawsByDate } from '../lib/api';
 import confetti from 'canvas-confetti';
 
 interface PrizeRecord {
@@ -449,6 +450,73 @@ export default function DemoPlayModule({ initialDraws = [] }: DemoPlayModuleProp
   // Tickets stored in localStorage
   const [myTickets, setMyTickets] = useState<LuckyTicket[]>([]);
 
+  // Dynamically loaded draw results (starts with initialDraws, fetches past dates on demand)
+  const [loadedDraws, setLoadedDraws] = useState<any[]>(initialDraws);
+
+  // Sync loadedDraws if initialDraws prop updates
+  useEffect(() => {
+    if (initialDraws && initialDraws.length > 0) {
+      setLoadedDraws(prev => {
+        const merged = [...prev];
+        for (const d of initialDraws) {
+          if (!merged.some(m => m.id === d.id)) {
+            merged.push(d);
+          }
+        }
+        return merged;
+      });
+    }
+  }, [initialDraws]);
+
+  // Dynamically fetch historical draw if selectedDate is not yet in loadedDraws
+  useEffect(() => {
+    if (selectedDate) {
+      const hasDraws = loadedDraws.some(d => d.draw_date === selectedDate);
+      if (!hasDraws) {
+        fetchDrawsByDate(selectedDate).then(pastDraws => {
+          if (pastDraws && pastDraws.length > 0) {
+            setLoadedDraws(prev => {
+              const merged = [...prev];
+              for (const d of pastDraws) {
+                if (!merged.some(m => m.id === d.id)) {
+                  merged.push(d);
+                }
+              }
+              return merged;
+            });
+          }
+        }).catch(() => {});
+      }
+    }
+  }, [selectedDate]);
+
+  // List of all dates where the user actually has printed tickets (with spending & count summary)
+  const pastDatesWithTickets = useMemo(() => {
+    const map = new Map<string, { count: number; sem: number }>();
+    for (const t of myTickets) {
+      if (t.date) {
+        const cur = map.get(t.date) || { count: 0, sem: 0 };
+        map.set(t.date, {
+          count: cur.count + 1,
+          sem: cur.sem + (t.sem || 5)
+        });
+      }
+    }
+
+    const list: Array<{ date: string; totalTickets: number; totalSem: number; totalCost: number }> = [];
+    for (const [date, val] of map.entries()) {
+      list.push({
+        date,
+        totalTickets: val.count,
+        totalSem: val.sem,
+        totalCost: val.sem * 7
+      });
+    }
+
+    list.sort((a, b) => b.date.localeCompare(a.date));
+    return list;
+  }, [myTickets]);
+
   // Hot number combinations & Top Middles generated from heat map
   const [hotCards, setHotCards] = useState<HotNumberCard[]>([]);
   const [popularMiddles, setPopularMiddles] = useState<string[]>(['48', '72', '35', '80', '29', '52', '64', '15', '24', '79']);
@@ -470,10 +538,17 @@ export default function DemoPlayModule({ initialDraws = [] }: DemoPlayModuleProp
         if (raw) {
           const parsed = JSON.parse(raw);
           if (Array.isArray(parsed)) {
-            const normalized = parsed.map(t => ({
-              ...t,
-              sem: Math.max(t.sem || 5, 5)
-            }));
+            // Safety Auto-Cleanup: Keep tickets within last 60 days to keep phone 100% lightweight & lag-free
+            const cutoffDate = new Date(istNow);
+            cutoffDate.setDate(cutoffDate.getDate() - 60);
+            const cutoffStr = getISTDateString(cutoffDate);
+
+            const normalized = parsed
+              .filter((t: any) => t && t.date && t.date >= cutoffStr)
+              .map(t => ({
+                ...t,
+                sem: Math.max(t.sem || 5, 5)
+              }));
             setMyTickets(normalized);
           }
         }
@@ -514,10 +589,10 @@ export default function DemoPlayModule({ initialDraws = [] }: DemoPlayModuleProp
     }
   };
 
-  // Find draw record matching the ticket's date & slot
+  // Find draw record matching the ticket's date & slot (Searches dynamic loadedDraws)
   const findDrawForTicket = (ticket: LuckyTicket) => {
     const slotNumber = ticket.slot.replace('PM', '');
-    return initialDraws.find(d => 
+    return loadedDraws.find(d => 
       d.draw_date === ticket.date &&
       (d.draw_time?.includes(slotNumber) || d.id?.includes(ticket.slot))
     ) || null;
@@ -958,7 +1033,7 @@ export default function DemoPlayModule({ initialDraws = [] }: DemoPlayModuleProp
       settledCount: settled.length,
       isPending
     };
-  }, [activeGameTickets, initialDraws]);
+  }, [activeGameTickets, loadedDraws]);
 
   // Overall Global Profit & Loss & Accuracy calculation
   const globalStats = useMemo(() => {
@@ -986,7 +1061,7 @@ export default function DemoPlayModule({ initialDraws = [] }: DemoPlayModuleProp
       accuracyPercent,
       overallNetPnl
     };
-  }, [myTickets, initialDraws]);
+  }, [myTickets, loadedDraws]);
 
   return (
     <div className="space-y-3.5 max-w-xl mx-auto text-slate-800">
@@ -1062,36 +1137,93 @@ export default function DemoPlayModule({ initialDraws = [] }: DemoPlayModuleProp
           {/* Game Date & Slot Selector */}
           <div className="bg-white border border-slate-200 rounded-2xl p-2.5 sm:p-3 shadow-2xs space-y-2">
             
-            {/* Date Switcher: Today vs Yesterday */}
-            <div className="flex items-center justify-between border-b border-slate-100 pb-2 px-0.5">
-              <span className="text-[11px] font-bold text-slate-600 flex items-center gap-1">
-                <span>📅</span>
-                <span>{lang === 'bn' ? 'খেলার তারিখ:' : 'Game Date:'}</span>
-              </span>
+            {/* Game Date & Smart History Dropdown Switcher */}
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-100 pb-2 px-0.5">
+              <div className="flex items-center justify-between sm:justify-start gap-1.5 flex-wrap">
+                <span className="text-[11px] font-bold text-slate-600 flex items-center gap-1">
+                  <span>📅</span>
+                  <span>{lang === 'bn' ? 'তারিখ:' : lang === 'hi' ? 'तारीख:' : 'Date:'}</span>
+                </span>
 
+                <div className="flex items-center gap-1">
+                  <button
+                    type="button"
+                    onClick={() => { setSelectedDate(todayStr); setErrorMsg(null); }}
+                    className={`px-2.5 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                      selectedDate === todayStr
+                        ? 'bg-blue-700 text-white shadow-2xs'
+                        : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
+                    }`}
+                  >
+                    {lang === 'bn' ? 'আজ' : lang === 'hi' ? 'आज' : 'Today'}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => { setSelectedDate(yesterdayStr); setErrorMsg(null); }}
+                    className={`px-2.5 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                      selectedDate === yesterdayStr
+                        ? 'bg-blue-700 text-white shadow-2xs'
+                        : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
+                    }`}
+                  >
+                    {lang === 'bn' ? 'গতকাল' : lang === 'hi' ? 'कल' : 'Yesterday'}
+                  </button>
+                </div>
+              </div>
+
+              {/* Smart History Dropdown (Past Dates with Tickets) & Calendar Picker */}
               <div className="flex items-center gap-1.5">
-                <button
-                  type="button"
-                  onClick={() => { setSelectedDate(todayStr); setErrorMsg(null); }}
-                  className={`px-2.5 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer ${
-                    selectedDate === todayStr
-                      ? 'bg-blue-700 text-white shadow-2xs'
-                      : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
-                  }`}
-                >
-                  {lang === 'bn' ? 'আজকের ড্র' : 'Today'}
-                </button>
-                <button
-                  type="button"
-                  onClick={() => { setSelectedDate(yesterdayStr); setErrorMsg(null); }}
-                  className={`px-2.5 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer ${
-                    selectedDate === yesterdayStr
-                      ? 'bg-blue-700 text-white shadow-2xs'
-                      : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
-                  }`}
-                >
-                  {lang === 'bn' ? 'গতকালকের ড্র' : 'Yesterday'}
-                </button>
+                <div className="relative flex-1 sm:flex-none min-w-[170px]">
+                  <select
+                    value={selectedDate}
+                    onChange={(e) => {
+                      setSelectedDate(e.target.value);
+                      setErrorMsg(null);
+                    }}
+                    className={`w-full text-xs font-bold py-1 pl-2.5 pr-6 rounded-lg border appearance-none cursor-pointer transition-all ${
+                      selectedDate !== todayStr && selectedDate !== yesterdayStr
+                        ? 'bg-amber-100 border-amber-400 text-amber-950 font-black ring-1 ring-amber-400 shadow-2xs'
+                        : 'bg-slate-50 hover:bg-slate-100 border-slate-300 text-slate-700'
+                    }`}
+                    title={lang === 'bn' ? 'অতীত তারিখের টিকিট ও খরচ দেখুন' : 'View past printed tickets & spending'}
+                  >
+                    <option value={todayStr}>
+                      📅 {todayStr.split('-').reverse().join('/')} ({lang === 'bn' ? 'আজ' : 'Today'})
+                      {myTickets.filter(t => t.date === todayStr).length > 0 ? ` • ${myTickets.filter(t => t.date === todayStr).length} ${lang === 'bn' ? 'টিকিট' : 'tickets'}` : ''}
+                    </option>
+                    <option value={yesterdayStr}>
+                      📅 {yesterdayStr.split('-').reverse().join('/')} ({lang === 'bn' ? 'গতকাল' : 'Yesterday'})
+                      {myTickets.filter(t => t.date === yesterdayStr).length > 0 ? ` • ${myTickets.filter(t => t.date === yesterdayStr).length} ${lang === 'bn' ? 'টিকিট' : 'tickets'}` : ''}
+                    </option>
+                    
+                    {/* All past dates where tickets are recorded */}
+                    {pastDatesWithTickets
+                      .filter(d => d.date !== todayStr && d.date !== yesterdayStr)
+                      .map(d => (
+                        <option key={d.date} value={d.date}>
+                          🎟️ {d.date.split('-').reverse().join('/')} — {d.totalTickets} {lang === 'bn' ? 'টিকিট' : 'tickets'} (₹{d.totalCost})
+                        </option>
+                      ))}
+                  </select>
+                  <span className="absolute right-2 top-1/2 -translate-y-1/2 pointer-events-none text-[9px] text-slate-500">
+                    ▼
+                  </span>
+                </div>
+
+                {/* Direct Native HTML5 Date Picker for picking any historical date */}
+                <input
+                  type="date"
+                  value={selectedDate}
+                  max={todayStr}
+                  onChange={(e) => {
+                    if (e.target.value) {
+                      setSelectedDate(e.target.value);
+                      setErrorMsg(null);
+                    }
+                  }}
+                  className="text-xs bg-slate-50 border border-slate-300 rounded-lg py-1 px-1.5 text-slate-700 cursor-pointer hover:bg-slate-100 shrink-0"
+                  title={lang === 'bn' ? 'ক্যালেন্ডার থেকে তারিখ বাছুন' : 'Pick date from calendar'}
+                />
               </div>
             </div>
 
@@ -1351,8 +1483,10 @@ export default function DemoPlayModule({ initialDraws = [] }: DemoPlayModuleProp
                   <span>📊</span>
                   <span>
                     {lang === 'bn' 
-                      ? `${selectedDate === todayStr ? 'আজকের' : 'গতকালকের'} ${selectedSlot} ড্র লাভ/ক্ষতি (P/L):` 
-                      : `${selectedSlot} Draw Financial Summary (P/L):`}
+                      ? `${selectedDate === todayStr ? 'আজকের' : selectedDate === yesterdayStr ? 'গতকালকের' : selectedDate.split('-').reverse().join('/') + ' তারিখের'} ${selectedSlot} ড্র লাভ/ক্ষতি (P/L):` 
+                      : lang === 'hi'
+                      ? `${selectedDate === todayStr ? 'आज का' : selectedDate === yesterdayStr ? 'कल का' : selectedDate.split('-').reverse().join('/')} ${selectedSlot} ड्रॉ लाभ/हानि (P/L):`
+                      : `${selectedDate === todayStr ? 'Today' : selectedDate === yesterdayStr ? 'Yesterday' : selectedDate.split('-').reverse().join('/')} ${selectedSlot} Draw Financial Summary (P/L):`}
                   </span>
                 </span>
                 <span className="font-mono text-[10px] text-slate-400 bg-white/10 px-2 py-0.5 rounded">
@@ -1459,8 +1593,10 @@ export default function DemoPlayModule({ initialDraws = [] }: DemoPlayModuleProp
                 <span>🎟️</span>
                 <span>
                   {lang === 'bn' 
-                    ? `আপনার টিকিট (${selectedDate === todayStr ? 'আজ' : 'গতকাল'} • ${selectedSlot})` 
-                    : `Your Tickets (${selectedSlot})`}
+                    ? `আপনার টিকিট (${selectedDate === todayStr ? 'আজ' : selectedDate === yesterdayStr ? 'গতকাল' : selectedDate.split('-').reverse().join('/')} • ${selectedSlot})` 
+                    : lang === 'hi'
+                    ? `आपके टिकट (${selectedDate === todayStr ? 'आज' : selectedDate === yesterdayStr ? 'कल' : selectedDate.split('-').reverse().join('/')} • ${selectedSlot})`
+                    : `Your Tickets (${selectedDate === todayStr ? 'Today' : selectedDate === yesterdayStr ? 'Yesterday' : selectedDate.split('-').reverse().join('/')} • ${selectedSlot})`}
                 </span>
                 <span className="text-[10px] px-2 py-0.2 rounded-full font-mono font-bold bg-slate-200 text-slate-800">
                   {activeGameTickets.length}
