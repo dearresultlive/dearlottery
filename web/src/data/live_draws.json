@@ -2218,5 +2218,19 @@
       "fifth_prize": [],
       "telegram_sent": true
     }
+  },
+  "2026-10-21": {
+    "1PM": {
+      "first_prize": {
+        "series": "38E",
+        "number": "42562"
+      },
+      "consolation_prize_amount": 1000,
+      "second_prize": [],
+      "third_prize": [],
+      "fourth_prize": [],
+      "fifth_prize": [],
+      "telegram_sent": true
+    }
   }
 }
