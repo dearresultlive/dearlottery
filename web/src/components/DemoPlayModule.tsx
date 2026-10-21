@@ -47,7 +47,7 @@ export interface LuckyTicket {
   id: string;
   series: string;
   number: string;
-  sem: number; // 1, 5, 10, 25, 50, 100
+  sem: number; // 5, 10, 15, 25, 50, 100
   slot: '1PM' | '6PM' | '8PM';
   date: string; // YYYY-MM-DD
   createdAt: number;
@@ -90,46 +90,44 @@ function getSchemeName(dateStr: string, slot: '1PM' | '6PM' | '8PM'): string {
   }
 }
 
-// Real-world Barcode Visual Component
+// Barcode Visual Component
 function TicketBarcode({ code }: { code: string }) {
   const bars = [2, 1, 3, 1, 2, 4, 1, 2, 1, 3, 2, 1, 4, 1, 2, 3, 1, 2, 1, 4, 2, 1, 3, 1, 2];
   return (
     <div className="flex flex-col items-center select-none opacity-85">
-      <div className="flex items-center gap-[1.5px] h-6 sm:h-7">
+      <div className="flex items-center gap-[1.5px] h-5 sm:h-6">
         {bars.map((w, i) => (
           <div
             key={i}
             className="bg-slate-900 h-full"
-            style={{ width: `${w * 1.4}px` }}
+            style={{ width: `${w * 1.2}px` }}
           />
         ))}
       </div>
-      <span className="text-[8px] font-mono font-bold tracking-widest text-slate-700 mt-0.5">
+      <span className="text-[7px] font-mono font-bold tracking-widest text-slate-700 mt-0.5">
         * {code} *
       </span>
     </div>
   );
 }
 
-// Realistic Physical Paper Ticket Component (With Stacked Booklet Effect for Sem)
+// Realistic Physical Paper Ticket Component with DIRECT IN-TICKET SEM STEPPER
 function RealPaperTicket({
   ticket,
   evalRes,
   onDelete,
   onCopy,
+  onAddSem,
   isCopied,
-  lang,
-  isSelected,
-  onSelect
+  lang
 }: {
   ticket: LuckyTicket;
-  evalRes: any;
+  evalRes: TicketEvalResult;
   onDelete: (id: string) => void;
   onCopy: (id: string, text: string) => void;
+  onAddSem: (id: string, delta: number) => void;
   isCopied: boolean;
   lang: string;
-  isSelected?: boolean;
-  onSelect?: (id: string) => void;
 }) {
   const schemeName = getSchemeName(ticket.date, ticket.slot);
   const formattedDate = ticket.date.split('-').reverse().join('/');
@@ -168,14 +166,11 @@ function RealPaperTicket({
 
   return (
     <div 
-      onClick={() => onSelect && onSelect(ticket.id)}
-      className={`relative ${theme.bg} rounded-xl border-2 ${
-        isSelected ? 'border-amber-500 ring-2 ring-amber-400 shadow-md' : theme.border
-      } ${
-        sem > 1 
+      className={`relative ${theme.bg} rounded-xl border-2 ${theme.border} ${
+        sem > 5 
           ? 'shadow-[3px_3px_0px_#94a3b8,6px_6px_0px_#cbd5e1]' 
           : 'shadow-md'
-      } overflow-hidden font-sans select-none transition-all hover:scale-[1.005] ${onSelect ? 'cursor-pointer' : ''}`}
+      } overflow-hidden font-sans select-none transition-all hover:scale-[1.002]`}
     >
       
       {/* Semicircle perforation notch cutouts on top and bottom divider */}
@@ -227,12 +222,6 @@ function RealPaperTicket({
                 <span className="bg-amber-500 text-white font-black text-[8px] px-1.5 py-0.2 rounded shrink-0">
                   {sem} SEM
                 </span>
-                {isSelected && (
-                  <span className="bg-amber-600 text-white font-black text-[8px] px-1.5 py-0.2 rounded shrink-0 flex items-center gap-0.5 shadow-2xs">
-                    <span>✓</span>
-                    <span>{lang === 'bn' ? 'সিলেক্টেড' : 'ACTIVE'}</span>
-                  </span>
-                )}
               </div>
               <div className="flex items-center gap-1 text-[9px] sm:text-[10px] font-bold text-slate-600 mt-0.5">
                 <span className="text-red-700 font-black">{schemeName}</span>
@@ -243,7 +232,6 @@ function RealPaperTicket({
 
             {/* Quick Actions (Copy & Delete) */}
             <div className="flex items-center gap-1 shrink-0">
-
               <button
                 type="button"
                 onClick={() => onCopy(ticket.id, `${ticket.series} ${ticket.number} (${sem} Sem)`)}
@@ -325,18 +313,71 @@ function RealPaperTicket({
             </span>
           </div>
 
-          {/* 4. Footer Barcode & Microtext */}
-          <div className="flex items-end justify-between border-t border-black/10 pt-1 mt-1 text-[8px] text-slate-500">
-            <span className="truncate max-w-[140px] sm:max-w-[200px] font-mono tracking-tighter">
-              DIRECTORATE OF NAGALAND STATE LOTTERIES
-            </span>
-            <TicketBarcode code={`${ticket.series} ${ticket.number}`} />
+          {/* 4. IN-TICKET SEM STEPPER & CONTROLS (Eliminates separate controller box!) */}
+          <div className="flex items-center justify-between gap-1.5 pt-1.5 mt-1 border-t border-black/10 flex-wrap">
+            <div className="flex items-center gap-1">
+              <span className="text-[9px] font-black text-slate-600 uppercase">SEM:</span>
+              
+              {/* Stepper Minus */}
+              <button
+                type="button"
+                onClick={() => onAddSem(ticket.id, -5)}
+                disabled={sem <= 5}
+                className={`w-6 h-6 rounded-md font-black text-xs flex items-center justify-center transition-all ${
+                  sem <= 5
+                    ? 'bg-slate-200 text-slate-400 cursor-not-allowed opacity-50'
+                    : 'bg-rose-600 hover:bg-rose-700 text-white shadow-2xs active:scale-95 cursor-pointer'
+                }`}
+                title={lang === 'bn' ? '৫ সেম কমান' : 'Reduce 5 Sem (-₹35)'}
+              >
+                −
+              </button>
+
+              {/* Sem Badge */}
+              <div className="bg-amber-100/90 border border-amber-300 px-2 py-0.5 rounded text-[10px] sm:text-xs font-mono font-black text-amber-950 flex items-center gap-1 shadow-2xs">
+                <span>{sem} SEM</span>
+                <span className="text-[9px] text-amber-800 font-normal">(₹{ticketCost})</span>
+              </div>
+
+              {/* Stepper Plus */}
+              <button
+                type="button"
+                onClick={() => onAddSem(ticket.id, 5)}
+                className="w-6 h-6 rounded-md bg-emerald-600 hover:bg-emerald-700 text-white font-black text-xs flex items-center justify-center shadow-2xs active:scale-95 cursor-pointer"
+                title={lang === 'bn' ? '৫ সেম বাড়ান' : 'Add +5 Sem (+₹35)'}
+              >
+                +
+              </button>
+
+              {/* Quick +10 / +25 chip shortcuts */}
+              <button
+                type="button"
+                onClick={() => onAddSem(ticket.id, 10)}
+                className="px-1.5 py-0.5 rounded text-[9px] font-mono font-bold bg-blue-600 hover:bg-blue-700 text-white shadow-2xs active:scale-95 cursor-pointer"
+                title="Add +10 Sem (+₹70)"
+              >
+                +10
+              </button>
+              <button
+                type="button"
+                onClick={() => onAddSem(ticket.id, 25)}
+                className="px-1.5 py-0.5 rounded text-[9px] font-mono font-bold bg-purple-600 hover:bg-purple-700 text-white shadow-2xs active:scale-95 cursor-pointer"
+                title="Add +25 Sem (+₹175)"
+              >
+                +25
+              </button>
+            </div>
+
+            {/* Micro Barcode */}
+            <div className="hidden xs:block">
+              <TicketBarcode code={`${ticket.series} ${ticket.number}`} />
+            </div>
           </div>
 
-          {/* 5. Live Rubber Stamp Overlay & Multiplied Profit Indicator */}
-          <div className="absolute right-2 sm:right-5 top-1/2 -translate-y-1/2 pointer-events-none z-20 flex flex-col items-end gap-1">
+          {/* 5. Live Rubber Stamp Overlay */}
+          <div className="absolute right-2 sm:right-4 top-1/2 -translate-y-1/2 pointer-events-none z-20 flex flex-col items-end gap-1">
             {evalRes.isWin ? (
-              <div className="rotate-[-5deg] border-2 border-dashed border-emerald-600 bg-emerald-500/25 text-emerald-950 px-2.5 sm:px-3.5 py-1 sm:py-1.5 rounded-lg shadow-sm font-black text-xs sm:text-sm tracking-wide uppercase backdrop-blur-[0.5px] animate-bounce text-right">
+              <div className="rotate-[-5deg] border-2 border-dashed border-emerald-600 bg-emerald-500/25 text-emerald-950 px-2 sm:px-3 py-1 rounded-lg shadow-sm font-black text-xs sm:text-sm tracking-wide uppercase backdrop-blur-[0.5px] animate-bounce text-right">
                 <div className="flex items-center justify-end gap-1">
                   <span>🎉</span>
                   <span>{evalRes.prizeTitle}</span>
@@ -349,18 +390,18 @@ function RealPaperTicket({
                 </div>
               </div>
             ) : evalRes.status === 'DRAWING' ? (
-              <div className="rotate-[-2deg] border-2 border-dashed border-red-500 bg-red-500/15 text-red-700 px-2.5 py-1 rounded-md font-black text-[10px] sm:text-xs tracking-wider uppercase animate-pulse">
-                🔴 {lang === 'bn' ? 'ড্র চলছে...' : 'DRAW IN PROGRESS'}
+              <div className="rotate-[-2deg] border-2 border-dashed border-red-500 bg-red-500/15 text-red-700 px-2 py-0.5 rounded-md font-black text-[10px] sm:text-xs tracking-wider uppercase animate-pulse">
+                🔴 {lang === 'bn' ? 'ড্র চলছে...' : 'DRAWING'}
               </div>
             ) : evalRes.status === 'UPCOMING' ? (
-              <div className="rotate-[3deg] border-2 border-dashed border-blue-500 bg-blue-500/10 text-blue-700 px-2.5 py-0.5 rounded-md font-bold text-[9px] sm:text-[11px] tracking-wider uppercase text-right">
+              <div className="rotate-[3deg] border-2 border-dashed border-blue-500 bg-blue-500/10 text-blue-700 px-2 py-0.5 rounded-md font-bold text-[9px] sm:text-[10px] tracking-wider uppercase text-right">
                 <div>⏳ DRAW AT {ticket.slot}</div>
-                <div className="text-[8px] text-blue-900 font-mono">COST: ₹{ticketCost} ({sem} SEM)</div>
+                <div className="text-[8px] text-blue-900 font-mono">₹{ticketCost} ({sem} SEM)</div>
               </div>
             ) : (
-              <div className="rotate-[4deg] border border-slate-300 bg-slate-100/90 text-slate-600 px-2 py-0.5 rounded text-[9px] font-bold uppercase text-right shadow-2xs">
+              <div className="rotate-[4deg] border border-slate-300 bg-slate-100/90 text-slate-600 px-1.5 py-0.5 rounded text-[8px] sm:text-[9px] font-bold uppercase text-right shadow-2xs">
                 <div>✕ NO PRIZE</div>
-                <div className="text-[8px] text-rose-700 font-mono font-bold">NET: -₹{ticketCost}.00</div>
+                <div className="text-[8px] text-rose-700 font-mono font-bold">-₹{ticketCost}</div>
               </div>
             )}
           </div>
@@ -392,8 +433,11 @@ export default function DemoPlayModule({ initialDraws = [] }: DemoPlayModuleProp
   const [selectedDate, setSelectedDate] = useState<string>(todayStr);
   const [selectedSlot, setSelectedSlot] = useState<'1PM' | '6PM' | '8PM'>(nextUpcoming.slot);
 
-  // Active ticket focused in the Single Sem Controller
-  const [activeTicketIdForSem, setActiveTicketIdForSem] = useState<string | null>(null);
+  // Tab State: 'tickets' (My Tickets) vs 'hot' (Hot Numbers & Middles)
+  const [activeTab, setActiveTab] = useState<'tickets' | 'hot'>('tickets');
+
+  // Toggle for Global/All-Time P&L statistics drawer
+  const [showGlobalStats, setShowGlobalStats] = useState(false);
 
   const [copiedTicketId, setCopiedTicketId] = useState<string | null>(null);
   const [manualSeries, setManualSeries] = useState('72B');
@@ -405,8 +449,9 @@ export default function DemoPlayModule({ initialDraws = [] }: DemoPlayModuleProp
   // Tickets stored in localStorage
   const [myTickets, setMyTickets] = useState<LuckyTicket[]>([]);
 
-  // Hot number combinations generated from heat map & repeating draws
+  // Hot number combinations & Top Middles generated from heat map
   const [hotCards, setHotCards] = useState<HotNumberCard[]>([]);
+  const [popularMiddles, setPopularMiddles] = useState<string[]>(['48', '72', '35', '80', '29', '52', '64', '15', '24', '79']);
   const [isRefreshingHot, setIsRefreshingHot] = useState<boolean>(false);
 
   // Time passed checks for today
@@ -425,7 +470,6 @@ export default function DemoPlayModule({ initialDraws = [] }: DemoPlayModuleProp
         if (raw) {
           const parsed = JSON.parse(raw);
           if (Array.isArray(parsed)) {
-            // Ensure sem is minimum 5 for all tickets (as single tickets are not sold)
             const normalized = parsed.map(t => ({
               ...t,
               sem: Math.max(t.sem || 5, 5)
@@ -435,7 +479,7 @@ export default function DemoPlayModule({ initialDraws = [] }: DemoPlayModuleProp
         }
       } catch (e) {}
 
-      // Prefill from URL query params (e.g. from Target Numbers page)
+      // Prefill from URL query params
       const params = new URLSearchParams(window.location.search);
       const qNum = params.get('num');
       const qSlot = params.get('slot') as '1PM' | '6PM' | '8PM';
@@ -450,6 +494,12 @@ export default function DemoPlayModule({ initialDraws = [] }: DemoPlayModuleProp
 
       // Preload 5-year archive in background for heat map calculations
       fetchClient5YearArchive().then(() => {
+        try {
+          const topMids = getTopFrequentMiddles(10, '3Y');
+          if (topMids && topMids.length > 0) {
+            setPopularMiddles(topMids.map(m => m.middle));
+          }
+        } catch (e) {}
         generateHotNumbers();
       });
     }
@@ -460,7 +510,7 @@ export default function DemoPlayModule({ initialDraws = [] }: DemoPlayModuleProp
     setMyTickets(tickets);
     if (typeof window !== 'undefined') {
       localStorage.setItem('dearlottery_lucky_tickets', JSON.stringify(tickets));
-      localStorage.setItem('dearlottery_demo_tickets', JSON.stringify(tickets)); // sync legacy
+      localStorage.setItem('dearlottery_demo_tickets', JSON.stringify(tickets));
     }
   };
 
@@ -573,8 +623,7 @@ export default function DemoPlayModule({ initialDraws = [] }: DemoPlayModuleProp
     };
   };
 
-  // Add ticket function for selected game with Sem count
-  // If ticket already exists in the same game, clicking again adds +5 Sem to the same number!
+  // Add ticket function for selected game with Sem count (Limit increased to 12 booklets!)
   const addTicket = (series: string, number: string, semCount: number = 5) => {
     setErrorMsg(null);
     setSuccessMsg(null);
@@ -614,18 +663,18 @@ export default function DemoPlayModule({ initialDraws = [] }: DemoPlayModuleProp
           ? `+${semCount} সেম বৃদ্ধি! ${existing.series} ${existing.number} মোট: ${updatedSem} সেম (খরচ: ₹${updatedSem * 7})`
           : `Added +${semCount} Sem! ${existing.series} ${existing.number} Total: ${updatedSem} Sem (Cost: ₹${updatedSem * 7})`
       );
-      setTimeout(() => setSuccessMsg(null), 4000);
+      setTimeout(() => setSuccessMsg(null), 3500);
     } else {
-      // Check quota limit: Maximum 5 distinct booklets allowed per draw game
+      // Quota limit: Maximum 12 distinct booklets allowed per draw game
       const currentSlotCount = myTickets.filter(
         t => t.date === selectedDate && t.slot === selectedSlot
       ).length;
 
-      if (currentSlotCount >= 5) {
+      if (currentSlotCount >= 12) {
         setErrorMsg(
           lang === 'bn'
-            ? '⚠️ এই ড্র-এর জন্য সর্বোচ্চ ৫টি বুকলেটের কোটা পূর্ণ! নিচের যেকোনো টিকিটে সেম (+৫ সেম) বৃদ্ধি করুন অথবা নতুন নম্বর নিতে কোনো টিকিট মুছুন।'
-            : '⚠️ Quota full! Maximum 5 booklets allowed per draw. You can add more Sem (+5 Sem) to your existing tickets or delete one to pick a new number.'
+            ? '⚠️ এই ড্র-এর জন্য সর্বোচ্চ ১২টি বুকলেটের কোটা পূর্ণ! যেকোনো টিকিটে সেম (+৫ সেম) বৃদ্ধি করুন অথবা কোনো টিকিট মুছুন।'
+            : '⚠️ Quota full! Maximum 12 booklets allowed per draw. Add more Sem (+5 Sem) on your tickets or delete one to add a new number.'
         );
         return;
       }
@@ -649,7 +698,7 @@ export default function DemoPlayModule({ initialDraws = [] }: DemoPlayModuleProp
           ? `টিকিট যোগ হয়েছে: ${cleanSeries} ${cleanNum} (${semCount} সেম • ₹${semCount * 7})`
           : `Ticket added: ${cleanSeries} ${cleanNum} (${semCount} Sem • ₹${semCount * 7})`
       );
-      setTimeout(() => setSuccessMsg(null), 4000);
+      setTimeout(() => setSuccessMsg(null), 3500);
     }
 
     setManualNumber('');
@@ -661,7 +710,6 @@ export default function DemoPlayModule({ initialDraws = [] }: DemoPlayModuleProp
       ? (evalRes.isWin ? evalRes.prizeAmount - ticketCost : -ticketCost)
       : -ticketCost;
 
-    setActiveTicketIdForSem(targetTicket.id);
     setPurchaseFeedback({
       ticket: targetTicket,
       evalRes,
@@ -680,7 +728,7 @@ export default function DemoPlayModule({ initialDraws = [] }: DemoPlayModuleProp
     }
   };
 
-  // Add or reduce Sem for a specific ticket directly
+  // Add or reduce Sem for a specific ticket directly (In-ticket stepper handler)
   const handleAddSemToTicket = (ticketId: string, delta: number = 5) => {
     setErrorMsg(null);
     setSuccessMsg(null);
@@ -698,7 +746,6 @@ export default function DemoPlayModule({ initialDraws = [] }: DemoPlayModuleProp
 
     if (updatedTarget) {
       const target = updatedTarget as LuckyTicket;
-      setActiveTicketIdForSem(target.id);
       const evalRes = evaluateTicket(target);
       const totalSem = target.sem || 5;
       const ticketCost = totalSem * 7;
@@ -731,11 +778,11 @@ export default function DemoPlayModule({ initialDraws = [] }: DemoPlayModuleProp
       t => t.date === selectedDate && t.slot === selectedSlot
     ).length;
 
-    if (currentSlotCount >= 5) {
+    if (currentSlotCount >= 12) {
       setErrorMsg(
         lang === 'bn'
-          ? '⚠️ এই ড্র-এর জন্য সর্বোচ্চ ৫টি বুকলেটের কোটা পূর্ণ! নিচের টিকিটে সেম (+৫ সেম) বৃদ্ধি করুন অথবা কোনো টিকিট মুছুন।'
-          : '⚠️ Quota full! Maximum 5 booklets allowed per draw. Add more Sem (+5 Sem) below or delete a ticket.'
+          ? '⚠️ এই ড্র-এর জন্য সর্বোচ্চ ১২টি বুকলেট পূর্ণ! টিকিটের সেম বাড়ান অথবা একটি মুছুন।'
+          : '⚠️ Quota full! Maximum 12 booklets reached. Add Sem below or delete a ticket.'
       );
       return;
     }
@@ -749,6 +796,18 @@ export default function DemoPlayModule({ initialDraws = [] }: DemoPlayModuleProp
     const end = endingSeeds[Math.floor(Math.random() * endingSeeds.length)];
     const lead = String(Math.floor(Math.random() * 9) + 1);
     const num = `${lead}${m}${end.slice(-2)}`;
+
+    addTicket(s, num, 5);
+  };
+
+  // 1-Click Ticket with Selected Middle (The #1 Indian lottery player feature!)
+  const handlePickMiddleTicket = (middle: string) => {
+    const seriesOptions = ['72B', '64D', '81G', '92H', '55A', '58C', '73E', '86J', '84D', '69A', '77C'];
+    const endingSeeds = ['55', '74', '22', '57', '63', '36', '14', '82', '99', '06'];
+    const s = seriesOptions[Math.floor(Math.random() * seriesOptions.length)];
+    const end = endingSeeds[Math.floor(Math.random() * endingSeeds.length)];
+    const lead = String(Math.floor(Math.random() * 9) + 1);
+    const num = `${lead}${middle}${end.slice(-2)}`;
 
     addTicket(s, num, 5);
   };
@@ -774,9 +833,6 @@ export default function DemoPlayModule({ initialDraws = [] }: DemoPlayModuleProp
   // Delete ticket
   const handleDeleteTicket = (id: string) => {
     saveTickets(myTickets.filter(t => t.id !== id));
-    if (activeTicketIdForSem === id) {
-      setActiveTicketIdForSem(null);
-    }
   };
 
   // Clear slot tickets
@@ -791,7 +847,7 @@ export default function DemoPlayModule({ initialDraws = [] }: DemoPlayModuleProp
     }
   };
 
-  // Generate Hot Numbers from Heat Map and Historical Archives (Dynamically randomized on each Refresh)
+  // Generate Hot Numbers from Heat Map and Historical Archives
   const generateHotNumbers = () => {
     setIsRefreshingHot(true);
     const seriesOptions = ['72B', '64D', '81G', '92H', '55A', '58C', '73E', '86J', '84D', '69A', '77C', '95L', '62B'];
@@ -904,7 +960,7 @@ export default function DemoPlayModule({ initialDraws = [] }: DemoPlayModuleProp
     };
   }, [activeGameTickets, initialDraws]);
 
-  // Overall Global Profit & Loss & Accuracy calculation with Sem factoring
+  // Overall Global Profit & Loss & Accuracy calculation
   const globalStats = useMemo(() => {
     const totalSemAll = myTickets.reduce((acc, t) => acc + (t.sem || 5), 0);
     const totalCostAll = totalSemAll * 7;
@@ -933,813 +989,700 @@ export default function DemoPlayModule({ initialDraws = [] }: DemoPlayModuleProp
   }, [myTickets, initialDraws]);
 
   return (
-    <div className="space-y-4 max-w-xl mx-auto text-slate-800">
+    <div className="space-y-3.5 max-w-xl mx-auto text-slate-800">
       
-      {/* 1. Header (Simple & Clean) */}
-      <div className="bg-slate-900 text-white rounded-2xl p-3.5 sm:p-4 shadow-sm flex items-center justify-between">
+      {/* 1. Header (Compact & Modern) */}
+      <div className="bg-gradient-to-r from-slate-900 via-slate-800 to-slate-900 text-white rounded-2xl p-3 sm:p-3.5 shadow-sm flex items-center justify-between">
         <div>
-          <h1 className="text-base sm:text-lg font-black tracking-tight text-white flex items-center gap-1.5">
+          <h1 className="text-sm sm:text-base font-black tracking-tight text-white flex items-center gap-1.5">
             <span>🎟️</span>
             <span>
-              {lang === 'bn' ? 'ডিয়ার লটারি লাকি টিকিট (সেম বুকলেট)' : lang === 'hi' ? 'डियर लॉटरी लकी टिकट (सेम बुकलेट)' : 'Dear Lottery Lucky Ticket (Sem)'}
+              {lang === 'bn' ? 'ডিয়ার লটারি লাকি টিকিট' : lang === 'hi' ? 'डियर लॉटरी लकी टिकट' : 'Dear Lottery Lucky Ticket'}
+            </span>
+            <span className="bg-amber-400 text-slate-950 font-black text-[9px] px-1.5 py-0.2 rounded shadow-2xs font-mono">
+              5 SEM
             </span>
           </h1>
-          <p className="text-[11px] sm:text-xs text-slate-400 mt-0.5">
+          <p className="text-[10px] sm:text-[11px] text-slate-400 mt-0.5">
             {lang === 'bn' 
-              ? '৫ সেম / ১০ সেম পেপার বুকলেট সিমুলেশন ও রিয়াল প্রফিট-লস ট্র্যাকিং' 
-              : '5 Sem / 10 Sem paper ticket simulator with realistic profit & loss'}
+              ? '৫ সেম পেপার বুকলেট সিমুলেশন ও রিয়াল প্রফিট-লস' 
+              : '5 Sem paper booklet simulator with real profit & loss'}
           </p>
         </div>
         <div className="text-right shrink-0">
-          <span className="font-mono text-xs font-bold text-amber-400 bg-white/10 px-2 py-0.5 rounded">
+          <span className="font-mono text-[11px] font-bold text-amber-300 bg-white/10 px-2 py-0.5 rounded">
             {selectedDate.split('-').reverse().join('/')}
           </span>
         </div>
       </div>
 
-      {/* 2. Global Performance & Accuracy Bar (Transparent Cost, Returns, and Net P/L) */}
-      <div className="grid grid-cols-4 gap-1.5 sm:gap-2 text-center">
-        <div className="bg-white border border-slate-200 rounded-xl p-2 shadow-2xs">
-          <span className="text-[9px] sm:text-[10px] text-slate-500 font-bold block uppercase truncate">
-            {lang === 'bn' ? 'মোট টিকিট' : 'Booklets'}
-          </span>
-          <span className="font-mono text-xs sm:text-base font-black text-slate-900 block truncate">
-            {myTickets.length}
-          </span>
-          <span className="text-[8px] sm:text-[9px] text-slate-400 block font-mono">
-            {globalStats.totalSemAll} Sem
-          </span>
-        </div>
-
-        <div className="bg-white border border-slate-200 rounded-xl p-2 shadow-2xs">
-          <span className="text-[9px] sm:text-[10px] text-slate-500 font-bold block uppercase truncate">
-            {lang === 'bn' ? 'মোট খরচ' : 'Total Cost'}
-          </span>
-          <span className="font-mono text-xs sm:text-base font-black text-slate-900 block truncate">
-            ₹{globalStats.totalCostAll}
-          </span>
-          <span className="text-[8px] sm:text-[9px] text-slate-400 block font-mono">
-            ₹7/ticket
-          </span>
-        </div>
-
-        <div className="bg-white border border-slate-200 rounded-xl p-2 shadow-2xs">
-          <span className="text-[9px] sm:text-[10px] text-slate-500 font-bold block uppercase truncate">
-            {lang === 'bn' ? 'মোট জয়' : 'Total Won'}
-          </span>
-          <span className="font-mono text-xs sm:text-base font-black text-emerald-600 block truncate">
-            ₹{formatINR(globalStats.totalReturns)}
-          </span>
-          <span className="text-[8px] sm:text-[9px] text-emerald-700 block font-bold truncate">
-            {globalStats.totalWins} জয় ({globalStats.accuracyPercent}%)
-          </span>
-        </div>
-
-        <div className="bg-white border border-slate-200 rounded-xl p-2 shadow-2xs">
-          <span className="text-[9px] sm:text-[10px] text-slate-500 font-bold block uppercase truncate">
-            {lang === 'bn' ? 'নিট P/L' : 'Net P/L'}
-          </span>
-          <span className={`font-mono text-xs sm:text-base font-black truncate block ${
-            myTickets.length === 0 
-              ? 'text-slate-700' 
-              : globalStats.overallNetPnl >= 0 
-              ? 'text-emerald-700' 
-              : 'text-rose-700'
-          }`}>
-            {myTickets.length === 0 
-              ? '₹0' 
-              : globalStats.overallNetPnl >= 0 
-              ? `+₹${formatINR(globalStats.overallNetPnl)}` 
-              : `-₹${formatINR(Math.abs(globalStats.overallNetPnl))}`}
-          </span>
-          <span className={`text-[8px] sm:text-[9px] block font-bold truncate ${
-            myTickets.length === 0
-              ? 'text-slate-400'
-              : globalStats.overallNetPnl > 0 
-              ? 'text-emerald-700' 
-              : globalStats.overallNetPnl < 0 
-              ? 'text-rose-600' 
-              : 'text-slate-500'
-          }`}>
-            {myTickets.length === 0 
-              ? (lang === 'bn' ? 'খালি' : 'Empty')
-              : globalStats.overallNetPnl > 0 
-              ? (lang === 'bn' ? '🎉 লাভ' : 'Profit') 
-              : globalStats.overallNetPnl < 0 
-              ? (lang === 'bn' ? 'ক্ষতি' : 'Loss') 
-              : (lang === 'bn' ? 'ব্রেক-ইভেন' : 'Even')}
-          </span>
-        </div>
-      </div>
-
-      {/* 3. Game Date & Time Selector (History & New Games) */}
-      <div className="bg-white border border-slate-200 rounded-2xl p-3 shadow-2xs space-y-2.5">
-        
-        {/* Date Switcher: Today vs Yesterday */}
-        <div className="flex items-center justify-between border-b border-slate-100 pb-2 px-1">
-          <span className="text-[11px] font-bold text-slate-600 flex items-center gap-1">
-            <span>📅</span>
-            <span>{lang === 'bn' ? 'খেলার তারিখ:' : 'Game Date:'}</span>
-          </span>
-
-          <div className="flex items-center gap-1.5">
-            <button
-              type="button"
-              onClick={() => { setSelectedDate(todayStr); setErrorMsg(null); }}
-              className={`px-2.5 py-1 rounded-lg text-xs font-bold transition-all ${
-                selectedDate === todayStr
-                  ? 'bg-blue-700 text-white shadow-2xs'
-                  : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
-              }`}
-            >
-              {lang === 'bn' ? 'আজকের ড্র' : 'Today'}
-            </button>
-            <button
-              type="button"
-              onClick={() => { setSelectedDate(yesterdayStr); setErrorMsg(null); }}
-              className={`px-2.5 py-1 rounded-lg text-xs font-bold transition-all ${
-                selectedDate === yesterdayStr
-                  ? 'bg-blue-700 text-white shadow-2xs'
-                  : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
-              }`}
-            >
-              {lang === 'bn' ? 'গতকালকের ড্র' : 'Yesterday'}
-            </button>
-          </div>
-        </div>
-
-        {/* 3 Slot Tabs (1:00 PM | 6:00 PM | 8:00 PM) with ticket counts */}
-        <div className="grid grid-cols-3 gap-2">
-          {(['1PM', '6PM', '8PM'] as const).map(slot => {
-            const isSelected = selectedSlot === slot;
-            const slotTicketsCount = myTickets.filter(t => t.date === selectedDate && t.slot === slot).length;
-            const isNext = selectedDate === todayStr && nextUpcoming.slot === slot;
-            const isPassed = (
-              selectedDate < todayStr ||
-              (selectedDate === todayStr && (
-                (slot === '1PM' && is1pmPassed) ||
-                (slot === '6PM' && is6pmPassed) ||
-                (slot === '8PM' && is8pmPassed)
-              ))
-            );
-
-            return (
-              <button
-                key={slot}
-                type="button"
-                onClick={() => { setSelectedSlot(slot); setErrorMsg(null); }}
-                className={`py-2 px-1.5 rounded-xl text-center font-black transition-all relative ${
-                  isSelected
-                    ? 'bg-blue-700 text-white shadow-sm ring-2 ring-blue-600'
-                    : 'bg-slate-50 hover:bg-slate-100 border border-slate-200 text-slate-700'
-                }`}
-              >
-                <div className="text-xs sm:text-sm font-black flex items-center justify-center gap-1">
-                  <span>{slot === '1PM' ? '1:00 PM' : slot === '6PM' ? '6:00 PM' : '8:00 PM'}</span>
-                  {slotTicketsCount > 0 && (
-                    <span className={`text-[10px] px-1.5 py-0.2 rounded-full font-bold ${
-                      isSelected ? 'bg-white/20 text-white' : 'bg-blue-100 text-blue-800'
-                    }`}>
-                      {slotTicketsCount}
-                    </span>
-                  )}
-                </div>
-                <div className="text-[9px] mt-0.5">
-                  {isNext ? (
-                    <span className={isSelected ? 'text-emerald-300 font-bold' : 'text-emerald-600 font-bold'}>
-                      ⚡ {lang === 'bn' ? 'পরবর্তী' : 'Next'}
-                    </span>
-                  ) : isPassed ? (
-                    <span className={isSelected ? 'text-blue-200' : 'text-slate-400'}>
-                      {lang === 'bn' ? 'ফলাফল প্রকাশিত' : 'Result Out'}
-                    </span>
-                  ) : (
-                    <span className={isSelected ? 'text-blue-200' : 'text-slate-400'}>
-                      {lang === 'bn' ? 'আসন্ন' : 'Upcoming'}
-                    </span>
-                  )}
-                </div>
-              </button>
-            );
-          })}
-        </div>
-
-      </div>
-
-      {/* 4. Ticket Generator Controls with 1-Tap Sem Selector */}
-      <div className="bg-white border border-slate-200 rounded-2xl p-3 sm:p-4 shadow-sm space-y-3">
-        
-        {/* 5 SEM RETAIL STANDARD BADGE & 5-BOOKLET LIMIT COUNTER */}
-        <div className="flex items-center justify-between gap-2 bg-gradient-to-r from-amber-50 to-orange-50 border border-amber-200/90 p-2.5 rounded-xl text-xs">
-          <div className="flex items-center gap-1.5 min-w-0">
-            <span className="text-base shrink-0">📚</span>
-            <div className="min-w-0">
-              <span className="font-black text-amber-950 block text-[11px] sm:text-xs">
-                {lang === 'bn' 
-                  ? 'স্ট্যান্ডার্ড ৫ সেম (₹৩৫) • লিমিট: সর্বোচ্চ ৫ বুকলেট' 
-                  : 'Standard 5 Sem (₹35) • Limit: Max 5 Booklets'}
-              </span>
-              <span className="text-[10px] text-amber-900/80 block truncate">
-                {lang === 'bn'
-                  ? 'টিকিট নেওয়ার পর নিচে আলাদা বাটনে সেম বাড়ানো বা কমানো যায়'
-                  : 'Adjust Sem quantity easily using the dedicated controller below'}
-              </span>
-            </div>
-          </div>
-          <div className="flex items-center gap-1.5 shrink-0">
-            <span className={`font-mono font-black text-[10px] px-2 py-0.5 rounded-md border shadow-2xs ${
-              activeGameTickets.length >= 5
-                ? 'bg-amber-600 text-white border-amber-700'
-                : 'bg-white text-slate-800 border-amber-300'
-            }`}>
-              {activeGameTickets.length}/5
-            </span>
-            <span className="bg-amber-600 text-white font-mono font-black text-xs px-2.5 py-1 rounded-lg shrink-0 shadow-2xs">
-              5 SEM • ₹35
-            </span>
-          </div>
-        </div>
-
-        {/* 1-Click Quick Ticket Button (Adds 5 Sem) */}
+      {/* 2. TABBED SEGMENTED NAVIGATION (Clean & Mobile-Friendly!) */}
+      <div className="flex items-center gap-1.5 p-1 bg-slate-200/80 rounded-xl border border-slate-300/80">
         <button
           type="button"
-          onClick={handleQuickTicket}
-          disabled={activeGameTickets.length >= 5}
-          className={`w-full font-black text-xs sm:text-sm py-2.5 px-4 rounded-xl shadow-xs transition-all flex items-center justify-center gap-2 ${
-            activeGameTickets.length >= 5
-              ? 'bg-slate-100 text-slate-400 border border-slate-200 cursor-not-allowed'
-              : 'bg-gradient-to-r from-amber-500 via-orange-500 to-amber-600 hover:from-amber-600 hover:to-orange-600 text-white active:scale-[0.99] cursor-pointer'
+          onClick={() => setActiveTab('tickets')}
+          className={`flex-1 py-1.5 px-3 rounded-lg text-xs font-black transition-all flex items-center justify-center gap-1.5 cursor-pointer ${
+            activeTab === 'tickets'
+              ? 'bg-white text-blue-900 shadow-xs ring-1 ring-black/5'
+              : 'text-slate-600 hover:text-slate-900 hover:bg-white/50'
           }`}
         >
-          <span className="text-base sm:text-lg">{activeGameTickets.length >= 5 ? '🔒' : '🎲'}</span>
-          <span>
-            {activeGameTickets.length >= 5
-              ? (lang === 'bn' ? '৫/৫ বুকলেট পূর্ণ (নিচে সেম বৃদ্ধি করুন)' : '5/5 Booklets Full (Add Sem below)')
-              : (lang === 'bn' ? 'কুইক লাকি টিকিট নিন (৫ সেম • ₹৩৫)' : 'Print Quick Lucky Ticket (5 Sem • ₹35)')}
-          </span>
+          <span>🎟️</span>
+          <span>{lang === 'bn' ? 'আমার টিকিট' : 'My Tickets'}</span>
+          {activeGameTickets.length > 0 && (
+            <span className={`text-[10px] px-1.5 py-0.2 rounded-full font-mono font-bold ${
+              activeTab === 'tickets' ? 'bg-blue-100 text-blue-900' : 'bg-slate-300 text-slate-800'
+            }`}>
+              {activeGameTickets.length}
+            </span>
+          )}
         </button>
 
-        {/* Manual 5-Digit Number Entry */}
-        <form 
-          onSubmit={(e) => {
-            e.preventDefault();
-            addTicket(manualSeries, manualNumber, 5);
-          }} 
-          className="flex items-center gap-1.5 pt-1 border-t border-slate-100"
+        <button
+          type="button"
+          onClick={() => setActiveTab('hot')}
+          className={`flex-1 py-1.5 px-3 rounded-lg text-xs font-black transition-all flex items-center justify-center gap-1.5 cursor-pointer ${
+            activeTab === 'hot'
+              ? 'bg-white text-amber-950 shadow-xs ring-1 ring-black/5'
+              : 'text-slate-600 hover:text-slate-900 hover:bg-white/50'
+          }`}
         >
-          <input
-            type="text"
-            placeholder="72B"
-            maxLength={4}
-            value={manualSeries}
-            onChange={e => setManualSeries(e.target.value.toUpperCase())}
-            className="w-16 text-center font-mono font-black text-xs sm:text-sm uppercase bg-slate-50 border border-slate-300 rounded-xl px-1.5 py-2 focus:ring-2 focus:ring-blue-600 focus:bg-white outline-none shrink-0"
-            title="Series"
-          />
-          <input
-            type="text"
-            placeholder="Enter 5-digit number (e.g. 48755)"
-            maxLength={5}
-            value={manualNumber}
-            onChange={e => setManualNumber(e.target.value.replace(/\D/g, ''))}
-            className="flex-1 min-w-0 font-mono font-black text-xs sm:text-sm tracking-wider bg-slate-50 border border-slate-300 rounded-xl px-2.5 py-2 focus:ring-2 focus:ring-blue-600 focus:bg-white outline-none text-center"
-            title="5-digit number"
-          />
-          <button
-            type="submit"
-            className="bg-blue-700 hover:bg-blue-800 text-white font-black text-xs sm:text-sm px-3.5 py-2 rounded-xl shadow-xs transition-all active:scale-95 shrink-0 cursor-pointer"
-          >
-            {lang === 'bn' ? '+ প্রিন্ট (৫ সেম)' : '+ Print (5 Sem)'}
-          </button>
-        </form>
-
-        {/* Instant Purchase & Live Profit/Loss Feedback Card */}
-        {purchaseFeedback && (
-          <div 
-            className={`rounded-xl p-3 border shadow-xs transition-all animate-fadeIn relative ${
-              purchaseFeedback.evalRes.status === 'RESULT_OUT' && purchaseFeedback.evalRes.isWin
-                ? 'bg-gradient-to-r from-emerald-800 via-teal-800 to-emerald-900 text-white border-emerald-400 ring-2 ring-emerald-500/40'
-                : purchaseFeedback.evalRes.status === 'RESULT_OUT' && !purchaseFeedback.evalRes.isWin
-                ? 'bg-gradient-to-r from-slate-900 to-slate-800 text-white border-slate-700'
-                : 'bg-gradient-to-r from-blue-950 to-indigo-950 text-white border-blue-700'
-            }`}
-          >
-            <div className="flex items-start justify-between gap-2">
-              <div className="flex items-start gap-2.5 min-w-0">
-                <span className="text-2xl shrink-0 mt-0.5">
-                  {purchaseFeedback.evalRes.status === 'RESULT_OUT' && purchaseFeedback.evalRes.isWin ? '🎉' : purchaseFeedback.evalRes.status === 'RESULT_OUT' ? '🎟️' : '⏳'}
-                </span>
-                <div className="space-y-1 min-w-0">
-                  <div className="flex items-center gap-1.5 flex-wrap">
-                    <span className="text-xs sm:text-sm font-black text-white">
-                      {purchaseFeedback.isIncrement
-                        ? (purchaseFeedback.semAdded > 0
-                            ? (lang === 'bn' ? `+${purchaseFeedback.semAdded} সেম বৃদ্ধি সফল!` : lang === 'hi' ? `+${purchaseFeedback.semAdded} सेम वृद्धि सफल!` : `+${purchaseFeedback.semAdded} Sem Added!`)
-                            : (lang === 'bn' ? `${Math.abs(purchaseFeedback.semAdded)} সেম কমানো হয়েছে (-₹${Math.abs(purchaseFeedback.semAdded) * 7})` : lang === 'hi' ? `${Math.abs(purchaseFeedback.semAdded)} सेम घटाया गया (-₹${Math.abs(purchaseFeedback.semAdded) * 7})` : `${Math.abs(purchaseFeedback.semAdded)} Sem Reduced (-₹${Math.abs(purchaseFeedback.semAdded) * 7})`))
-                        : (lang === 'bn' ? 'টিকিট প্রিন্ট সম্পন্ন!' : lang === 'hi' ? 'टिकट प्रिंट संपन्न!' : 'Ticket Printed!')}
-                    </span>
-                    <span className="bg-white/20 font-mono text-[10px] sm:text-xs font-bold px-1.5 py-0.2 rounded text-white">
-                      {purchaseFeedback.ticket.series} {purchaseFeedback.ticket.number}
-                    </span>
-                    <span className="bg-amber-400 text-amber-950 font-black text-[9px] sm:text-[10px] px-1.5 py-0.2 rounded">
-                      {purchaseFeedback.totalSem} Sem (₹{purchaseFeedback.ticketCost})
-                    </span>
-                  </div>
-
-                  {purchaseFeedback.evalRes.status === 'RESULT_OUT' ? (
-                    purchaseFeedback.evalRes.isWin ? (
-                      <div className="space-y-1">
-                        <div className="text-[11px] text-emerald-200 font-bold flex items-center gap-1">
-                          <span>🏆</span>
-                          <span>{lang === 'bn' ? `${purchaseFeedback.evalRes.prizeTitle} জয়ী (+₹${formatINR(purchaseFeedback.evalRes.prizeAmount)})` : `Won ${purchaseFeedback.evalRes.prizeTitle} (+₹${formatINR(purchaseFeedback.evalRes.prizeAmount)})`}</span>
-                        </div>
-                        <div className="text-xs sm:text-sm font-black text-amber-300 font-mono flex items-center gap-1.5 flex-wrap">
-                          <span>💰</span>
-                          <span>
-                            {lang === 'bn' 
-                              ? `নিট লাভ: +₹${formatINR(purchaseFeedback.netPnl)}` 
-                              : `Net Profit: +₹${formatINR(purchaseFeedback.netPnl)}`}
-                          </span>
-                          <span className="text-[10px] text-emerald-200 font-normal">
-                            (প্রাইজ ₹{formatINR(purchaseFeedback.evalRes.prizeAmount)} - খরচ ₹{purchaseFeedback.ticketCost})
-                          </span>
-                        </div>
-                      </div>
-                    ) : (
-                      <div className="text-[11px] text-slate-300 flex items-center gap-2 flex-wrap">
-                        <span>{lang === 'bn' ? 'এই ড্র-তে কোনো প্রাইজ মেলেনি।' : 'No prize won in this draw.'}</span>
-                        <span className="text-rose-300 font-bold font-mono">
-                          {lang === 'bn' ? `নিট ক্ষতি: -₹${purchaseFeedback.ticketCost}` : `Net Loss: -₹${purchaseFeedback.ticketCost}`}
-                        </span>
-                      </div>
-                    )
-                  ) : (
-                    <div className="text-[11px] text-blue-200">
-                      {lang === 'bn'
-                        ? `বিনিয়োগ: ₹${purchaseFeedback.ticketCost} • ${purchaseFeedback.ticket.slot} ড্র সম্পন্ন হলে প্রফিট/লস লাইভ আপডেট হবে।`
-                        : `Invested: ₹${purchaseFeedback.ticketCost} • P/L will settle live once ${purchaseFeedback.ticket.slot} draw results are out.`}
-                    </div>
-                  )}
-                </div>
-              </div>
-
-              {/* Dismiss Button */}
-              <button
-                type="button"
-                onClick={() => setPurchaseFeedback(null)}
-                className="text-white/60 hover:text-white p-1 rounded hover:bg-white/10 transition-colors shrink-0 text-xs cursor-pointer"
-                title="Dismiss"
-              >
-                ✕
-              </button>
-            </div>
-          </div>
-        )}
-
-        {successMsg && !purchaseFeedback && (
-          <div className="text-[11px] text-emerald-800 font-bold bg-emerald-50 border border-emerald-300 rounded-lg p-2 text-center flex items-center justify-center gap-1.5 animate-fadeIn">
-            <span>🎉</span>
-            <span>{successMsg}</span>
-          </div>
-        )}
-
-        {errorMsg && (
-          <div className="text-[11px] text-red-600 font-bold bg-red-50 border border-red-200 rounded-lg p-1.5 text-center">
-            ⚠️ {errorMsg}
-          </div>
-        )}
-
+          <span>🔥</span>
+          <span>{lang === 'bn' ? 'হট নম্বর ও মিডিল' : 'Hot Picks & Middles'}</span>
+          <span className="bg-amber-100 text-amber-900 text-[9px] px-1.5 py-0.2 rounded-full font-bold">
+            6
+          </span>
+        </button>
       </div>
 
-      {/* 5. Paper Tickets Display (Saved for selected game with stacked Sem visual) */}
-      <div className="space-y-3">
-        <div className="flex items-center justify-between px-1">
-          <h2 className="text-xs sm:text-sm font-black text-slate-900 flex items-center gap-1.5">
-            <span>🎟️</span>
-            <span>
-              {lang === 'bn' 
-                ? `আপনার টিকিট (${selectedDate === todayStr ? 'আজ' : 'গতকাল'} • ${selectedSlot})` 
-                : `Your Tickets (${selectedSlot})`}
-            </span>
-            <span className={`text-[10px] px-2 py-0.2 rounded-full font-mono font-bold shadow-2xs ${
-              activeGameTickets.length >= 5
-                ? 'bg-amber-100 text-amber-900 border border-amber-300'
-                : 'bg-slate-200 text-slate-800'
-            }`}>
-              {activeGameTickets.length}/5
-            </span>
-          </h2>
+      {/* TAB 1: MY TICKETS & SIMULATOR */}
+      {activeTab === 'tickets' && (
+        <div className="space-y-3 animate-fadeIn">
+          
+          {/* Game Date & Slot Selector */}
+          <div className="bg-white border border-slate-200 rounded-2xl p-2.5 sm:p-3 shadow-2xs space-y-2">
+            
+            {/* Date Switcher: Today vs Yesterday */}
+            <div className="flex items-center justify-between border-b border-slate-100 pb-2 px-0.5">
+              <span className="text-[11px] font-bold text-slate-600 flex items-center gap-1">
+                <span>📅</span>
+                <span>{lang === 'bn' ? 'খেলার তারিখ:' : 'Game Date:'}</span>
+              </span>
 
-          {activeGameTickets.length > 0 && (
+              <div className="flex items-center gap-1.5">
+                <button
+                  type="button"
+                  onClick={() => { setSelectedDate(todayStr); setErrorMsg(null); }}
+                  className={`px-2.5 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                    selectedDate === todayStr
+                      ? 'bg-blue-700 text-white shadow-2xs'
+                      : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
+                  }`}
+                >
+                  {lang === 'bn' ? 'আজকের ড্র' : 'Today'}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => { setSelectedDate(yesterdayStr); setErrorMsg(null); }}
+                  className={`px-2.5 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                    selectedDate === yesterdayStr
+                      ? 'bg-blue-700 text-white shadow-2xs'
+                      : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
+                  }`}
+                >
+                  {lang === 'bn' ? 'গতকালকের ড্র' : 'Yesterday'}
+                </button>
+              </div>
+            </div>
+
+            {/* 3 Slot Tabs (1:00 PM | 6:00 PM | 8:00 PM) */}
+            <div className="grid grid-cols-3 gap-1.5 sm:gap-2">
+              {(['1PM', '6PM', '8PM'] as const).map(slot => {
+                const isSelected = selectedSlot === slot;
+                const slotTicketsCount = myTickets.filter(t => t.date === selectedDate && t.slot === slot).length;
+                const isNext = selectedDate === todayStr && nextUpcoming.slot === slot;
+                const isPassed = (
+                  selectedDate < todayStr ||
+                  (selectedDate === todayStr && (
+                    (slot === '1PM' && is1pmPassed) ||
+                    (slot === '6PM' && is6pmPassed) ||
+                    (slot === '8PM' && is8pmPassed)
+                  ))
+                );
+
+                return (
+                  <button
+                    key={slot}
+                    type="button"
+                    onClick={() => { setSelectedSlot(slot); setErrorMsg(null); }}
+                    className={`py-1.5 sm:py-2 px-1 rounded-xl text-center font-black transition-all relative cursor-pointer ${
+                      isSelected
+                        ? 'bg-blue-700 text-white shadow-sm ring-2 ring-blue-600'
+                        : 'bg-slate-50 hover:bg-slate-100 border border-slate-200 text-slate-700'
+                    }`}
+                  >
+                    <div className="text-xs sm:text-sm font-black flex items-center justify-center gap-1">
+                      <span>{slot === '1PM' ? '1:00 PM' : slot === '6PM' ? '6:00 PM' : '8:00 PM'}</span>
+                      {slotTicketsCount > 0 && (
+                        <span className={`text-[10px] px-1.5 py-0.2 rounded-full font-bold ${
+                          isSelected ? 'bg-white/20 text-white' : 'bg-blue-100 text-blue-800'
+                        }`}>
+                          {slotTicketsCount}
+                        </span>
+                      )}
+                    </div>
+                    <div className="text-[9px] mt-0.5">
+                      {isNext ? (
+                        <span className={isSelected ? 'text-emerald-300 font-bold' : 'text-emerald-600 font-bold'}>
+                          ⚡ {lang === 'bn' ? 'পরবর্তী' : 'Next'}
+                        </span>
+                      ) : isPassed ? (
+                        <span className={isSelected ? 'text-blue-200' : 'text-slate-400'}>
+                          {lang === 'bn' ? 'ফলাফল প্রকাশিত' : 'Result Out'}
+                        </span>
+                      ) : (
+                        <span className={isSelected ? 'text-blue-200' : 'text-slate-400'}>
+                          {lang === 'bn' ? 'আসন্ন' : 'Upcoming'}
+                        </span>
+                      )}
+                    </div>
+                  </button>
+                );
+              })}
+            </div>
+
+          </div>
+
+          {/* Quick Generator Box with 1-Tap Middle Chips */}
+          <div className="bg-white border border-slate-200 rounded-2xl p-3 sm:p-3.5 shadow-sm space-y-2.5">
+            
+            {/* Top Bar: Quota counter & Retail Standard */}
+            <div className="flex items-center justify-between text-xs">
+              <span className="font-black text-slate-700 flex items-center gap-1">
+                <span>🎲</span>
+                <span>{lang === 'bn' ? 'লাকি টিকিট জেনারেটর:' : 'Lucky Ticket Generator:'}</span>
+              </span>
+              <div className="flex items-center gap-1.5">
+                <span className={`font-mono font-bold text-[10px] px-2 py-0.5 rounded-md border ${
+                  activeGameTickets.length >= 12
+                    ? 'bg-amber-100 text-amber-900 border-amber-300'
+                    : 'bg-slate-100 text-slate-700 border-slate-200'
+                }`}>
+                  {activeGameTickets.length}/12 {lang === 'bn' ? 'বুকলেট' : 'Booklets'}
+                </span>
+                <span className="bg-amber-500 text-white font-mono font-black text-[10px] px-2 py-0.5 rounded-md">
+                  5 SEM • ₹35
+                </span>
+              </div>
+            </div>
+
+            {/* Big Quick Lucky Ticket Button */}
             <button
               type="button"
-              onClick={handleClearSlot}
-              className="text-[11px] font-bold text-red-600 hover:underline cursor-pointer"
+              onClick={handleQuickTicket}
+              disabled={activeGameTickets.length >= 12}
+              className={`w-full font-black text-xs sm:text-sm py-2.5 px-4 rounded-xl shadow-xs transition-all flex items-center justify-center gap-2 ${
+                activeGameTickets.length >= 12
+                  ? 'bg-slate-100 text-slate-400 border border-slate-200 cursor-not-allowed'
+                  : 'bg-gradient-to-r from-amber-500 via-orange-500 to-amber-600 hover:from-amber-600 hover:to-orange-600 text-white active:scale-[0.99] cursor-pointer'
+              }`}
             >
-              {lang === 'bn' ? 'এই ড্র ক্লিয়ার করুন' : 'Clear game'}
-            </button>
-          )}
-        </div>
-
-        {/* Active Game Financial P/L Bar */}
-        {activeGameTickets.length > 0 && (
-          <div className="bg-slate-900 text-white rounded-xl p-3 border border-slate-800 shadow-xs space-y-2.5">
-            <div className="flex items-center justify-between text-xs border-b border-slate-800 pb-1.5">
-              <span className="font-bold flex items-center gap-1.5 text-slate-200">
-                <span>📊</span>
-                <span>
-                  {lang === 'bn' 
-                    ? `${selectedDate === todayStr ? 'আজকের' : 'গতকালকের'} ${selectedSlot} ড্র-এর মোট লাভ/ক্ষতি (P/L):` 
-                    : `${selectedSlot} Game Financial Summary (P/L):`}
-                </span>
-              </span>
-              <span className="font-mono text-[10px] text-slate-400 bg-white/10 px-2 py-0.5 rounded">
-                {activeGameTickets.length} {lang === 'bn' ? 'টি টিকিট' : 'Tickets'} • {gameStats.totalSem} Sem
-              </span>
-            </div>
-
-            <div className="grid grid-cols-3 gap-2 text-center">
-              <div className="bg-white/5 rounded-lg p-2 border border-white/10">
-                <span className="text-[9px] text-slate-400 block font-bold uppercase">
-                  {lang === 'bn' ? 'মোট খরচ' : 'Total Spent'}
-                </span>
-                <span className="font-mono text-xs sm:text-sm font-bold text-slate-200">
-                  ₹{gameStats.totalCost}
-                </span>
-              </div>
-
-              <div className="bg-white/5 rounded-lg p-2 border border-white/10">
-                <span className="text-[9px] text-slate-400 block font-bold uppercase">
-                  {lang === 'bn' ? 'মোট জয়' : 'Total Won'}
-                </span>
-                <span className="font-mono text-xs sm:text-sm font-bold text-amber-400">
-                  ₹{formatINR(gameStats.totalReturns)}
-                  {gameStats.winsCount > 0 && (
-                    <span className="text-[9px] text-emerald-400 ml-1 font-sans">
-                      ({gameStats.winsCount} জয়)
-                    </span>
-                  )}
-                </span>
-              </div>
-
-              <div className={`rounded-lg p-2 border ${
-                gameStats.isPending 
-                  ? 'bg-blue-950/40 border-blue-800 text-blue-300' 
-                  : gameStats.netPnl >= 0 
-                  ? 'bg-emerald-950/60 border-emerald-600 text-emerald-300 ring-1 ring-emerald-500/50' 
-                  : 'bg-rose-950/40 border-rose-900/60 text-rose-300'
-              }`}>
-                <span className="text-[9px] text-slate-400 block font-bold uppercase">
-                  {gameStats.isPending 
-                    ? (lang === 'bn' ? 'স্ট্যাটাস' : 'Status') 
-                    : (lang === 'bn' ? 'নিট লাভ/ক্ষতি' : 'Net P/L')}
-                </span>
-                <span className="font-mono text-xs sm:text-sm font-black truncate block">
-                  {gameStats.isPending 
-                    ? (lang === 'bn' ? 'ড্র অপেক্ষায়' : 'Awaiting Draw')
-                    : gameStats.netPnl >= 0 
-                    ? `+₹${formatINR(gameStats.netPnl)}` 
-                    : `-₹${formatINR(Math.abs(gameStats.netPnl))}`}
-                </span>
-              </div>
-            </div>
-
-            {/* Bottom Insight Line */}
-            <div className="text-[10px] text-center font-bold pt-0.5">
-              {gameStats.isPending ? (
-                <span className="text-blue-300">
-                  {lang === 'bn' 
-                    ? `⏳ এই ড্র-তে মোট ₹${gameStats.totalCost} বিনিয়োগ হয়েছে। ড্র ফলাফল প্রকাশ হলে প্রফিট/লস এখানে দেখাবে।` 
-                    : `⏳ ₹${gameStats.totalCost} invested in this draw. Profit/loss will calculate after draw.`}
-                </span>
-              ) : gameStats.netPnl > 0 ? (
-                <span className="text-emerald-400 flex items-center justify-center gap-1">
-                  <span>🎉</span>
-                  <span>
-                    {lang === 'bn' 
-                      ? `দারুণ! এই ড্র-তে আপনার মোট নিট লাভ: +₹${formatINR(gameStats.netPnl)}` 
-                      : `Great! Net profit in this draw: +₹${formatINR(gameStats.netPnl)}`}
-                  </span>
-                </span>
-              ) : gameStats.netPnl === 0 ? (
-                <span className="text-slate-400">
-                  {lang === 'bn' ? 'খরচ ও প্রাপ্তি সমান সমান (ব্রেক-ইভেন)' : 'Break-even (₹0 P/L)'}
-                </span>
-              ) : (
-                <span className="text-rose-400">
-                  {lang === 'bn' 
-                    ? `এই ড্র-তে নিট ক্ষতি: -₹${formatINR(Math.abs(gameStats.netPnl))} (খরচ: ₹${gameStats.totalCost}, প্রাপ্তি: ₹${formatINR(gameStats.totalReturns)})` 
-                    : `Net loss in this draw: -₹${formatINR(Math.abs(gameStats.netPnl))} (Spent: ₹${gameStats.totalCost}, Won: ₹${formatINR(gameStats.totalReturns)})`}
-                </span>
-              )}
-            </div>
-          </div>
-        )}
-
-        {/* SEPARATE SEM CONTROLLER PANEL ON THE PAGE */}
-        {activeGameTickets.length > 0 && (
-          <div className="bg-gradient-to-r from-amber-500/10 via-orange-500/10 to-amber-500/10 border-2 border-amber-400/80 rounded-2xl p-3 sm:p-3.5 shadow-xs space-y-2.5">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1.5">
-              <div className="flex items-center gap-2">
-                <span className="text-xl">🏷️</span>
-                <div>
-                  <h3 className="text-xs sm:text-sm font-black text-slate-900 flex items-center gap-1.5">
-                    <span>
-                      {lang === 'bn' ? 'সেম কন্ট্রোলার (Sem Controller)' : lang === 'hi' ? 'सेम कंट्रोलर' : 'Quick Sem Controller'}
-                    </span>
-                    <span className="bg-amber-500 text-white text-[10px] font-black px-2 py-0.5 rounded-full font-mono">
-                      {activeGameTickets.length} {lang === 'bn' ? 'বুকলেট' : 'Booklets'}
-                    </span>
-                  </h3>
-                  <p className="text-[10px] text-slate-600">
-                    {lang === 'bn' 
-                      ? 'টিকিটের সেম সরাসরি বাড়াতে বা কমাতে নিচের বাটনগুলোতে ক্লিক করুন:' 
-                      : lang === 'hi'
-                      ? 'टिकट का सेम बढ़ाने या घटाने के लिए नीचे बटन पर क्लिक करें:'
-                      : 'Easily increase or decrease Sem for your ticket with 1 tap:'}
-                  </p>
-                </div>
-              </div>
-              
-              {/* If more than 1 ticket, quick 1-tap ticket switcher pill buttons */}
-              {activeGameTickets.length > 1 && (
-                <div className="flex items-center gap-1.5 overflow-x-auto pb-1 pt-0.5">
-                  <span className="text-[10px] font-bold text-slate-600 shrink-0">
-                    {lang === 'bn' ? 'টিকিট বাছুন:' : lang === 'hi' ? 'टिकट चुनें:' : 'Select Ticket:'}
-                  </span>
-                  <div className="flex items-center gap-1.5 flex-wrap">
-                    {activeGameTickets.map(t => {
-                      const isTarget = (activeTicketIdForSem || activeGameTickets[0]?.id) === t.id;
-                      return (
-                        <button
-                          key={t.id}
-                          type="button"
-                          onClick={() => setActiveTicketIdForSem(t.id)}
-                          className={`px-2.5 py-1 rounded-lg text-xs font-mono font-bold transition-all cursor-pointer flex items-center gap-1.5 ${
-                            isTarget
-                              ? 'bg-amber-600 text-white shadow-xs ring-2 ring-amber-400 font-black'
-                              : 'bg-white text-slate-700 border border-amber-200 hover:bg-amber-50'
-                          }`}
-                        >
-                          <span>{t.series} {t.number}</span>
-                          <span className={`text-[10px] px-1 py-0.2 rounded font-black ${
-                            isTarget ? 'bg-amber-800 text-white' : 'bg-slate-100 text-slate-700'
-                          }`}>
-                            {t.sem || 5} Sem
-                          </span>
-                        </button>
-                      );
-                    })}
-                  </div>
-                </div>
-              )}
-            </div>
-
-            {/* Big Quick Stepper Action Buttons */}
-            {(() => {
-              const targetTicket = activeGameTickets.find(t => t.id === (activeTicketIdForSem || activeGameTickets[0]?.id)) || activeGameTickets[0];
-              if (!targetTicket) return null;
-              const targetSem = targetTicket.sem || 5;
-              const targetCost = targetSem * 7;
-
-              return (
-                <div className="bg-white rounded-xl p-2.5 border border-amber-300/80 shadow-2xs flex flex-col sm:flex-row items-center justify-between gap-2.5">
-                  <div className="flex items-center gap-2">
-                    <span className="font-mono font-black text-xs sm:text-sm bg-slate-900 text-white px-2.5 py-1 rounded-lg shadow-2xs">
-                      {targetTicket.series} {targetTicket.number}
-                    </span>
-                    <div className="text-xs">
-                      <span className="font-bold text-slate-700">{lang === 'bn' ? 'বর্তমান সেম:' : lang === 'hi' ? 'वर्तमान सेम:' : 'Current Sem:'}</span>{' '}
-                      <span className="font-mono font-black text-amber-600 bg-amber-50 border border-amber-200 px-1.5 py-0.5 rounded">
-                        {targetSem} SEM
-                      </span>{' '}
-                      <span className="text-slate-500 font-mono text-[11px] font-bold">(₹{targetCost})</span>
-                    </div>
-                  </div>
-
-                  <div className="flex items-center gap-1.5 w-full sm:w-auto justify-end flex-wrap">
-                    {targetSem > 5 && (
-                      <button
-                        type="button"
-                        onClick={() => handleAddSemToTicket(targetTicket.id, -5)}
-                        className="flex-1 sm:flex-none px-3.5 py-2 rounded-xl text-xs font-black bg-rose-600 hover:bg-rose-500 text-white shadow-xs active:scale-95 transition-all flex items-center justify-center gap-1 cursor-pointer"
-                        title="Reduce 5 Sem (-₹35)"
-                      >
-                        <span>{lang === 'bn' ? '−৫ সেম' : lang === 'hi' ? '−५ सेम' : '−5 Sem'}</span>
-                        <span className="text-[10px] opacity-80 font-mono">(-₹35)</span>
-                      </button>
-                    )}
-
-                    <button
-                      type="button"
-                      onClick={() => handleAddSemToTicket(targetTicket.id, 5)}
-                      className="flex-1 sm:flex-none px-3.5 py-2 rounded-xl text-xs font-black bg-emerald-600 hover:bg-emerald-500 text-white shadow-xs active:scale-95 transition-all flex items-center justify-center gap-1 cursor-pointer"
-                      title="Add 5 Sem (+₹35)"
-                    >
-                      <span>{lang === 'bn' ? '+৫ সেম' : lang === 'hi' ? '+५ सेम' : '+5 Sem'}</span>
-                      <span className="text-[10px] text-emerald-200 font-mono">(+₹35)</span>
-                    </button>
-
-                    <button
-                      type="button"
-                      onClick={() => handleAddSemToTicket(targetTicket.id, 10)}
-                      className="flex-1 sm:flex-none px-3.5 py-2 rounded-xl text-xs font-black bg-blue-600 hover:bg-blue-500 text-white shadow-xs active:scale-95 transition-all flex items-center justify-center gap-1 cursor-pointer"
-                      title="Add 10 Sem (+₹70)"
-                    >
-                      <span>{lang === 'bn' ? '+১০ সেম' : lang === 'hi' ? '+১০ सेम' : '+10 Sem'}</span>
-                      <span className="text-[10px] text-blue-200 font-mono">(+₹70)</span>
-                    </button>
-
-                    <button
-                      type="button"
-                      onClick={() => handleAddSemToTicket(targetTicket.id, 25)}
-                      className="flex-1 sm:flex-none px-3.5 py-2 rounded-xl text-xs font-black bg-purple-600 hover:bg-purple-500 text-white shadow-xs active:scale-95 transition-all flex items-center justify-center gap-1 cursor-pointer"
-                      title="Add 25 Sem (+₹175)"
-                    >
-                      <span>{lang === 'bn' ? '+২৫ সেম' : lang === 'hi' ? '+२५ सेम' : '+25 Sem'}</span>
-                      <span className="text-[10px] text-purple-200 font-mono">(+₹175)</span>
-                    </button>
-                  </div>
-                </div>
-              );
-            })()}
-          </div>
-        )}
-
-        {activeGameTickets.length === 0 ? (
-          <div className="bg-white border-2 border-dashed border-slate-200 rounded-2xl p-6 text-center space-y-1.5">
-            <span className="text-3xl block">🎟️</span>
-            <p className="text-xs font-bold text-slate-600">
-              {lang === 'bn'
-                ? `এই ${selectedSlot} ড্র-এর জন্য কোনো টিকিট নেই।`
-                : `No tickets printed for ${selectedSlot} yet.`}
-            </p>
-            <p className="text-[11px] text-slate-400">
-              {lang === 'bn'
-                ? 'প্রতিটি নতুন খেলায় নতুন ৫ সেম টিকিট নিতে উপরের বাটন বা নিচের হট নম্বর থেকে যোগ করুন!'
-                : 'Every new game requires new tickets. Print a 5 Sem Lucky Ticket above or pick from Hot Numbers below!'}
-            </p>
-          </div>
-        ) : (
-          <div className="space-y-3">
-            {activeGameTickets.map(ticket => (
-              <RealPaperTicket
-                key={ticket.id}
-                ticket={ticket}
-                evalRes={evaluateTicket(ticket)}
-                onDelete={handleDeleteTicket}
-                onCopy={handleCopyTicket}
-                isCopied={copiedTicketId === ticket.id}
-                lang={lang}
-                isSelected={(activeTicketIdForSem || activeGameTickets[0]?.id) === ticket.id}
-                onSelect={setActiveTicketIdForSem}
-              />
-            ))}
-          </div>
-        )}
-      </div>
-
-      {/* 6. 🔥 Hot Numbers & Heat Map Generator Section (Below Tickets) */}
-      <div className="bg-white border border-amber-300 rounded-2xl p-3 sm:p-4 shadow-sm space-y-3">
-        <div className="flex items-center justify-between border-b border-amber-100 pb-2">
-          <div>
-            <h3 className="text-xs sm:text-sm font-black text-slate-900 flex items-center gap-1.5">
-              <span>🔥</span>
+              <span className="text-base sm:text-lg">{activeGameTickets.length >= 12 ? '🔒' : '🎲'}</span>
               <span>
-                {lang === 'bn' 
-                  ? 'হট নম্বর ও হিট ম্যাপ জেনারেটর' 
-                  : lang === 'hi' 
-                  ? 'हॉट नंबर एवं हीट मैप जनरेटर' 
-                  : 'Hot Numbers & Heat Map Generator'}
+                {activeGameTickets.length >= 12
+                  ? (lang === 'bn' ? '১২/১২ বুকলেট পূর্ণ (নিচে সেম বৃদ্ধি করুন)' : '12/12 Booklets Full (Add Sem below)')
+                  : (lang === 'bn' ? 'কুইক লাকি টিকিট নিন (৫ সেম • ₹৩৫)' : 'Print Quick Lucky Ticket (5 Sem • ₹35)')}
               </span>
-            </h3>
-            <p className="text-[10px] text-slate-500 mt-0.5">
-              {lang === 'bn'
-                ? 'অতীত ড্র-তে বহুবার আসা নম্বর ও টপ হিট মিডিল/এন্ডিং প্যাটার্ন'
-                : 'Multiple-time repeating winners & top heat map middle/ending combinations'}
-            </p>
-          </div>
+            </button>
 
-          <button
-            type="button"
-            onClick={generateHotNumbers}
-            disabled={isRefreshingHot}
-            className="text-[10px] sm:text-[11px] font-bold text-amber-900 bg-amber-100 hover:bg-amber-200 active:scale-95 border border-amber-300 px-2.5 py-1 rounded-lg transition-all flex items-center gap-1 shrink-0 cursor-pointer shadow-2xs"
-            title="Refresh hot numbers"
-          >
-            <span className={isRefreshingHot ? 'animate-spin inline-block' : 'inline-block'}>🔄</span>
-            <span>
-              {isRefreshingHot 
-                ? (lang === 'bn' ? 'তৈরি হচ্ছে...' : 'Generating...') 
-                : (lang === 'bn' ? 'নতুন নম্বর' : 'Refresh')}
-            </span>
-          </button>
-        </div>
+            {/* 1-Tap "Popular Middles" Chip Bar (Bengal retail lottery culture) */}
+            <div className="pt-1 border-t border-slate-100">
+              <div className="flex items-center justify-between text-[11px] mb-1.5">
+                <span className="font-bold text-slate-600 flex items-center gap-1">
+                  <span>🎯</span>
+                  <span>{lang === 'bn' ? 'জনপ্রিয় মিডিল থেকে টিকিট নিন:' : '1-Tap Middle Quick Pick:'}</span>
+                </span>
+                <span className="text-[10px] text-slate-400">
+                  {lang === 'bn' ? 'ট্যাপ করলে সরাসরি ৫ সেম তৈরি হবে' : 'Tap to generate 5 Sem'}
+                </span>
+              </div>
 
-        {/* Hot Cards Grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-          {hotCards.map((item, idx) => {
-            const existingInGame = activeGameTickets.find(t => t.number === item.number);
-            const currentSem = existingInGame?.sem || 0;
-            const targetSem = currentSem > 0 ? currentSem : 5;
+              {/* Horizontal Scrollable Middle Chips */}
+              <div className="flex items-center gap-1.5 overflow-x-auto pb-1 scrollbar-thin">
+                {popularMiddles.map((mid) => (
+                  <button
+                    key={mid}
+                    type="button"
+                    onClick={() => handlePickMiddleTicket(mid)}
+                    disabled={activeGameTickets.length >= 12}
+                    className="shrink-0 px-2.5 py-1 rounded-lg text-xs font-mono font-black bg-amber-50 hover:bg-amber-100 active:scale-95 border border-amber-200 text-amber-950 transition-all flex items-center gap-1 cursor-pointer shadow-2xs disabled:opacity-50 disabled:cursor-not-allowed"
+                    title={`Generate ticket with middle ${mid}`}
+                  >
+                    <span className="text-amber-600 text-[10px]">#</span>
+                    <span>{mid} মিডিল</span>
+                  </button>
+                ))}
+              </div>
+            </div>
 
-            // Check if this number won in the currently selected game
-            const previewEval = evaluateTicket({
-              id: `preview-${idx}`,
-              series: item.series,
-              number: item.number,
-              sem: targetSem,
-              slot: selectedSlot,
-              date: selectedDate,
-              createdAt: 0
-            });
-            const isWinner = previewEval.status === 'RESULT_OUT' && previewEval.isWin;
-            const previewCost = targetSem * 7;
-            const previewNetProfit = previewEval.prizeAmount - previewCost;
+            {/* Manual 5-Digit Number Entry */}
+            <form 
+              onSubmit={(e) => {
+                e.preventDefault();
+                addTicket(manualSeries, manualNumber, 5);
+              }} 
+              className="flex items-center gap-1.5 pt-1 border-t border-slate-100"
+            >
+              <input
+                type="text"
+                placeholder="72B"
+                maxLength={4}
+                value={manualSeries}
+                onChange={e => setManualSeries(e.target.value.toUpperCase())}
+                className="w-16 text-center font-mono font-black text-xs sm:text-sm uppercase bg-slate-50 border border-slate-300 rounded-xl px-1.5 py-2 focus:ring-2 focus:ring-blue-600 focus:bg-white outline-none shrink-0"
+                title="Series"
+              />
+              <input
+                type="text"
+                placeholder={lang === 'bn' ? '৫ ডিজিট নম্বর দিন (যেমন: 48755)' : 'Enter 5-digit number'}
+                maxLength={5}
+                value={manualNumber}
+                onChange={e => setManualNumber(e.target.value.replace(/\D/g, ''))}
+                className="flex-1 min-w-0 font-mono font-black text-xs sm:text-sm tracking-wider bg-slate-50 border border-slate-300 rounded-xl px-2.5 py-2 focus:ring-2 focus:ring-blue-600 focus:bg-white outline-none text-center"
+                title="5-digit number"
+              />
+              <button
+                type="submit"
+                disabled={activeGameTickets.length >= 12}
+                className="bg-blue-700 hover:bg-blue-800 disabled:bg-slate-300 disabled:cursor-not-allowed text-white font-black text-xs sm:text-sm px-3.5 py-2 rounded-xl shadow-xs transition-all active:scale-95 shrink-0 cursor-pointer"
+              >
+                {lang === 'bn' ? '+ প্রিন্ট' : '+ Print'}
+              </button>
+            </form>
 
-            return (
+            {/* Instant Purchase & Live Profit/Loss Feedback Toast */}
+            {purchaseFeedback && (
               <div 
-                key={idx} 
-                className={`border rounded-xl p-2.5 flex items-center justify-between gap-2 transition-all group ${
-                  isWinner
-                    ? 'border-emerald-500 bg-emerald-50/80 ring-1 ring-emerald-400 shadow-2xs'
-                    : currentSem > 0 
-                    ? 'border-blue-400 bg-blue-50/50 ring-1 ring-blue-300' 
-                    : 'bg-slate-50 hover:bg-amber-50/40 border-slate-200 hover:border-amber-300'
+                className={`rounded-xl p-2.5 border shadow-xs transition-all animate-fadeIn relative ${
+                  purchaseFeedback.evalRes.status === 'RESULT_OUT' && purchaseFeedback.evalRes.isWin
+                    ? 'bg-gradient-to-r from-emerald-800 to-emerald-900 text-white border-emerald-400 ring-2 ring-emerald-500/40'
+                    : purchaseFeedback.evalRes.status === 'RESULT_OUT' && !purchaseFeedback.evalRes.isWin
+                    ? 'bg-gradient-to-r from-slate-900 to-slate-800 text-white border-slate-700'
+                    : 'bg-gradient-to-r from-blue-950 to-indigo-950 text-white border-blue-700'
                 }`}
               >
-                <div className="min-w-0">
-                  <div className="flex items-center gap-1.5 flex-wrap">
-                    <span className="font-mono text-xs font-black bg-amber-200/90 text-amber-950 px-1.5 py-0.2 rounded">
-                      {item.series}
+                <div className="flex items-start justify-between gap-2">
+                  <div className="flex items-start gap-2 min-w-0">
+                    <span className="text-xl shrink-0 mt-0.5">
+                      {purchaseFeedback.evalRes.status === 'RESULT_OUT' && purchaseFeedback.evalRes.isWin ? '🎉' : purchaseFeedback.evalRes.status === 'RESULT_OUT' ? '🎟️' : '⏳'}
                     </span>
-                    <span className="font-mono text-sm sm:text-base font-black text-slate-950 tracking-wider">
-                      {item.number}
-                    </span>
-                    {currentSem > 0 && (
-                      <span className="bg-slate-800 text-white text-[9px] font-black px-1.5 py-0.2 rounded-md shrink-0 shadow-2xs">
-                        🎟️ {currentSem} Sem
-                      </span>
-                    )}
-                    {isWinner && (
-                      <span className="bg-emerald-600 text-white text-[9px] font-black px-1.5 py-0.2 rounded-md shrink-0 shadow-2xs animate-pulse">
-                        🎉 WIN: +₹{formatINR(previewNetProfit)}
-                      </span>
-                    )}
-                  </div>
+                    <div className="space-y-0.5 min-w-0">
+                      <div className="flex items-center gap-1.5 flex-wrap">
+                        <span className="text-xs font-black text-white">
+                          {purchaseFeedback.isIncrement
+                            ? (purchaseFeedback.semAdded > 0
+                                ? (lang === 'bn' ? `+${purchaseFeedback.semAdded} সেম বৃদ্ধি সফল!` : `+${purchaseFeedback.semAdded} Sem Added!`)
+                                : (lang === 'bn' ? `${Math.abs(purchaseFeedback.semAdded)} সেম কমানো হয়েছে` : `${Math.abs(purchaseFeedback.semAdded)} Sem Reduced`))
+                            : (lang === 'bn' ? 'টিকিট প্রিন্ট সম্পন্ন!' : 'Ticket Printed!')}
+                        </span>
+                        <span className="bg-white/20 font-mono text-[10px] font-bold px-1.5 py-0.2 rounded text-white">
+                          {purchaseFeedback.ticket.series} {purchaseFeedback.ticket.number}
+                        </span>
+                        <span className="bg-amber-400 text-amber-950 font-black text-[9px] px-1.5 py-0.2 rounded">
+                          {purchaseFeedback.totalSem} Sem (₹{purchaseFeedback.ticketCost})
+                        </span>
+                      </div>
 
-                  <div className="text-[10px] text-slate-500 mt-0.5 flex items-center gap-1 truncate">
-                    <span className="font-bold text-amber-700 shrink-0">
-                      {lang === 'bn' ? item.tagBn : item.tag}
-                    </span>
-                    <span>•</span>
-                    <span className="truncate">{lang === 'bn' ? item.reasonBn : item.reason}</span>
-                  </div>
-
-                  {isWinner && (
-                    <div className="text-[9px] font-bold text-emerald-800 mt-0.5">
-                      {previewEval.prizeTitle} (+₹{formatINR(previewEval.prizeAmount)}) • {lang === 'bn' ? `নিট লাভ: +₹${formatINR(previewNetProfit)}` : `Net: +₹${formatINR(previewNetProfit)}`}
+                      {purchaseFeedback.evalRes.status === 'RESULT_OUT' ? (
+                        purchaseFeedback.evalRes.isWin ? (
+                          <div className="text-xs font-black text-amber-300 font-mono flex items-center gap-1.5">
+                            <span>🏆 {purchaseFeedback.evalRes.prizeTitle} (+₹{formatINR(purchaseFeedback.evalRes.prizeAmount)})</span>
+                            <span>•</span>
+                            <span className="text-emerald-200">Net: +₹{formatINR(purchaseFeedback.netPnl)}</span>
+                          </div>
+                        ) : (
+                          <div className="text-[11px] text-slate-300 flex items-center gap-1.5">
+                            <span>{lang === 'bn' ? 'এই ড্র-তে মেলেনি।' : 'No prize in this draw.'}</span>
+                            <span className="text-rose-300 font-bold font-mono">Net: -₹{purchaseFeedback.ticketCost}</span>
+                          </div>
+                        )
+                      ) : (
+                        <div className="text-[10px] text-blue-200">
+                          {lang === 'bn'
+                            ? `বিনিয়োগ: ₹${purchaseFeedback.ticketCost} • ${purchaseFeedback.ticket.slot} ড্র সম্পন্ন হলে প্রফিট/লস লাইভ আপডেট হবে।`
+                            : `Invested: ₹${purchaseFeedback.ticketCost} • P/L will calculate after ${purchaseFeedback.ticket.slot} draw.`}
+                        </div>
+                      )}
                     </div>
-                  )}
-                </div>
+                  </div>
 
-                <div className="flex items-center gap-1 shrink-0">
-                  {/* Copy Button */}
                   <button
                     type="button"
-                    onClick={() => handleCopyTicket(`hot-${idx}`, `${item.series} ${item.number}`)}
-                    className="p-1.5 rounded-lg border border-slate-200 bg-white hover:bg-slate-100 text-slate-700 text-xs shadow-2xs transition-all cursor-pointer"
-                    title="Copy number"
+                    onClick={() => setPurchaseFeedback(null)}
+                    className="text-white/60 hover:text-white p-1 rounded text-xs cursor-pointer"
+                    title="Dismiss"
                   >
-                    {copiedTicketId === `hot-${idx}` ? '✓' : '📋'}
-                  </button>
-
-                  {/* Add 5 Sem Button */}
-                  <button
-                    type="button"
-                    onClick={() => addTicket(item.series, item.number, 5)}
-                    className={`px-2.5 py-1.5 rounded-lg font-black text-xs shadow-2xs active:scale-95 transition-all flex items-center gap-1 cursor-pointer ${
-                      isWinner
-                        ? 'bg-emerald-600 hover:bg-emerald-700 text-white ring-1 ring-emerald-400'
-                        : 'bg-emerald-600 hover:bg-emerald-700 text-white'
-                    }`}
-                    title={
-                      currentSem > 0 
-                        ? (lang === 'bn' ? `${item.number} নম্বরে আরও +৫ সেম নিন` : `Add +5 more Sem to ${item.number}`)
-                        : (lang === 'bn' ? '৫ সেম টিকিট নিন' : 'Add 5 Sem ticket')
-                    }
-                  >
-                    <span>+</span>
-                    <span>5 Sem</span>
+                    ✕
                   </button>
                 </div>
               </div>
-            );
-          })}
-        </div>
-      </div>
+            )}
 
-      {/* 7. WhatsApp Share & Reset */}
+            {successMsg && !purchaseFeedback && (
+              <div className="text-[11px] text-emerald-800 font-bold bg-emerald-50 border border-emerald-300 rounded-lg p-2 text-center flex items-center justify-center gap-1.5 animate-fadeIn">
+                <span>🎉</span>
+                <span>{successMsg}</span>
+              </div>
+            )}
+
+            {errorMsg && (
+              <div className="text-[11px] text-red-600 font-bold bg-red-50 border border-red-200 rounded-lg p-1.5 text-center">
+                ⚠️ {errorMsg}
+              </div>
+            )}
+
+          </div>
+
+          {/* 3. UNIFIED ACTIVE GAME FINANCIAL SUMMARY CARD */}
+          {activeGameTickets.length > 0 && (
+            <div className="bg-slate-900 text-white rounded-2xl p-3 border border-slate-800 shadow-xs space-y-2">
+              <div className="flex items-center justify-between text-xs border-b border-slate-800 pb-1.5">
+                <span className="font-bold flex items-center gap-1 text-slate-200">
+                  <span>📊</span>
+                  <span>
+                    {lang === 'bn' 
+                      ? `${selectedDate === todayStr ? 'আজকের' : 'গতকালকের'} ${selectedSlot} ড্র লাভ/ক্ষতি (P/L):` 
+                      : `${selectedSlot} Draw Financial Summary (P/L):`}
+                  </span>
+                </span>
+                <span className="font-mono text-[10px] text-slate-400 bg-white/10 px-2 py-0.5 rounded">
+                  {activeGameTickets.length} {lang === 'bn' ? 'টিকিট' : 'Tickets'} • {gameStats.totalSem} Sem
+                </span>
+              </div>
+
+              <div className="grid grid-cols-3 gap-1.5 sm:gap-2 text-center">
+                <div className="bg-white/5 rounded-lg p-1.5 sm:p-2 border border-white/10">
+                  <span className="text-[9px] text-slate-400 block font-bold uppercase">
+                    {lang === 'bn' ? 'মোট খরচ' : 'Spent'}
+                  </span>
+                  <span className="font-mono text-xs sm:text-sm font-bold text-slate-200">
+                    ₹{gameStats.totalCost}
+                  </span>
+                </div>
+
+                <div className="bg-white/5 rounded-lg p-1.5 sm:p-2 border border-white/10">
+                  <span className="text-[9px] text-slate-400 block font-bold uppercase">
+                    {lang === 'bn' ? 'মোট জয়' : 'Won'}
+                  </span>
+                  <span className="font-mono text-xs sm:text-sm font-bold text-amber-400">
+                    ₹{formatINR(gameStats.totalReturns)}
+                  </span>
+                </div>
+
+                <div className={`rounded-lg p-1.5 sm:p-2 border ${
+                  gameStats.isPending 
+                    ? 'bg-blue-950/40 border-blue-800 text-blue-300' 
+                    : gameStats.netPnl >= 0 
+                    ? 'bg-emerald-950/60 border-emerald-600 text-emerald-300 ring-1 ring-emerald-500/50' 
+                    : 'bg-rose-950/40 border-rose-900/60 text-rose-300'
+                }`}>
+                  <span className="text-[9px] text-slate-400 block font-bold uppercase">
+                    {gameStats.isPending 
+                      ? (lang === 'bn' ? 'স্ট্যাটাস' : 'Status') 
+                      : (lang === 'bn' ? 'নিট লাভ/ক্ষতি' : 'Net P/L')}
+                  </span>
+                  <span className="font-mono text-xs sm:text-sm font-black truncate block">
+                    {gameStats.isPending 
+                      ? (lang === 'bn' ? 'ড্র অপেক্ষায়' : 'Awaiting') 
+                      : gameStats.netPnl >= 0 
+                      ? `+₹${formatINR(gameStats.netPnl)}` 
+                      : `-₹${formatINR(Math.abs(gameStats.netPnl))}`}
+                  </span>
+                </div>
+              </div>
+
+              {/* Expandable Lifetime Stats Link */}
+              <div className="pt-1 border-t border-slate-800/80 flex items-center justify-between text-[10px]">
+                <span className="text-slate-400">
+                  {gameStats.isPending
+                    ? (lang === 'bn' ? 'ড্র-এর ফলাফল প্রকাশ হলে প্রফিট হিসাব হবে' : 'P/L settles after official draw')
+                    : gameStats.netPnl > 0
+                    ? `🎉 লাভ: +₹${formatINR(gameStats.netPnl)}`
+                    : `ক্ষতি: -₹${formatINR(Math.abs(gameStats.netPnl))}`}
+                </span>
+
+                <button
+                  type="button"
+                  onClick={() => setShowGlobalStats(!showGlobalStats)}
+                  className="text-amber-400 hover:text-amber-300 font-bold underline cursor-pointer"
+                >
+                  {showGlobalStats ? (lang === 'bn' ? '▲ লাইফটাইম হিসেব লুকান' : '▲ Hide All-Time') : (lang === 'bn' ? '▼ লাইফটাইম হিসেব দেখুন' : '▼ View All-Time Stats')}
+                </button>
+              </div>
+
+              {/* Collapsible Lifetime Statistics Drawer */}
+              {showGlobalStats && (
+                <div className="bg-white/5 rounded-xl p-2.5 border border-white/10 space-y-1.5 animate-fadeIn">
+                  <div className="text-[10px] font-bold text-amber-300">
+                    {lang === 'bn' ? '📊 সর্বমোট লাইফটাইম পরিসংখ্যান (সব দিন মিলিয়ে):' : '📊 Lifetime Overall Statistics (All-Time):'}
+                  </div>
+                  <div className="grid grid-cols-4 gap-1.5 text-center text-xs">
+                    <div className="bg-black/20 p-1.5 rounded">
+                      <span className="text-[8px] text-slate-400 block">মোট টিকিট</span>
+                      <span className="font-mono font-bold text-slate-200">{myTickets.length} ({globalStats.totalSemAll} Sem)</span>
+                    </div>
+                    <div className="bg-black/20 p-1.5 rounded">
+                      <span className="text-[8px] text-slate-400 block">মোট খরচ</span>
+                      <span className="font-mono font-bold text-slate-200">₹{globalStats.totalCostAll}</span>
+                    </div>
+                    <div className="bg-black/20 p-1.5 rounded">
+                      <span className="text-[8px] text-slate-400 block">মোট জয়</span>
+                      <span className="font-mono font-bold text-emerald-400">₹{formatINR(globalStats.totalReturns)}</span>
+                    </div>
+                    <div className="bg-black/20 p-1.5 rounded">
+                      <span className="text-[8px] text-slate-400 block">লাইফটাইম P/L</span>
+                      <span className={`font-mono font-bold ${globalStats.overallNetPnl >= 0 ? 'text-emerald-400' : 'text-rose-400'}`}>
+                        {globalStats.overallNetPnl >= 0 ? `+₹${formatINR(globalStats.overallNetPnl)}` : `-₹${formatINR(Math.abs(globalStats.overallNetPnl))}`}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+            </div>
+          )}
+
+          {/* 4. PAPER TICKETS LIST (Each with its own in-ticket Sem Stepper!) */}
+          <div className="space-y-2.5">
+            <div className="flex items-center justify-between px-1">
+              <h2 className="text-xs sm:text-sm font-black text-slate-900 flex items-center gap-1.5">
+                <span>🎟️</span>
+                <span>
+                  {lang === 'bn' 
+                    ? `আপনার টিকিট (${selectedDate === todayStr ? 'আজ' : 'গতকাল'} • ${selectedSlot})` 
+                    : `Your Tickets (${selectedSlot})`}
+                </span>
+                <span className="text-[10px] px-2 py-0.2 rounded-full font-mono font-bold bg-slate-200 text-slate-800">
+                  {activeGameTickets.length}
+                </span>
+              </h2>
+
+              {activeGameTickets.length > 0 && (
+                <button
+                  type="button"
+                  onClick={handleClearSlot}
+                  className="text-[11px] font-bold text-red-600 hover:underline cursor-pointer"
+                >
+                  {lang === 'bn' ? 'এই ড্র ক্লিয়ার করুন' : 'Clear game'}
+                </button>
+              )}
+            </div>
+
+            {activeGameTickets.length === 0 ? (
+              <div className="bg-white border-2 border-dashed border-slate-200 rounded-2xl p-6 text-center space-y-1.5">
+                <span className="text-3xl block">🎟️</span>
+                <p className="text-xs font-bold text-slate-600">
+                  {lang === 'bn'
+                    ? `এই ${selectedSlot} ড্র-এর জন্য কোনো টিকিট নেই।`
+                    : `No tickets printed for ${selectedSlot} yet.`}
+                </p>
+                <p className="text-[11px] text-slate-400">
+                  {lang === 'bn'
+                    ? 'উপরে "কুইক লাকি টিকিট" বা মিডিল বোতামে ক্লিক করে টিকিট প্রিন্ট করুন!'
+                    : 'Click "Print Quick Lucky Ticket" or tap a Middle chip above!'}
+                </p>
+              </div>
+            ) : (
+              <div className="space-y-3">
+                {activeGameTickets.map(ticket => (
+                  <RealPaperTicket
+                    key={ticket.id}
+                    ticket={ticket}
+                    evalRes={evaluateTicket(ticket)}
+                    onDelete={handleDeleteTicket}
+                    onCopy={handleCopyTicket}
+                    onAddSem={handleAddSemToTicket}
+                    isCopied={copiedTicketId === ticket.id}
+                    lang={lang}
+                  />
+                ))}
+              </div>
+            )}
+          </div>
+
+        </div>
+      )}
+
+      {/* TAB 2: HOT NUMBERS & HEAT MAP PICKS */}
+      {activeTab === 'hot' && (
+        <div className="space-y-3 animate-fadeIn">
+          
+          <div className="bg-white border border-amber-300 rounded-2xl p-3 sm:p-4 shadow-sm space-y-3">
+            <div className="flex items-center justify-between border-b border-amber-100 pb-2">
+              <div>
+                <h3 className="text-xs sm:text-sm font-black text-slate-900 flex items-center gap-1.5">
+                  <span>🔥</span>
+                  <span>
+                    {lang === 'bn' 
+                      ? 'হট নম্বর ও হিট ম্যাপ জেনারেটর' 
+                      : lang === 'hi' 
+                      ? 'हॉट नंबर एवं हीट मैप जनरेटर' 
+                      : 'Hot Numbers & Heat Map Generator'}
+                  </span>
+                </h3>
+                <p className="text-[10px] text-slate-500 mt-0.5">
+                  {lang === 'bn'
+                    ? 'অতীত ড্র-তে বহুবার আসা নম্বর ও টপ হিট মিডিল/এন্ডিং প্যাটার্ন'
+                    : 'Multiple-time repeating winners & top heat map middle/ending combinations'}
+                </p>
+              </div>
+
+              <button
+                type="button"
+                onClick={generateHotNumbers}
+                disabled={isRefreshingHot}
+                className="text-[10px] sm:text-[11px] font-bold text-amber-900 bg-amber-100 hover:bg-amber-200 active:scale-95 border border-amber-300 px-2.5 py-1 rounded-lg transition-all flex items-center gap-1 shrink-0 cursor-pointer shadow-2xs"
+                title="Refresh hot numbers"
+              >
+                <span className={isRefreshingHot ? 'animate-spin inline-block' : 'inline-block'}>🔄</span>
+                <span>
+                  {isRefreshingHot 
+                    ? (lang === 'bn' ? 'তৈরি হচ্ছে...' : 'Generating...') 
+                    : (lang === 'bn' ? 'নতুন নম্বর' : 'Refresh')}
+                </span>
+              </button>
+            </div>
+
+            {/* Popular Middle Chips inside Hot Tab */}
+            <div className="bg-amber-50/70 border border-amber-200/80 rounded-xl p-2.5 space-y-1.5">
+              <span className="text-[11px] font-black text-amber-950 flex items-center gap-1">
+                <span>🎯</span>
+                <span>{lang === 'bn' ? 'টপ ফ্রিকোয়েন্ট মিডিল নির্বাচন করুন:' : 'Top Frequent Middles:'}</span>
+              </span>
+              <div className="flex items-center gap-1.5 overflow-x-auto pb-1 scrollbar-thin">
+                {popularMiddles.map((mid) => (
+                  <button
+                    key={mid}
+                    type="button"
+                    onClick={() => {
+                      handlePickMiddleTicket(mid);
+                      setActiveTab('tickets');
+                    }}
+                    className="shrink-0 px-2 py-0.5 rounded-lg text-xs font-mono font-black bg-white hover:bg-amber-100 active:scale-95 border border-amber-300 text-amber-950 transition-all flex items-center gap-1 cursor-pointer shadow-2xs"
+                  >
+                    <span>{mid}</span>
+                    <span className="text-[9px] text-amber-700 font-sans">+৫ সেম</span>
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Hot Cards Grid */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+              {hotCards.map((item, idx) => {
+                const existingInGame = activeGameTickets.find(t => t.number === item.number);
+                const currentSem = existingInGame?.sem || 0;
+                const targetSem = currentSem > 0 ? currentSem : 5;
+
+                // Check if this number won in the currently selected game
+                const previewEval = evaluateTicket({
+                  id: `preview-${idx}`,
+                  series: item.series,
+                  number: item.number,
+                  sem: targetSem,
+                  slot: selectedSlot,
+                  date: selectedDate,
+                  createdAt: 0
+                });
+                const isWinner = previewEval.status === 'RESULT_OUT' && previewEval.isWin;
+                const previewCost = targetSem * 7;
+                const previewNetProfit = previewEval.prizeAmount - previewCost;
+
+                return (
+                  <div 
+                    key={idx} 
+                    className={`border rounded-xl p-2.5 flex items-center justify-between gap-2 transition-all group ${
+                      isWinner
+                        ? 'border-emerald-500 bg-emerald-50/80 ring-1 ring-emerald-400 shadow-2xs'
+                        : currentSem > 0 
+                        ? 'border-blue-400 bg-blue-50/50 ring-1 ring-blue-300' 
+                        : 'bg-slate-50 hover:bg-amber-50/40 border-slate-200 hover:border-amber-300'
+                    }`}
+                  >
+                    <div className="min-w-0">
+                      <div className="flex items-center gap-1.5 flex-wrap">
+                        <span className="font-mono text-xs font-black bg-amber-200/90 text-amber-950 px-1.5 py-0.2 rounded">
+                          {item.series}
+                        </span>
+                        <span className="font-mono text-sm sm:text-base font-black text-slate-950 tracking-wider">
+                          {item.number}
+                        </span>
+                        {currentSem > 0 && (
+                          <span className="bg-slate-800 text-white text-[9px] font-black px-1.5 py-0.2 rounded-md shrink-0 shadow-2xs">
+                            🎟️ {currentSem} Sem
+                          </span>
+                        )}
+                        {isWinner && (
+                          <span className="bg-emerald-600 text-white text-[9px] font-black px-1.5 py-0.2 rounded-md shrink-0 shadow-2xs animate-pulse">
+                            🎉 WIN: +₹{formatINR(previewNetProfit)}
+                          </span>
+                        )}
+                      </div>
+
+                      <div className="text-[10px] text-slate-500 mt-0.5 flex items-center gap-1 truncate">
+                        <span className="font-bold text-amber-700 shrink-0">
+                          {lang === 'bn' ? item.tagBn : item.tag}
+                        </span>
+                        <span>•</span>
+                        <span className="truncate">{lang === 'bn' ? item.reasonBn : item.reason}</span>
+                      </div>
+
+                      {isWinner && (
+                        <div className="text-[9px] font-bold text-emerald-800 mt-0.5">
+                          {previewEval.prizeTitle} (+₹{formatINR(previewEval.prizeAmount)})
+                        </div>
+                      )}
+                    </div>
+
+                    <div className="flex items-center gap-1 shrink-0">
+                      {/* Copy Button */}
+                      <button
+                        type="button"
+                        onClick={() => handleCopyTicket(`hot-${idx}`, `${item.series} ${item.number}`)}
+                        className="p-1.5 rounded-lg border border-slate-200 bg-white hover:bg-slate-100 text-slate-700 text-xs shadow-2xs transition-all cursor-pointer"
+                        title="Copy number"
+                      >
+                        {copiedTicketId === `hot-${idx}` ? '✓' : '📋'}
+                      </button>
+
+                      {/* Add 5 Sem Button */}
+                      <button
+                        type="button"
+                        onClick={() => {
+                          addTicket(item.series, item.number, 5);
+                          setActiveTab('tickets');
+                        }}
+                        className={`px-2.5 py-1.5 rounded-lg font-black text-xs shadow-2xs active:scale-95 transition-all flex items-center gap-1 cursor-pointer ${
+                          isWinner
+                            ? 'bg-emerald-600 hover:bg-emerald-700 text-white ring-1 ring-emerald-400'
+                            : 'bg-emerald-600 hover:bg-emerald-700 text-white'
+                        }`}
+                        title={lang === 'bn' ? '৫ সেম টিকিট নিন' : 'Add 5 Sem ticket'}
+                      >
+                        <span>+</span>
+                        <span>5 Sem</span>
+                      </button>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+
+        </div>
+      )}
+
+      {/* 5. WhatsApp Share & Reset */}
       {myTickets.length > 0 && (
         <div className="flex items-center justify-between gap-2 pt-1">
           <a
@@ -1760,7 +1703,7 @@ export default function DemoPlayModule({ initialDraws = [] }: DemoPlayModuleProp
           <button
             type="button"
             onClick={handleClearAll}
-            className="text-slate-500 hover:text-red-700 font-bold text-xs px-3 py-2 rounded-xl border border-slate-200 bg-white hover:bg-red-50 transition-colors"
+            className="text-slate-500 hover:text-red-700 font-bold text-xs px-3 py-2 rounded-xl border border-slate-200 bg-white hover:bg-red-50 transition-colors cursor-pointer"
           >
             {lang === 'bn' ? 'সব ক্লিয়ার' : 'Clear All'}
           </button>
