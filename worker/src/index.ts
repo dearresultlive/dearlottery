@@ -369,10 +369,17 @@ const handleSheetImage = async (c: any) => {
     // Continue if cache match fails
   }
 
+  const prefix = slotKey.includes('6') ? 'DN' : slotKey.includes('8') ? 'EN' : 'MN';
+  const nagalandUrl1 = `https://www.nagalandlotteryresults.com/wp-content/uploads/${year}/${month}/${prefix}${day}${month}${year.slice(2)}_1.jpeg`;
+  const nagalandUrl2 = `https://www.nagalandlotteryresults.com/wp-content/uploads/${year}/${month}/${prefix}${day}${month}${year.slice(2)}_${slotKey.replace('pm', '')}.jpeg`;
+
   // Upstream Candidate Waterfall:
+  // 0. Official Nagaland State Gazette JPEG (Primary, fast)
   // 1. High-Res Desktop Gazette JPEG (1202x1650, sharp legibility)
   // 2. Mobile Gazette WebP
   const candidateUrls = [
+    nagalandUrl1,
+    nagalandUrl2,
     `https://lottery.sambad.com/images/lottery-sambad-${slotKey}-${dateKey}.jpg`,
     `https://lottery.sambad.com/images/mobile/lottery-sambad-${slotKey}-${dateKey}.webp`
   ];

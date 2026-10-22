@@ -314,20 +314,20 @@ export default function LiveResultsTabs({
   );
   const yesterday8pmPrize = yesterday8pmDraw?.parsed_data?.prizes?.first_prize || yesterday8pmDraw?.prizes?.first_prize;
 
-  // Find active draw matching activeDateStr and activeSlot
+  // Find active draw matching activeDateStr and activeSlot strictly
   const currentSlotNumber = activeSlot.replace('PM', '');
   const currentDraw = useMemo(() => {
     return allKnownDraws.find(d => 
       d.draw_date === activeDateStr &&
       (d.draw_time?.includes(currentSlotNumber) || d.id?.includes(activeSlot))
-    ) || allKnownDraws.find(d => d.draw_date === activeDateStr) || null;
+    ) || null;
   }, [allKnownDraws, activeDateStr, activeSlot, currentSlotNumber]);
 
   const prizesData: PrizeData = currentDraw?.parsed_data?.prizes || currentDraw?.prizes || {};
+  const hasFirstPrize = Boolean(prizesData.first_prize?.number);
   const hasPrizes = Boolean(
-    prizesData.first_prize?.number &&
-    currentDraw?.status !== 'UPCOMING' &&
-    currentDraw?.status !== 'DRAWING'
+    hasFirstPrize &&
+    currentDraw?.status !== 'UPCOMING'
   );
 
   const activeStatus = isToday

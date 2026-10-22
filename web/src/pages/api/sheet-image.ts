@@ -79,8 +79,14 @@ export const GET: APIRoute = async ({ request }) => {
     // Continue to direct candidates
   }
 
+  const prefix = slotKey.includes('6') ? 'DN' : slotKey.includes('8') ? 'EN' : 'MN';
+  const nagalandUrl1 = `https://www.nagalandlotteryresults.com/wp-content/uploads/${year}/${month}/${prefix}${day}${month}${year.slice(2)}_1.jpeg`;
+  const nagalandUrl2 = `https://www.nagalandlotteryresults.com/wp-content/uploads/${year}/${month}/${prefix}${day}${month}${year.slice(2)}_${slotKey.replace('pm', '')}.jpeg`;
+
   // 2. Priority 2: Direct upstream waterfall candidates
   const candidateUrls = [
+    nagalandUrl1,
+    nagalandUrl2,
     sambadJpgUrl,
     sambadWebpUrl,
     `https://dear-lottery-api.dearresultlive.workers.dev/api/sheet-image?date=${dateParam}&slot=${slotKey}`

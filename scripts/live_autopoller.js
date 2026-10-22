@@ -145,8 +145,11 @@ async function checkNagalandLotteryResults(dateStr, slot) {
       if (b.includes('dls-success') && (b.includes(slotAnchor) || b.includes(slotText))) {
           const imgMatch = b.match(/<img[^>]+src=['"]([^'"]+)['"]/i);
           const imgUrl = imgMatch ? imgMatch[1] : null;
-          const slotSuffix = slot === '1PM' ? '_1' : slot === '6PM' ? '_6' : '_8';
-          if (imgUrl && !imgUrl.includes(slotSuffix) && !imgUrl.toLowerCase().includes(slot.toLowerCase())) {
+          const isWrongSlot = 
+            (slot === '1PM' && (imgUrl.includes('/DN') || imgUrl.includes('/EN') || imgUrl.includes('6pm') || imgUrl.includes('8pm'))) ||
+            (slot === '6PM' && (imgUrl.includes('/MN') || imgUrl.includes('/EN') || imgUrl.includes('1pm') || imgUrl.includes('8pm'))) ||
+            (slot === '8PM' && (imgUrl.includes('/MN') || imgUrl.includes('/DN') || imgUrl.includes('1pm') || imgUrl.includes('6pm')));
+          if (isWrongSlot || imgUrl.includes('WA00') || imgUrl.includes('logo')) {
             continue;
           }
           const nameMatch = b.match(/Dear\s*<strong>(.*?)<\/strong>/i) || b.match(/Dear\s*([a-zA-Z]+)\s*Weekly/i);
@@ -158,6 +161,17 @@ async function checkNagalandLotteryResults(dateStr, slot) {
       }
     }
   } catch (e) {}
+
+  // Direct URL fallback if homepage parsing fails
+  try {
+    const prefix = slot === '6PM' ? 'DN' : slot === '8PM' ? 'EN' : 'MN';
+    const directUrl = `https://www.nagalandlotteryresults.com/wp-content/uploads/${year}/${month}/${prefix}${day}${month}${year.slice(2)}_1.jpeg`;
+    const headRes = await fetch(directUrl, { method: 'HEAD', signal: AbortSignal.timeout(3000) });
+    if (headRes.ok) {
+      return { declared: true, imageUrl: directUrl, drawName: `DEAR ${slot}` };
+    }
+  } catch (e) {}
+
   return null;
 }
 

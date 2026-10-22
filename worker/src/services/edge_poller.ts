@@ -209,8 +209,12 @@ export async function pollAndIngestLiveDraw(
             if (b.includes('dls-success') && (b.includes(slotAnchor) || b.includes(slotText))) {
               const imgMatch = b.match(/<img[^>]+src=['"]([^'"]+)['"]/i);
               const imgUrl = imgMatch ? imgMatch[1] : undefined;
-              const slotSuffix = slot === '1PM' ? '_1' : slot === '6PM' ? '_6' : '_8';
-              if (imgUrl && !imgUrl.includes(slotSuffix) && !imgUrl.toLowerCase().includes(slot.toLowerCase()) && !imgUrl.includes('WA00')) {
+              if (!imgUrl) continue;
+              const isWrongSlot = 
+                (slot === '1PM' && (imgUrl.includes('/DN') || imgUrl.includes('/EN') || imgUrl.includes('6pm') || imgUrl.includes('8pm'))) ||
+                (slot === '6PM' && (imgUrl.includes('/MN') || imgUrl.includes('/EN') || imgUrl.includes('1pm') || imgUrl.includes('8pm'))) ||
+                (slot === '8PM' && (imgUrl.includes('/MN') || imgUrl.includes('/DN') || imgUrl.includes('1pm') || imgUrl.includes('6pm')));
+              if (isWrongSlot || imgUrl.includes('WA00') || imgUrl.includes('logo')) {
                 continue;
               }
               const nameMatch = b.match(/Dear\s*<strong>(.*?)<\/strong>/i) || b.match(/Dear\s*([a-zA-Z]+)\s*Weekly/i);
@@ -396,9 +400,10 @@ export async function pollAndIngestLiveDraw(
     console.error(`[EdgePoller] Failed to save to D1:`, d1Err?.message || d1Err);
   }
 
-  // 6. Broadcast to Telegram immediately
+  // 6. Broadcast to Telegram immediately ONLY on first detection
   let telegramSent = false;
-  if (number) {
+  const alreadyTelegrammed = Boolean(existingPrizes?.first_prize?.number);
+  if (number && !alreadyTelegrammed) {
     try {
       telegramSent = await sendTelegramAlert(env, {
         dateStr,
@@ -410,9 +415,12 @@ export async function pollAndIngestLiveDraw(
         imageUrl,
         pdfUrl
       });
+      console.log(`[EdgePoller] 📢 Telegram 1st prize broadcast sent for ${drawId}`);
     } catch (tgErr: any) {
       console.error(`[EdgePoller] Telegram error:`, tgErr?.message || tgErr);
     }
+  } else if (alreadyTelegrammed) {
+    console.log(`[EdgePoller] ℹ️ Telegram alert already sent for ${drawId}. Suppressing duplicate cron broadcast.`);
   }
 
   // 7. Non-blocking SEO pings via ctx.waitUntil
