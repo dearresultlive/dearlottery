@@ -396,7 +396,7 @@ export default function LiveResultsTabs({
   const sheetSvgUrl = `/api/gazette-sheet.svg?date=${activeDateStr}&slot=${activeSlot.toLowerCase()}`;
   const proxySheetUrl = `/api/sheet-image?date=${activeDateStr}&slot=${activeSlot.toLowerCase()}`;
   const activeSheetUrl = hasPrizes
-    ? (currentDraw?.image_r2_url && !currentDraw.image_r2_url.includes('lottery.sambad.com')
+    ? (currentDraw?.image_r2_url && !currentDraw.image_r2_url.includes('lottery.sambad.com') && !currentDraw.image_r2_url.startsWith('/results/')
         ? currentDraw.image_r2_url
         : proxySheetUrl)
     : sheetSvgUrl;
@@ -793,7 +793,12 @@ export default function LiveResultsTabs({
               className="w-full h-full object-contain transition-transform group-hover:scale-[1.01]"
               loading="eager"
               onError={(e) => {
-                (e.target as HTMLImageElement).src = sheetSvgUrl;
+                const img = e.target as HTMLImageElement;
+                if (!img.src.includes('/api/sheet-image')) {
+                  img.src = proxySheetUrl;
+                } else {
+                  img.src = sheetSvgUrl;
+                }
               }}
             />
           </div>

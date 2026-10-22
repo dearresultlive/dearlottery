@@ -66,14 +66,14 @@ export default function DynamicSlotView({
   const pdfUrl = `/pdf/${targetDate}/${slotKey}.pdf`;
   const sheetSvgUrl = `/api/gazette-sheet.svg?date=${targetDate}&slot=${slotKey}`;
   const proxySheetUrl = `/api/sheet-image?date=${targetDate}&slot=${slotKey}`;
-  const defaultSheetImg = currentDraw?.image_r2_url && !currentDraw.image_r2_url.includes('lottery.sambad.com')
+  const defaultSheetImg = currentDraw?.image_r2_url && !currentDraw.image_r2_url.includes('lottery.sambad.com') && !currentDraw.image_r2_url.startsWith('/results/')
     ? currentDraw.image_r2_url
     : proxySheetUrl;
   const [activeSheetImg, setActiveSheetImg] = useState<string>(defaultSheetImg);
 
   useEffect(() => {
     setActiveSheetImg(
-      currentDraw?.image_r2_url && !currentDraw.image_r2_url.includes('lottery.sambad.com')
+      currentDraw?.image_r2_url && !currentDraw.image_r2_url.includes('lottery.sambad.com') && !currentDraw.image_r2_url.startsWith('/results/')
         ? currentDraw.image_r2_url
         : proxySheetUrl
     );
@@ -371,7 +371,9 @@ export default function DynamicSlotView({
                 className="w-full h-full object-contain transition-transform group-hover:scale-[1.01]"
                 loading="eager"
                 onError={() => {
-                  if (activeSheetImg !== sheetSvgUrl) {
+                  if (activeSheetImg !== proxySheetUrl) {
+                    setActiveSheetImg(proxySheetUrl);
+                  } else if (activeSheetImg !== sheetSvgUrl) {
                     setActiveSheetImg(sheetSvgUrl);
                   }
                 }}
