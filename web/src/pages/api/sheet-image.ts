@@ -8,6 +8,7 @@ export const prerender = false;
 const RELAY_BASE = 'https://script.google.com/macros/s/AKfycbzPpSKnFJ9AQaJI05q7foByTEPq4iwVySDR591yFkeAaY0s65EpKyfkPkFz8cM5mcOh/exec';
 
 export const GET: APIRoute = async ({ request }) => {
+
   const url = new URL(request.url);
   const istNow = getISTNow();
   const todayStr = getISTDateString(istNow);
@@ -149,3 +150,5 @@ export const GET: APIRoute = async ({ request }) => {
     }
   });
 };
+
+export const HEAD: APIRoute = GET;

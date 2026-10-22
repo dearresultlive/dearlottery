@@ -63,21 +63,22 @@ export default function DynamicSlotView({
   const fourth = p?.fourth_prize || [];
   const fifth = p?.fifth_prize || [];
 
+  const directStaticUrl = `/results/${targetDate}/${slotKey}.jpg`;
   const pdfUrl = `/pdf/${targetDate}/${slotKey}.pdf`;
   const sheetSvgUrl = `/api/gazette-sheet.svg?date=${targetDate}&slot=${slotKey}`;
   const proxySheetUrl = `/api/sheet-image?date=${targetDate}&slot=${slotKey}`;
-  const defaultSheetImg = currentDraw?.image_r2_url && !currentDraw.image_r2_url.includes('lottery.sambad.com') && !currentDraw.image_r2_url.startsWith('/results/')
+  const defaultSheetImg = currentDraw?.image_r2_url && !currentDraw.image_r2_url.includes('lottery.sambad.com') && !currentDraw.image_r2_url.includes('/api/sheet-image')
     ? currentDraw.image_r2_url
-    : proxySheetUrl;
+    : directStaticUrl;
   const [activeSheetImg, setActiveSheetImg] = useState<string>(defaultSheetImg);
 
   useEffect(() => {
     setActiveSheetImg(
-      currentDraw?.image_r2_url && !currentDraw.image_r2_url.includes('lottery.sambad.com') && !currentDraw.image_r2_url.startsWith('/results/')
+      currentDraw?.image_r2_url && !currentDraw.image_r2_url.includes('lottery.sambad.com') && !currentDraw.image_r2_url.includes('/api/sheet-image')
         ? currentDraw.image_r2_url
-        : proxySheetUrl
+        : directStaticUrl
     );
-  }, [currentDraw, targetDate, slotKey, proxySheetUrl]);
+  }, [currentDraw, targetDate, slotKey, directStaticUrl]);
 
   const whatsappMessage = `🎯 *Dear Lottery Result Today (${currentDraw?.draw_time || slotHour})*\n📅 তারিখ: ${targetDate}\n\n🏆 *১ম পুরস্কার (₹1 Crore Winner)*: *${first.series} ${first.number}*\n\n👉 সম্পূর্ণ অফিসিয়াল রেজাল্ট শিট ও সব প্রাইজ নম্বর দেখুন:\nhttps://dearresultlive.in/results/${targetDate}/${slotKey}`;
   const whatsappUrl = `https://api.whatsapp.com/send?text=${encodeURIComponent(whatsappMessage)}`;

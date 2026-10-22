@@ -33,8 +33,9 @@ const slotKey = activeSlot.toLowerCase();
 
 // Strict Slot Matching - Never fall back to another slot's draw!
 const selectedDraw = allDraws.find(d => 
+  d.draw_date === targetDate && (
   d.draw_time?.includes(activeSlot.replace('PM', '')) || 
-  d.id?.includes(activeSlot)
+  d.id?.includes(activeSlot))
 );
 
 const prizes = selectedDraw?.parsed_data?.prizes || selectedDraw?.prizes;

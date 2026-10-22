@@ -43,6 +43,9 @@ export interface DrawItem {
  * Enhanced with instant upstream live edge-detection for zero-delay publishing.
  */
 export async function fetchLatestDraws(): Promise<DrawItem[]> {
+  const istNow = getISTNow();
+  const todayStr = getISTDateString(istNow);
+
   try {
     const res = await fetch(`${WORKER_BASE}/api/results/latest`, {
       headers: { 'Accept': 'application/json' },
@@ -51,15 +54,19 @@ export async function fetchLatestDraws(): Promise<DrawItem[]> {
     if (res.ok) {
       const data = await res.json();
       if (data.draws && data.draws.length > 0) {
-        return data.draws;
+        // Strict safety check: Worker /api/results/latest returns latest DB draws.
+        // If it is early morning before 1PM, the DB's latest draws are from yesterday.
+        // We MUST verify that returned draws actually match today's date (todayStr).
+        const todayDraws = data.draws.filter((d: any) => d.draw_date === todayStr);
+        if (todayDraws.length > 0) {
+          return todayDraws;
+        }
       }
     }
   } catch (e) {
     // Graceful fallback to verified official results + live edge check
   }
 
-  const istNow = getISTNow();
-  const todayStr = getISTDateString(istNow);
   const currentHour = istNow.getHours();
   let draws = getVerifiedDrawsByDate(todayStr, istNow) as unknown as DrawItem[];
 
