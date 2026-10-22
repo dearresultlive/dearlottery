@@ -10,7 +10,9 @@ import {
   getPositionalDigitSummaries,
   generateSmartPick5Y,
   type NumberHistoryAnalysis,
-  type SmartPickRecommendation
+  type SmartPickRecommendation,
+  type TimeHorizon,
+  type SlotFilter
 } from '../lib/history-analytics';
 import HistoricalIntelligenceCard from './HistoricalIntelligenceCard';
 
@@ -33,7 +35,10 @@ export default function AnalyticsExplorer({
   const [activeTab, setActiveTab] = useState<AnalyticsTab>(initialNumber ? 'search' : 'heatmap');
   const [searchInput, setSearchInput] = useState<string>(initialNumber);
   const [activeNumber, setActiveNumber] = useState<string>(initialNumber || '78866');
-  const [rankingsHorizon, setRankingsHorizon] = useState<'1Y' | '3Y' | '5Y'>('3Y');
+  
+  // Advanced Multi-Dimensional Filters: Time Horizon + Slot Filter
+  const [rankingsHorizon, setRankingsHorizon] = useState<TimeHorizon>('3Y');
+  const [selectedSlot, setSelectedSlot] = useState<SlotFilter>('ALL');
   const [isArchiveLoaded, setIsArchiveLoaded] = useState<boolean>(false);
 
   // Smart pick generator states
@@ -54,6 +59,10 @@ export default function AnalyticsExplorer({
     if (typeof window !== 'undefined') {
       const params = new URLSearchParams(window.location.search);
       const num = params.get('number');
+      const slotParam = params.get('slot') as SlotFilter;
+      if (['1PM', '6PM', '8PM'].includes(slotParam)) {
+        setSelectedSlot(slotParam);
+      }
       if (num && num.length >= 4) {
         setSearchInput(num);
         setActiveNumber(num);
@@ -74,10 +83,10 @@ export default function AnalyticsExplorer({
     return analyzeNumberHistory(activeNumber);
   }, [activeNumber, isArchiveLoaded]);
 
-  // Positional Digit Matrix (Digits 0-9 across 5 positions)
+  // Positional Digit Matrix (Digits 0-9 across 5 positions, filtered by horizon AND slot)
   const digitMatrix = useMemo(() => {
-    return getCalculatedDigitFrequencyMatrix(rankingsHorizon);
-  }, [rankingsHorizon, isArchiveLoaded]);
+    return getCalculatedDigitFrequencyMatrix(rankingsHorizon, selectedSlot);
+  }, [rankingsHorizon, selectedSlot, isArchiveLoaded]);
 
   const positionalSummaries = useMemo(() => {
     return getPositionalDigitSummaries(digitMatrix);
@@ -95,27 +104,27 @@ export default function AnalyticsExplorer({
     return map;
   }, [positionalSummaries]);
 
-  // Generate initial smart pick
-  useEffect(() => {
-    if (!smartPick || isArchiveLoaded) {
-      setSmartPick(generateSmartPick5Y(rankingsHorizon));
-    }
-  }, [rankingsHorizon, isArchiveLoaded]);
-
-  // Compute top recurring numbers
+  // Compute top recurring numbers (filtered by horizon AND slot)
   const topRecurring = useMemo(() => {
-    return getTopRecurringNumbers(rankingsHorizon, 12);
-  }, [rankingsHorizon, isArchiveLoaded]);
+    return getTopRecurringNumbers(rankingsHorizon, 12, selectedSlot);
+  }, [rankingsHorizon, selectedSlot, isArchiveLoaded]);
 
   // Compute top endings
   const topEndings = useMemo(() => {
-    return getTopFrequentEndings(10, rankingsHorizon);
-  }, [rankingsHorizon, isArchiveLoaded]);
+    return getTopFrequentEndings(10, rankingsHorizon, selectedSlot);
+  }, [rankingsHorizon, selectedSlot, isArchiveLoaded]);
 
   // Compute top middles
   const topMiddles = useMemo(() => {
-    return getTopFrequentMiddles(10, rankingsHorizon);
-  }, [rankingsHorizon, isArchiveLoaded]);
+    return getTopFrequentMiddles(10, rankingsHorizon, selectedSlot);
+  }, [rankingsHorizon, selectedSlot, isArchiveLoaded]);
+
+  // Generate initial smart pick
+  useEffect(() => {
+    if (isArchiveLoaded || !smartPick) {
+      setSmartPick(generateSmartPick5Y(rankingsHorizon, selectedSlot));
+    }
+  }, [rankingsHorizon, selectedSlot, isArchiveLoaded]);
 
   const handleSearchSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -146,7 +155,7 @@ export default function AnalyticsExplorer({
   const handleGenerateSmartPick = () => {
     setIsGeneratingPick(true);
     setTimeout(() => {
-      const pick = generateSmartPick5Y(rankingsHorizon);
+      const pick = generateSmartPick5Y(rankingsHorizon, selectedSlot);
       setSmartPick(pick);
       setIsGeneratingPick(false);
       if (typeof navigator !== 'undefined' && (navigator as any).vibrate) {
@@ -192,9 +201,29 @@ export default function AnalyticsExplorer({
   // Smart pick WhatsApp text
   const smartPickWhatsappUrl = useMemo(() => {
     if (!smartPick) return '';
-    const shareText = `🎯 *Dear Lottery 5Y Smart Pick (${rankingsHorizon})*\n🎟️ টিকিট নম্বর: *${smartPick.fullTicket}*\n🔥 Hot Score: ${smartPick.confidenceScore}/100\n📊 সূত্র: ${lang === 'bn' ? smartPick.logicBn : smartPick.logicEn}\n\n👉 ৫ বছরের লাইভ ডিজিট অ্যানালিটিক্স দেখুন:\nhttps://dearresultlive.in/analytics`;
+    const shareText = `🎯 *Dear Lottery Smart Pick (${rankingsHorizon} • ${selectedSlot === 'ALL' ? 'All Draws' : selectedSlot})*\n🎟️ টিকিট নম্বর: *${smartPick.fullTicket}*\n🔥 Hot Score: ${smartPick.confidenceScore}/100\n📊 সূত্র: ${lang === 'bn' ? smartPick.logicBn : smartPick.logicEn}\n\n👉 ৫ বছরের লাইভ ডিজিট অ্যানালিটিক্স দেখুন:\nhttps://dearresultlive.in/analytics`;
     return `https://api.whatsapp.com/send?text=${encodeURIComponent(shareText)}`;
-  }, [smartPick, rankingsHorizon, lang]);
+  }, [smartPick, rankingsHorizon, selectedSlot, lang]);
+
+  // Contextual helper info about active filters
+  const filterDescription = useMemo(() => {
+    const slotNames: Record<SlotFilter, { bn: string; en: string; hi: string }> = {
+      ALL: { bn: 'সব ড্র (১PM, ৬PM ও ৮PM)', en: 'All 3 Daily Draws (1PM, 6PM, 8PM)', hi: 'सभी 3 दैनिक ड्रॉ' },
+      '1PM': { bn: 'দুপুর ১:০০টা ড্র (সিকিম স্টেট লটারি)', en: '1:00 PM Draw (Sikkim State Lottery)', hi: 'दोपहर 1:00 बजे ड्रॉ (सिक्किम)' },
+      '6PM': { bn: 'সন্ধ্যা ৬:০০টা ড্র (নাগাল্যান্ড স্টেট লটারি)', en: '6:00 PM Draw (Nagaland State Lottery)', hi: 'शाम 6:00 बजे ड्रॉ (नागालैंड)' },
+      '8PM': { bn: 'রাত ৮:০০টা ড্র (নাগাল্যান্ড স্টেট লটারি)', en: '8:00 PM Draw (Nagaland State Lottery)', hi: 'रात 8:00 बजे ड्रॉ (नागालैंड)' }
+    };
+    const horizonNames: Record<TimeHorizon, { bn: string; en: string; hi: string }> = {
+      '30D': { bn: 'বিগত ৩০ দিনের সাম্প্রতিক ট্রেন্ড', en: 'Past 30 Days Recent Trend', hi: 'पिछले 30 दिनों का ट्रेंड' },
+      '1Y': { bn: '১ বছরের রেকর্ড', en: '1-Year Historical Record', hi: '1 वर्ष का रिकॉर्ड' },
+      '3Y': { bn: '৩ বছরের প্রমাণিত ডেটাবেজ', en: '3-Year Proven Database', hi: '3 वर्ष का डेटा' },
+      '5Y': { bn: '৫ বছরের সম্পূর্ণ বিগ-ডেটা আর্কাইভ', en: '5-Year Complete Big Data Archive', hi: '5 वर्ष का संपूर्ण बिग-डेटा' }
+    };
+    return {
+      slot: slotNames[selectedSlot][lang as 'bn' | 'hi' | 'en'] || slotNames[selectedSlot].en,
+      horizon: horizonNames[rankingsHorizon][lang as 'bn' | 'hi' | 'en'] || horizonNames[rankingsHorizon].en
+    };
+  }, [selectedSlot, rankingsHorizon, lang]);
 
   return (
     <div className="space-y-3.5 sm:space-y-4">
@@ -229,10 +258,25 @@ export default function AnalyticsExplorer({
         >
           <span>🔢</span>
           <span>
-            {lang === 'bn' ? '৫Y ডিজিট হিটম্যাপ' : lang === 'hi' ? '5Y डिजिट हीटमैप' : '5Y Digit Heatmap'}
+            {lang === 'bn' ? 'ডিজিট হিটম্যাপ' : lang === 'hi' ? 'डिजिट हीटमैप' : 'Digit Heatmap'}
           </span>
           <span className="bg-amber-400 text-slate-950 text-[9px] font-black px-1.5 py-0.2 rounded-full uppercase">
             HOT
+          </span>
+        </button>
+
+        <button
+          type="button"
+          onClick={() => setActiveTab('smartPick')}
+          className={`flex items-center gap-1.5 px-3 py-2 rounded-xl whitespace-nowrap transition-all active:scale-95 cursor-pointer shadow-2xs ${
+            activeTab === 'smartPick'
+              ? 'bg-blue-700 text-white shadow-xs'
+              : 'bg-white text-slate-700 hover:bg-slate-100 border border-slate-200'
+          }`}
+        >
+          <span>🎲</span>
+          <span>
+            {lang === 'bn' ? 'স্মার্ট টিকিট' : lang === 'hi' ? 'स्मार्ट टिकट' : 'Smart Pick'}
           </span>
         </button>
 
@@ -248,21 +292,6 @@ export default function AnalyticsExplorer({
           <span>🔍</span>
           <span>
             {lang === 'bn' ? 'নম্বর সার্চ ও অতীত' : lang === 'hi' ? 'नंबर सर्च व इतिहास' : 'Search Number'}
-          </span>
-        </button>
-
-        <button
-          type="button"
-          onClick={() => setActiveTab('smartPick')}
-          className={`flex items-center gap-1.5 px-3 py-2 rounded-xl whitespace-nowrap transition-all active:scale-95 cursor-pointer shadow-2xs ${
-            activeTab === 'smartPick'
-              ? 'bg-blue-700 text-white shadow-xs'
-              : 'bg-white text-slate-700 hover:bg-slate-100 border border-slate-200'
-          }`}
-        >
-          <span>🎲</span>
-          <span>
-            {lang === 'bn' ? 'স্মার্ট টিকিট' : lang === 'hi' ? 'स्मार्ट टिकट' : '5Y Smart Pick'}
           </span>
         </button>
 
@@ -297,49 +326,109 @@ export default function AnalyticsExplorer({
         </button>
       </div>
 
+      {/* 3. Advanced Dual Filter Bar (Slot Filter + Time Horizon Filter) */}
+      <div className="bg-white border border-slate-200 rounded-2xl p-3 sm:p-4 shadow-xs space-y-2.5 text-left">
+        {/* Row A: Slot Filter (1PM vs 6PM vs 8PM vs ALL) */}
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-100 pb-2.5">
+          <span className="text-[11px] font-black uppercase text-slate-600 flex items-center gap-1">
+            <span>⏰</span>
+            <span>{lang === 'bn' ? 'ড্র-এর সময় ফিল্টার:' : lang === 'hi' ? 'ड्रॉ समय फ़िल्टर:' : 'Draw Time Slot:'}</span>
+          </span>
+
+          <div className="flex items-center gap-1 bg-slate-100 p-1 rounded-xl overflow-x-auto text-xs font-black">
+            {(
+              [
+                { id: 'ALL', labelBn: 'সব ড্র (All)', labelEn: 'All Draws', labelHi: 'सभी ड्रॉ' },
+                { id: '1PM', labelBn: '১:০০টা (1PM)', labelEn: '1:00 PM', labelHi: '1:00 PM' },
+                { id: '6PM', labelBn: '৬:০০টা (6PM)', labelEn: '6:00 PM', labelHi: '6:00 PM' },
+                { id: '8PM', labelBn: '৮:০০টা (8PM)', labelEn: '8:00 PM', labelHi: '8:00 PM' }
+              ] as const
+            ).map(slot => (
+              <button
+                key={slot.id}
+                type="button"
+                onClick={() => setSelectedSlot(slot.id)}
+                className={`px-2.5 sm:px-3 py-1 rounded-lg whitespace-nowrap transition-all active:scale-95 cursor-pointer ${
+                  selectedSlot === slot.id
+                    ? 'bg-blue-700 text-white shadow-xs'
+                    : 'text-slate-600 hover:text-slate-900 hover:bg-slate-200'
+                }`}
+              >
+                {slot.id === 'ALL' ? '🕒 ' : slot.id === '1PM' ? '☀️ ' : slot.id === '6PM' ? '🌆 ' : '🌙 '}
+                {lang === 'bn' ? slot.labelBn : lang === 'hi' ? slot.labelHi : slot.labelEn}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* Row B: Time Horizon Switcher (30D vs 1Y vs 3Y vs 5Y) */}
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+          <span className="text-[11px] font-black uppercase text-slate-600 flex items-center gap-1">
+            <span>📅</span>
+            <span>{lang === 'bn' ? 'সময়কাল বিশ্লেষণ:' : lang === 'hi' ? 'समय अवधि फ़िल्टर:' : 'Time Horizon:'}</span>
+          </span>
+
+          <div className="flex items-center gap-1 bg-slate-100 p-1 rounded-xl overflow-x-auto text-xs font-black">
+            {(
+              [
+                { id: '30D', labelBn: '৩০ দিন (30D)', labelEn: '30 Days', labelHi: '30 दिन' },
+                { id: '1Y', labelBn: '১ বছর (1Y)', labelEn: '1 Year', labelHi: '1 वर्ष' },
+                { id: '3Y', labelBn: '৩ বছর (3Y)', labelEn: '3 Years', labelHi: '3 वर्ष' },
+                { id: '5Y', labelBn: '৫ বছর (5Y)', labelEn: '5 Years', labelHi: '5 वर्ष' }
+              ] as const
+            ).map(h => (
+              <button
+                key={h.id}
+                type="button"
+                onClick={() => setRankingsHorizon(h.id)}
+                className={`px-2.5 sm:px-3 py-1 rounded-lg whitespace-nowrap transition-all active:scale-95 cursor-pointer ${
+                  rankingsHorizon === h.id
+                    ? 'bg-blue-700 text-white shadow-xs'
+                    : 'text-slate-600 hover:text-slate-900 hover:bg-slate-200'
+                }`}
+              >
+                {lang === 'bn' ? h.labelBn : lang === 'hi' ? h.labelHi : h.labelEn}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* Active Filter Helper Feedback */}
+        <div className="bg-blue-50/70 border border-blue-200/80 rounded-xl px-3 py-1.5 flex items-center justify-between text-[11px] text-blue-900">
+          <span className="font-bold flex items-center gap-1.5 truncate">
+            <span>💡</span>
+            <span>
+              {filterDescription.slot} • {filterDescription.horizon}
+            </span>
+          </span>
+          <span className="bg-blue-200/60 font-bold px-2 py-0.2 rounded text-[10px] hidden sm:inline-block">
+            {selectedSlot === '1PM' ? 'সিকিম' : selectedSlot === 'ALL' ? 'সিকিম + নাগাল্যান্ড' : 'নাগাল্যান্ড'}
+          </span>
+        </div>
+      </div>
+
       {/* ========================================================================= */}
-      {/* TAB 1: 5Y DIGIT HEATMAP & POSITIONAL FREQUENCY (PRIMARY)                  */}
+      {/* TAB 1: DIGIT HEATMAP & POSITIONAL FREQUENCY                               */}
       {/* ========================================================================= */}
       {activeTab === 'heatmap' && (
         <div className="space-y-3.5">
-          {/* Header & Horizon Controls */}
           <div className="bg-white border border-slate-200 rounded-2xl p-3.5 sm:p-5 shadow-xs space-y-3 text-left">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 border-b border-slate-100 pb-3">
-              <div>
-                <h2 className="text-sm sm:text-base font-black text-slate-900 flex items-center gap-2">
-                  <span>🔢</span>
-                  <span>
-                    {lang === 'bn'
-                      ? '৫ সংখ্যার অবস্থানভিত্তিক ডিজিট ফ্রিকোয়েন্সি (Positional Heatmap)'
-                      : lang === 'hi'
-                      ? '5-अंक स्थिति आधारित डिजिट फ्रीक्वेंसी (Positional Heatmap)'
-                      : '5-Digit Positional Frequency Heatmap (Digits 0-9)'}
-                  </span>
-                </h2>
-                <p className="text-xs text-slate-500 mt-0.5">
+            <div>
+              <h2 className="text-sm sm:text-base font-black text-slate-900 flex items-center gap-2">
+                <span>🔢</span>
+                <span>
                   {lang === 'bn'
-                    ? '১ম, ২য়, ৩য়, ৪র্থ ও ৫ম ঘরে ০-৯ কোন সংখ্যা কতবার এসেছে তার নির্ভুল বিগ-ডেটা চার্ট'
-                    : 'Exact occurrence count of each digit (0 to 9) across 1st to 5th positions.'}
-                </p>
-              </div>
-
-              {/* Time Horizon Filter */}
-              <div className="flex items-center gap-1 bg-slate-100 p-1 rounded-xl self-start sm:self-auto text-xs font-black">
-                {(['1Y', '3Y', '5Y'] as const).map(h => (
-                  <button
-                    key={h}
-                    type="button"
-                    onClick={() => setRankingsHorizon(h)}
-                    className={`px-3 py-1 rounded-lg transition-all active:scale-95 cursor-pointer ${
-                      rankingsHorizon === h
-                        ? 'bg-blue-700 text-white shadow-xs'
-                        : 'text-slate-600 hover:text-slate-900 hover:bg-slate-200'
-                    }`}
-                  >
-                    {h === '1Y' ? (lang === 'bn' ? '১ বছর' : '1 Year') : h === '3Y' ? (lang === 'bn' ? '৩ বছর' : '3 Years') : (lang === 'bn' ? '৫ বছর' : '5 Years')}
-                  </button>
-                ))}
-              </div>
+                    ? `৫ সংখ্যার অবস্থানভিত্তিক ডিজিট ফ্রিকোয়েন্সি (${selectedSlot} • ${rankingsHorizon})`
+                    : lang === 'hi'
+                    ? `5-अंक स्थिति आधारित डिजिट फ्रीक्वेंसी (${selectedSlot} • ${rankingsHorizon})`
+                    : `5-Digit Positional Frequency Heatmap (${selectedSlot} • ${rankingsHorizon})`}
+                </span>
+              </h2>
+              <p className="text-xs text-slate-500 mt-0.5">
+                {lang === 'bn'
+                  ? '১ম, ২য়, ৩য়, ৪র্থ ও ৫ম ঘরে ০-৯ কোন সংখ্যা কতবার এসেছে তার নির্ভুল বিগ-ডেটা চার্ট'
+                  : 'Exact occurrence count of each digit (0 to 9) across 1st to 5th positions.'}
+              </p>
             </div>
 
             {/* Hot & Cold Summary Cards (Pos 1 to 5) */}
@@ -384,7 +473,7 @@ export default function AnalyticsExplorer({
               <div className="flex items-center justify-between">
                 <span className="text-[11px] font-black text-slate-800 flex items-center gap-1">
                   <span>📊</span>
-                  <span>{lang === 'bn' ? `সম্পূর্ণ পজিশনাল হিটম্যাপ চার্ট (${rankingsHorizon})` : `Full Positional Matrix (${rankingsHorizon})`}</span>
+                  <span>{lang === 'bn' ? `পজিশনাল হিটম্যাপ চার্ট (${selectedSlot} • ${rankingsHorizon})` : `Positional Matrix (${selectedSlot} • ${rankingsHorizon})`}</span>
                 </span>
                 <span className="text-[10px] text-slate-500 font-medium">
                   {lang === 'bn' ? '🔥 = সর্বোচ্চ ফ্রিকোয়েন্সি' : '🔥 = Highest Frequency'}
@@ -448,8 +537,8 @@ export default function AnalyticsExplorer({
                 <span>🎲</span>
                 <span>
                   {lang === 'bn'
-                    ? 'এই ফ্রিকোয়েন্সির ওপর ভিত্তি করে ৫ বছরের স্মার্ট টিকিট তৈরি করুন ➔'
-                    : 'Generate 5-Year Smart Pick Based on These Top Digits ➔'}
+                    ? `এই ফ্রিকোয়েন্সির ওপর ভিত্তি করে ${selectedSlot !== 'ALL' ? selectedSlot + ' ' : ''}স্মার্ট টিকিট তৈরি করুন ➔`
+                    : `Generate Smart Pick Based on These Top Digits ➔`}
                 </span>
               </button>
             </div>
@@ -458,26 +547,123 @@ export default function AnalyticsExplorer({
       )}
 
       {/* ========================================================================= */}
-      {/* TAB 2: NUMBER SEARCH & 5-YEAR WINNING INTELLIGENCE                        */}
+      {/* TAB 2: SMART PICK GENERATOR                                              */}
+      {/* ========================================================================= */}
+      {activeTab === 'smartPick' && (
+        <div className="space-y-3.5">
+          <div className="bg-gradient-to-br from-indigo-900 via-blue-900 to-slate-900 text-white rounded-2xl p-4 sm:p-6 shadow-sm space-y-4 text-center">
+            <div className="text-left border-b border-white/10 pb-3">
+              <span className="inline-flex items-center gap-1.5 bg-blue-500/30 border border-blue-400/40 text-blue-200 text-[10px] font-black px-2.5 py-0.5 rounded-full uppercase tracking-wider">
+                <span>🎲</span>
+                <span>{selectedSlot} • {rankingsHorizon} Big Data Recommendation</span>
+              </span>
+              <h2 className="text-sm sm:text-lg font-black text-white mt-1">
+                {lang === 'bn'
+                  ? `ডিয়ার লটারি ${selectedSlot !== 'ALL' ? selectedSlot + ' ' : ''}স্মার্ট টিকিট সাজেশন`
+                  : `Dear Lottery ${selectedSlot !== 'ALL' ? selectedSlot + ' ' : ''}Smart Combination`}
+              </h2>
+            </div>
+
+            {/* Smart Pick Showcase */}
+            {smartPick && (
+              <div className="bg-white/10 backdrop-blur-xs border border-white/20 rounded-2xl p-4 sm:p-6 space-y-3">
+                <span className="text-[11px] uppercase tracking-widest text-slate-300 font-bold">
+                  {lang === 'bn' ? 'প্রস্তাবিত লাকি টিকিট' : 'Recommended Smart Combination'}
+                </span>
+
+                <div className="flex items-center justify-center gap-2">
+                  <span className="font-mono text-3xl sm:text-4xl lg:text-5xl font-black text-amber-300 tracking-wider drop-shadow-md">
+                    {smartPick.fullTicket}
+                  </span>
+                </div>
+
+                <div className="flex items-center justify-center gap-2 pt-1 flex-wrap">
+                  <span className="bg-emerald-500/30 border border-emerald-400/40 text-emerald-200 text-xs font-black px-3 py-0.5 rounded-full">
+                    🔥 Hot Score: {smartPick.confidenceScore}/100
+                  </span>
+                  <span className="bg-blue-500/30 border border-blue-400/40 text-blue-200 text-xs font-bold px-3 py-0.5 rounded-full">
+                    🏛️ {selectedSlot} • {rankingsHorizon} Backed
+                  </span>
+                </div>
+
+                <p className="text-xs sm:text-sm text-slate-200 max-w-lg mx-auto pt-1 font-medium leading-relaxed">
+                  {lang === 'bn' ? smartPick.logicBn : lang === 'hi' ? smartPick.logicHi : smartPick.logicEn}
+                </p>
+
+                {/* 3 Action Buttons */}
+                <div className="flex items-center justify-center gap-2 pt-2 flex-wrap">
+                  <button
+                    type="button"
+                    onClick={handleGenerateSmartPick}
+                    disabled={isGeneratingPick}
+                    className="inline-flex items-center gap-1.5 bg-amber-400 hover:bg-amber-500 text-slate-950 font-black text-xs sm:text-sm px-4 py-2.5 rounded-xl shadow-xs transition-all active:scale-95 cursor-pointer disabled:opacity-50"
+                  >
+                    <span>🎲</span>
+                    <span>
+                      {isGeneratingPick
+                        ? (lang === 'bn' ? 'তৈরি হচ্ছে...' : 'Generating...')
+                        : (lang === 'bn' ? 'নতুন কম্বিনেশন তৈরি করুন' : 'Generate Another')}
+                    </span>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={handleCopySmartPick}
+                    className="inline-flex items-center gap-1.5 bg-white/20 hover:bg-white/30 text-white font-bold text-xs sm:text-sm px-4 py-2.5 rounded-xl transition-all active:scale-95 border border-white/30 cursor-pointer"
+                  >
+                    <span>{pickCopied ? '✓' : '📋'}</span>
+                    <span>
+                      {pickCopied
+                        ? (lang === 'bn' ? 'কপি হয়েছে!' : 'Copied!')
+                        : (lang === 'bn' ? 'কপি করুন' : 'Copy Ticket')}
+                    </span>
+                  </button>
+
+                  <a
+                    href={smartPickWhatsappUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-1.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs sm:text-sm px-4 py-2.5 rounded-xl shadow-xs transition-all active:scale-95"
+                  >
+                    <span>💬</span>
+                    <span>{lang === 'bn' ? 'হোয়াটসঅ্যাপ' : 'WhatsApp'}</span>
+                  </a>
+
+                  <button
+                    type="button"
+                    onClick={() => selectNumber(smartPick.ticketNumber)}
+                    className="inline-flex items-center gap-1.5 bg-blue-600/60 hover:bg-blue-600 text-white font-bold text-xs sm:text-sm px-4 py-2.5 rounded-xl transition-all active:scale-95 border border-blue-400/30 cursor-pointer"
+                  >
+                    <span>🔍</span>
+                    <span>{lang === 'bn' ? 'ইতিহাস দেখুন' : 'Inspect History'}</span>
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* ========================================================================= */}
+      {/* TAB 3: NUMBER SEARCH & 5-YEAR WINNING INTELLIGENCE                        */}
       {/* ========================================================================= */}
       {activeTab === 'search' && (
         <div className="space-y-3.5">
-          {/* Search Box */}
           <div className="bg-white border border-slate-200 rounded-2xl p-3.5 sm:p-5 shadow-xs space-y-3">
             <div className="text-left">
               <h2 className="text-sm sm:text-base font-black text-slate-900 flex items-center gap-2">
                 <span>🔍</span>
                 <span>
                   {lang === 'bn'
-                    ? 'যেকোনো লটারি নম্বরের ৫ বছরের অতীত রেকর্ড ও প্রাইজ সার্চ'
+                    ? 'যেকোনো লটারি নম্বরের অতীত রেকর্ড ও প্রাইজ সার্চ'
                     : lang === 'hi'
-                    ? 'किसी भी लॉटरी नंबर का 5 वर्ष का इतिहास और एनालिटिक्स खोजें'
-                    : 'Search 5-Year History & Analytics for Any Ticket Number'}
+                    ? 'किसी भी लॉटरी नंबर का इतिहास और एनालिटिक्स खोजें'
+                    : 'Search Winning History & Multi-Year Analytics for Any Ticket'}
                 </span>
               </h2>
               <p className="text-xs text-slate-500 mt-0.5">
                 {lang === 'bn'
-                  ? '৪ বা ৫ সংখ্যার টিকিট নম্বর লিখে ১ বছর, ৩ বছর ও ৫ বছরের পুনরাবৃত্তি ও অতীত জয়ের তারিখ দেখুন'
+                  ? '৪ বা ৫ সংখ্যার টিকিট নম্বর লিখে ৩০ দিন, ১ বছর, ৩ বছর ও ৫ বছরের পুনরাবৃত্তি ও অতীত জয়ের তারিখ দেখুন'
                   : 'Enter any 4 or 5-digit number to inspect multi-year hits, past winning dates, and repeating patterns.'}
               </p>
             </div>
@@ -545,189 +731,59 @@ export default function AnalyticsExplorer({
       )}
 
       {/* ========================================================================= */}
-      {/* TAB 3: 5Y SMART PICK GENERATOR (ACTIONABLE)                               */}
-      {/* ========================================================================= */}
-      {activeTab === 'smartPick' && (
-        <div className="space-y-3.5">
-          <div className="bg-gradient-to-br from-indigo-900 via-blue-900 to-slate-900 text-white rounded-2xl p-4 sm:p-6 shadow-sm space-y-4 text-center">
-            <div className="flex items-center justify-between border-b border-white/10 pb-3 flex-wrap gap-2">
-              <div className="text-left">
-                <span className="inline-flex items-center gap-1.5 bg-blue-500/30 border border-blue-400/40 text-blue-200 text-[10px] font-black px-2.5 py-0.5 rounded-full uppercase tracking-wider">
-                  <span>🎲</span>
-                  <span>5Y Big Data Combination Engine</span>
-                </span>
-                <h2 className="text-sm sm:text-lg font-black text-white mt-1">
-                  {lang === 'bn'
-                    ? '৫ বছরের ডেটাবেজ ভিত্তিক স্মার্ট টিকিট কম্বিনেশন'
-                    : '5-Year Statistical Smart Ticket Recommendation'}
-                </h2>
-              </div>
-
-              {/* Horizon Switcher */}
-              <div className="flex items-center gap-1 bg-white/10 p-1 rounded-xl text-xs font-black">
-                {(['1Y', '3Y', '5Y'] as const).map(h => (
-                  <button
-                    key={h}
-                    type="button"
-                    onClick={() => setRankingsHorizon(h)}
-                    className={`px-3 py-1 rounded-lg transition-all active:scale-95 cursor-pointer ${
-                      rankingsHorizon === h
-                        ? 'bg-amber-400 text-slate-950 font-black shadow-xs'
-                        : 'text-slate-200 hover:text-white'
-                    }`}
-                  >
-                    {h}
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            {/* Smart Pick Showcase */}
-            {smartPick && (
-              <div className="bg-white/10 backdrop-blur-xs border border-white/20 rounded-2xl p-4 sm:p-6 space-y-3">
-                <span className="text-[11px] uppercase tracking-widest text-slate-300 font-bold">
-                  {lang === 'bn' ? 'প্রস্তাবিত লাকি টিকিট' : 'Recommended Smart Combination'}
-                </span>
-
-                <div className="flex items-center justify-center gap-2">
-                  <span className="font-mono text-3xl sm:text-4xl lg:text-5xl font-black text-amber-300 tracking-wider drop-shadow-md">
-                    {smartPick.fullTicket}
-                  </span>
-                </div>
-
-                <div className="flex items-center justify-center gap-2 pt-1 flex-wrap">
-                  <span className="bg-emerald-500/30 border border-emerald-400/40 text-emerald-200 text-xs font-black px-3 py-0.5 rounded-full">
-                    🔥 Hot Score: {smartPick.confidenceScore}/100
-                  </span>
-                  <span className="bg-blue-500/30 border border-blue-400/40 text-blue-200 text-xs font-bold px-3 py-0.5 rounded-full">
-                    🏛️ {rankingsHorizon} Official Gazette Backed
-                  </span>
-                </div>
-
-                <p className="text-xs sm:text-sm text-slate-200 max-w-lg mx-auto pt-1 font-medium leading-relaxed">
-                  {lang === 'bn' ? smartPick.logicBn : lang === 'hi' ? smartPick.logicHi : smartPick.logicEn}
-                </p>
-
-                {/* 3 Action Buttons */}
-                <div className="flex items-center justify-center gap-2 pt-2 flex-wrap">
-                  <button
-                    type="button"
-                    onClick={handleGenerateSmartPick}
-                    disabled={isGeneratingPick}
-                    className="inline-flex items-center gap-1.5 bg-amber-400 hover:bg-amber-500 text-slate-950 font-black text-xs sm:text-sm px-4 py-2.5 rounded-xl shadow-xs transition-all active:scale-95 cursor-pointer disabled:opacity-50"
-                  >
-                    <span>🎲</span>
-                    <span>
-                      {isGeneratingPick
-                        ? (lang === 'bn' ? 'তৈরি হচ্ছে...' : 'Generating...')
-                        : (lang === 'bn' ? 'নতুন নম্বর জেনারেট করুন' : 'Generate Another')}
-                    </span>
-                  </button>
-
-                  <button
-                    type="button"
-                    onClick={handleCopySmartPick}
-                    className="inline-flex items-center gap-1.5 bg-white/20 hover:bg-white/30 text-white font-bold text-xs sm:text-sm px-4 py-2.5 rounded-xl transition-all active:scale-95 border border-white/30 cursor-pointer"
-                  >
-                    <span>{pickCopied ? '✓' : '📋'}</span>
-                    <span>
-                      {pickCopied
-                        ? (lang === 'bn' ? 'কপি হয়েছে!' : 'Copied!')
-                        : (lang === 'bn' ? 'কপি করুন' : 'Copy Ticket')}
-                    </span>
-                  </button>
-
-                  <a
-                    href={smartPickWhatsappUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="inline-flex items-center gap-1.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs sm:text-sm px-4 py-2.5 rounded-xl shadow-xs transition-all active:scale-95"
-                  >
-                    <span>💬</span>
-                    <span>{lang === 'bn' ? 'হোয়াটসঅ্যাপ' : 'WhatsApp'}</span>
-                  </a>
-
-                  <button
-                    type="button"
-                    onClick={() => selectNumber(smartPick.ticketNumber)}
-                    className="inline-flex items-center gap-1.5 bg-blue-600/60 hover:bg-blue-600 text-white font-bold text-xs sm:text-sm px-4 py-2.5 rounded-xl transition-all active:scale-95 border border-blue-400/30 cursor-pointer"
-                  >
-                    <span>🔍</span>
-                    <span>{lang === 'bn' ? 'ইতিহাস দেখুন' : 'Inspect History'}</span>
-                  </button>
-                </div>
-              </div>
-            )}
-          </div>
-        </div>
-      )}
-
-      {/* ========================================================================= */}
       {/* TAB 4: TOP REPEATING NUMBERS                                              */}
       {/* ========================================================================= */}
       {activeTab === 'repeaters' && (
         <div className="bg-white border border-slate-200 rounded-2xl p-3.5 sm:p-5 shadow-xs space-y-3 text-left">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-100 pb-2.5">
-            <div>
-              <h2 className="text-sm sm:text-base font-black text-slate-900 flex items-center gap-1.5">
-                <span>🔥</span>
-                <span>
-                  {lang === 'bn'
-                    ? `শীর্ষ পুনরাবৃত্ত বিজয়ী নম্বরসমূহ (Top Repeating Numbers)`
-                    : lang === 'hi'
-                    ? `शीर्ष दोहराए जाने वाले विजेता नंबर (Top Repeating Numbers)`
-                    : `Top Most Frequently Repeated Winning Numbers`}
-                </span>
-              </h2>
-              <p className="text-[11px] text-slate-500">
+          <div className="border-b border-slate-100 pb-2.5">
+            <h2 className="text-sm sm:text-base font-black text-slate-900 flex items-center gap-1.5">
+              <span>🔥</span>
+              <span>
                 {lang === 'bn'
-                  ? `${rankingsHorizon === '1Y' ? 'গত ১ বছর' : rankingsHorizon === '3Y' ? 'গত ৩ বছর' : 'গত ৫ বছর'} ধরে একাধিকবার জেতা অফিসিয়াল নম্বর (ক্লিক করে ইতিহাস দেখুন)`
-                  : `${rankingsHorizon === '1Y' ? 'Past 1 Year' : rankingsHorizon === '3Y' ? 'Past 3 Years' : 'Past 5 Years'} gazette repeating winners (tap to inspect)`}
-              </p>
-            </div>
-
-            {/* Horizon Switcher */}
-            <div className="flex items-center gap-1 bg-slate-100 p-1 rounded-xl self-start sm:self-auto text-xs font-black">
-              {(['1Y', '3Y', '5Y'] as const).map(h => (
-                <button
-                  key={h}
-                  type="button"
-                  onClick={() => setRankingsHorizon(h)}
-                  className={`px-3 py-1 rounded-lg transition-all active:scale-95 cursor-pointer ${
-                    rankingsHorizon === h
-                      ? 'bg-blue-700 text-white shadow-xs'
-                      : 'text-slate-600 hover:text-slate-900 hover:bg-slate-200'
-                  }`}
-                >
-                  {h === '1Y' ? (lang === 'bn' ? '১ বছর' : '1 Year') : h === '3Y' ? (lang === 'bn' ? '৩ বছর' : '3 Years') : (lang === 'bn' ? '৫ বছর' : '5 Years')}
-                </button>
-              ))}
-            </div>
+                  ? `শীর্ষ পুনরাবৃত্ত বিজয়ী নম্বরসমূহ (${selectedSlot} • ${rankingsHorizon})`
+                  : lang === 'hi'
+                  ? `शीर्ष दोहराए जाने वाले विजेता नंबर (${selectedSlot} • ${rankingsHorizon})`
+                  : `Top Repeating Numbers (${selectedSlot} • ${rankingsHorizon})`}
+              </span>
+            </h2>
+            <p className="text-[11px] text-slate-500 mt-0.5">
+              {lang === 'bn'
+                ? `${filterDescription.slot}-এ ${filterDescription.horizon}-এ একাধিকবার জেতা সরকারি নম্বর (ক্লিক করে বিস্তারিত দেখুন)`
+                : `Official gazette repeat winners in ${filterDescription.slot} over ${filterDescription.horizon} (tap to inspect)`}
+            </p>
           </div>
 
           {/* Repeating Numbers Grid */}
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2">
-            {topRecurring.map((item, idx) => (
-              <button
-                key={idx}
-                type="button"
-                onClick={() => selectNumber(item.number)}
-                className="bg-slate-50 hover:bg-blue-50 border border-slate-200 hover:border-blue-300 rounded-xl p-2.5 text-left transition-all group active:scale-95 shadow-2xs cursor-pointer"
-              >
-                <div className="flex items-center justify-between">
-                  <span className="font-mono font-black text-sm sm:text-base text-blue-700 group-hover:text-blue-900">
-                    {item.number}
-                  </span>
-                  <span className="bg-amber-100 text-amber-900 font-bold text-[10px] px-1.5 py-0.5 rounded">
-                    {item.count} {lang === 'bn' ? 'বার' : 'hits'}
-                  </span>
-                </div>
-                <div className="text-[10px] text-slate-500 mt-1 flex items-center justify-between">
-                  <span>📅 {item.lastDate.split('-').reverse().join('/')}</span>
-                  <span className="font-bold text-slate-700">{item.lastTime}</span>
-                </div>
-              </button>
-            ))}
+            {topRecurring.length > 0 ? (
+              topRecurring.map((item, idx) => (
+                <button
+                  key={idx}
+                  type="button"
+                  onClick={() => selectNumber(item.number)}
+                  className="bg-slate-50 hover:bg-blue-50 border border-slate-200 hover:border-blue-300 rounded-xl p-2.5 text-left transition-all group active:scale-95 shadow-2xs cursor-pointer"
+                >
+                  <div className="flex items-center justify-between">
+                    <span className="font-mono font-black text-sm sm:text-base text-blue-700 group-hover:text-blue-900">
+                      {item.number}
+                    </span>
+                    <span className="bg-amber-100 text-amber-900 font-bold text-[10px] px-1.5 py-0.5 rounded">
+                      {item.count} {lang === 'bn' ? 'বার' : 'hits'}
+                    </span>
+                  </div>
+                  <div className="text-[10px] text-slate-500 mt-1 flex items-center justify-between">
+                    <span>📅 {item.lastDate.split('-').reverse().join('/')}</span>
+                    <span className="font-bold text-slate-700">{item.lastTime}</span>
+                  </div>
+                </button>
+              ))
+            ) : (
+              <div className="col-span-full py-8 text-center text-xs text-slate-500">
+                {lang === 'bn'
+                  ? 'এই ফিল্টারে একাধিকবার জেতা কোনো নম্বর পাওয়া যায়নি — ফিল্টার পরিবর্তন করে দেখুন।'
+                  : 'No repeating numbers found for this specific filter — try expanding the time horizon.'}
+              </div>
+            )}
           </div>
         </div>
       )}
@@ -743,7 +799,7 @@ export default function AnalyticsExplorer({
               <div className="flex items-center justify-between border-b border-slate-100 pb-2">
                 <h3 className="text-xs sm:text-sm font-black text-slate-900 flex items-center gap-1.5">
                   <span>🎯</span>
-                  <span>{lang === 'bn' ? 'শীর্ষ শেষ ২-ডিজিট (Endings)' : 'Top Ending 2-Digits'} ({rankingsHorizon})</span>
+                  <span>{lang === 'bn' ? 'শীর্ষ শেষ ২-ডিজিট (Endings)' : 'Top Ending 2-Digits'} ({selectedSlot} • {rankingsHorizon})</span>
                 </h3>
                 <span className="text-[10px] text-slate-500 font-medium">00-99</span>
               </div>
@@ -775,7 +831,7 @@ export default function AnalyticsExplorer({
               <div className="flex items-center justify-between border-b border-slate-100 pb-2">
                 <h3 className="text-xs sm:text-sm font-black text-slate-900 flex items-center gap-1.5">
                   <span>⚡</span>
-                  <span>{lang === 'bn' ? 'শীর্ষ মিডিল পেয়ার (Middles)' : 'Top Middle Pairs'} ({rankingsHorizon})</span>
+                  <span>{lang === 'bn' ? 'শীর্ষ মিডিল পেয়ার (Middles)' : 'Top Middle Pairs'} ({selectedSlot} • {rankingsHorizon})</span>
                 </h3>
                 <span className="text-[10px] text-slate-500 font-medium">00-99</span>
               </div>

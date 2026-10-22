@@ -15,7 +15,7 @@ export default function HistoricalIntelligenceCard({
   variant = 'compact'
 }: HistoricalIntelligenceCardProps) {
   const { lang } = useLanguage();
-  const [historyHorizon, setHistoryHorizon] = useState<'1Y' | '3Y' | '5Y'>('3Y');
+  const [historyHorizon, setHistoryHorizon] = useState<'30D' | '1Y' | '3Y' | '5Y'>('3Y');
   const [showAllPastWins, setShowAllPastWins] = useState<boolean>(false);
   const [showSimilarNumbers, setShowSimilarNumbers] = useState<boolean>(false);
   const [copied, setCopied] = useState<boolean>(false);
@@ -23,6 +23,7 @@ export default function HistoricalIntelligenceCard({
   const isFull = variant === 'full';
 
   const currentStats = useMemo(() => {
+    if (historyHorizon === '30D') return history.stats30D || history.stats1Y;
     if (historyHorizon === '1Y') return history.stats1Y;
     if (historyHorizon === '3Y') return history.stats3Y;
     return history.stats5Y;
@@ -74,21 +75,23 @@ export default function HistoricalIntelligenceCard({
           <span className="text-[11px] font-bold text-slate-600 pl-1">
             {lang === 'bn' ? 'সময়কাল ফিল্টার:' : lang === 'hi' ? 'समय अवधि:' : 'Time Horizon:'}
           </span>
-          <div className="flex items-center gap-1 text-xs font-black">
-            {(['1Y', '3Y', '5Y'] as const).map(h => {
+          <div className="flex items-center gap-1 text-xs font-black flex-wrap">
+            {(['30D', '1Y', '3Y', '5Y'] as const).map(h => {
               const isActive = historyHorizon === h;
               return (
                 <button
                   key={h}
                   type="button"
                   onClick={() => setHistoryHorizon(h)}
-                  className={`px-2.5 sm:px-3 py-1 rounded-lg transition-all active:scale-95 ${
+                  className={`px-2 sm:px-2.5 py-1 rounded-lg transition-all active:scale-95 cursor-pointer ${
                     isActive
                       ? 'bg-blue-700 text-white shadow-xs'
                       : 'text-slate-600 hover:text-slate-900 hover:bg-slate-200/60'
                   }`}
                 >
-                  {h === '1Y' 
+                  {h === '30D'
+                    ? (lang === 'bn' ? '৩০ দিন' : lang === 'hi' ? '30 दिन' : '30D')
+                    : h === '1Y' 
                     ? (lang === 'bn' ? '১ বছর' : lang === 'hi' ? '1 वर्ष' : '1 Year')
                     : h === '3Y'
                     ? (lang === 'bn' ? '৩ বছর' : lang === 'hi' ? '3 वर्ष' : '3 Years')
