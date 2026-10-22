@@ -21,10 +21,11 @@ interface Props {
 
 const { title, description, drawDate, drawTime, winningNumbers, faqItems } = Astro.props;
 const currentPath = Astro.url.pathname;
-const isHomeActive = currentPath === '/' || currentPath.startsWith('/results');
+const isHomeActive = currentPath === '/' || (currentPath.startsWith('/results') && !currentPath.includes('yesterday'));
 const isLuckyActive = currentPath === '/lucky-ticket' || currentPath === '/demo';
-const isTargetsActive = currentPath === '/target-numbers' || currentPath === '/analytics';
+const isTargetsActive = currentPath === '/target-numbers';
 const isCheckerActive = currentPath === '/checker';
+const isMoreActive = currentPath === '/analytics' || currentPath === '/yesterday' || currentPath === '/old-results' || currentPath === '/disclaimer' || currentPath === '/terms' || currentPath === '/contact';
 ---
 
 <!doctype html>
@@ -137,8 +138,8 @@ const isCheckerActive = currentPath === '/checker';
     {/* PWA Floating Bottom Install Banner (Available on all pages) */}
     <PwaInstallBanner client:idle />
 
-    {/* Mobile Sticky Bottom Navigation Dock (1-Thumb Mobile Ergonomics) */}
-    <nav aria-label="Mobile Quick Dock" style="padding-bottom: max(0.4rem, env(safe-area-inset-bottom));" class="md:hidden fixed bottom-0 inset-x-0 z-40 bg-white/95 backdrop-blur-md border-t border-slate-200/90 shadow-[0_-4px_16px_rgba(0,0,0,0.06)] px-2 pt-1.5 flex items-center justify-around text-center select-none notranslate" translate="no">
+    {/* Mobile Sticky Bottom Navigation Dock (5-Tab Standard Mobile Ergonomics) */}
+    <nav aria-label="Mobile Quick Dock" style="padding-bottom: max(0.4rem, env(safe-area-inset-bottom));" class="md:hidden fixed bottom-0 inset-x-0 z-40 bg-white/95 backdrop-blur-md border-t border-slate-200/90 shadow-[0_-4px_16px_rgba(0,0,0,0.06)] px-1 pt-1.5 flex items-center justify-around text-center select-none notranslate" translate="no">
       <a
         href="/"
         aria-label="Today Live Results"
@@ -146,11 +147,11 @@ const isCheckerActive = currentPath === '/checker';
           isHomeActive ? 'text-blue-700 font-black' : 'text-slate-600 font-semibold hover:text-slate-900'
         }`}
       >
-        <span class="text-lg">☀️</span>
-        <span class="text-[10px] mt-0.5">
+        <span class="text-base sm:text-lg">☀️</span>
+        <span class="text-[10px] mt-0.5 leading-tight">
           <span class="lang-en">Today</span>
-          <span class="lang-bn">আজকের ড্র</span>
-          <span class="lang-hi">आज का ड्रॉ</span>
+          <span class="lang-bn">আজকের</span>
+          <span class="lang-hi">आज</span>
         </span>
       </a>
 
@@ -161,11 +162,11 @@ const isCheckerActive = currentPath === '/checker';
           isLuckyActive ? 'text-blue-700 font-black' : 'text-slate-600 font-semibold hover:text-slate-900'
         }`}
       >
-        <span class="text-lg">🎟️</span>
-        <span class="text-[10px] mt-0.5">
-          <span class="lang-en">Lucky Ticket</span>
-          <span class="lang-bn">লাকি টিকিট</span>
-          <span class="lang-hi">लकी टिकट</span>
+        <span class="text-base sm:text-lg">🎟️</span>
+        <span class="text-[10px] mt-0.5 leading-tight">
+          <span class="lang-en">Lucky</span>
+          <span class="lang-bn">লাকি</span>
+          <span class="lang-hi">लकी</span>
         </span>
       </a>
 
@@ -176,11 +177,11 @@ const isCheckerActive = currentPath === '/checker';
           isTargetsActive ? 'text-blue-700 font-black' : 'text-slate-600 font-semibold hover:text-slate-900'
         }`}
       >
-        <span class="text-lg">🎯</span>
-        <span class="text-[10px] mt-0.5">
-          <span class="lang-en">Targets & Hot</span>
-          <span class="lang-bn">টার্গেট ও হট</span>
-          <span class="lang-hi">टारगेट और हॉट</span>
+        <span class="text-base sm:text-lg">🎯</span>
+        <span class="text-[10px] mt-0.5 leading-tight">
+          <span class="lang-en">Targets</span>
+          <span class="lang-bn">টার্গেট</span>
+          <span class="lang-hi">टारगेट</span>
         </span>
       </a>
 
@@ -191,14 +192,225 @@ const isCheckerActive = currentPath === '/checker';
           isCheckerActive ? 'text-blue-700 font-black' : 'text-slate-600 font-semibold hover:text-slate-900'
         }`}
       >
-        <span class="text-lg">🔍</span>
-        <span class="text-[10px] mt-0.5">
-          <span class="lang-en">Check Ticket</span>
-          <span class="lang-bn">টিকিট মেলান</span>
-          <span class="lang-hi">टिकट चेक</span>
+        <span class="text-base sm:text-lg">🔍</span>
+        <span class="text-[10px] mt-0.5 leading-tight">
+          <span class="lang-en">Checker</span>
+          <span class="lang-bn">চেকার</span>
+          <span class="lang-hi">चेकर</span>
         </span>
       </a>
+
+      <button
+        type="button"
+        id="mobile-more-btn"
+        aria-label="Open More Features Menu"
+        aria-expanded="false"
+        aria-controls="mobile-more-sheet"
+        onclick="window.toggleMobileMoreMenu && window.toggleMobileMoreMenu()"
+        class={`flex flex-col items-center justify-center flex-1 min-h-[48px] py-1 transition-all active:scale-95 cursor-pointer ${
+          isMoreActive ? 'text-blue-700 font-black' : 'text-slate-600 font-semibold hover:text-slate-900'
+        }`}
+      >
+        <span class="text-base sm:text-lg">☰</span>
+        <span class="text-[10px] mt-0.5 leading-tight">
+          <span class="lang-en">More</span>
+          <span class="lang-bn">আরও</span>
+          <span class="lang-hi">और</span>
+        </span>
+      </button>
     </nav>
+
+    {/* Mobile "More" Bottom Sheet Modal & Backdrop */}
+    <div
+      id="mobile-more-sheet-backdrop"
+      class="md:hidden fixed inset-0 z-50 bg-slate-950/60 backdrop-blur-xs hidden opacity-0 transition-opacity duration-200"
+      onclick="window.closeMobileMoreMenu && window.closeMobileMoreMenu()"
+      aria-hidden="true"
+    ></div>
+
+    <div
+      id="mobile-more-sheet"
+      class="md:hidden fixed bottom-0 inset-x-0 z-50 bg-white rounded-t-3xl shadow-[0_-8px_30px_rgba(0,0,0,0.18)] border-t border-slate-200 max-w-lg mx-auto transform translate-y-full transition-transform duration-300 ease-out flex flex-col max-h-[85vh] notranslate"
+      role="dialog"
+      aria-modal="true"
+      aria-label="More Features & Menu"
+      style="padding-bottom: max(1.2rem, env(safe-area-inset-bottom));"
+    >
+      {/* Drag Handle Indicator */}
+      <div class="pt-3 pb-1 cursor-pointer" onclick="window.closeMobileMoreMenu && window.closeMobileMoreMenu()">
+        <div class="w-12 h-1.5 bg-slate-300 rounded-full mx-auto"></div>
+      </div>
+
+      {/* Header */}
+      <div class="px-5 py-2.5 flex items-center justify-between border-b border-slate-100">
+        <div class="flex items-center gap-2">
+          <span class="text-lg">📋</span>
+          <h3 class="font-black text-sm text-slate-900 tracking-tight">
+            <span class="lang-en">Menu & Features</span>
+            <span class="lang-bn">মেনু ও অন্যান্য ফিচার</span>
+            <span class="lang-hi">मेनू और सभी फीचर्स</span>
+          </h3>
+        </div>
+        <button
+          type="button"
+          onclick="window.closeMobileMoreMenu && window.closeMobileMoreMenu()"
+          class="w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-600 flex items-center justify-center text-sm font-bold transition-colors cursor-pointer"
+          aria-label="Close Menu"
+        >
+          ✕
+        </button>
+      </div>
+
+      {/* Scrollable Sheet Content */}
+      <div class="p-3.5 space-y-2 overflow-y-auto">
+        {/* Featured Item: 5Y Analytics */}
+        <a
+          href="/analytics"
+          onclick="window.closeMobileMoreMenu && window.closeMobileMoreMenu()"
+          class={`flex items-center justify-between p-3 rounded-2xl border transition-all ${
+            currentPath === '/analytics'
+              ? 'bg-blue-50/90 border-blue-400 shadow-xs'
+              : 'bg-gradient-to-r from-blue-50/70 to-indigo-50/40 border-blue-200 hover:border-blue-300'
+          }`}
+        >
+          <div class="flex items-center gap-3">
+            <div class="w-10 h-10 rounded-xl bg-blue-600 text-white flex items-center justify-center text-lg shadow-sm flex-shrink-0">
+              📊
+            </div>
+            <div>
+              <div class="flex items-center gap-1.5">
+                <span class="font-black text-sm text-slate-900">
+                  <span class="lang-en">5Y Digit Analytics</span>
+                  <span class="lang-bn">৫ বছরের ডিজিট অ্যানালিটিক্স</span>
+                  <span class="lang-hi">5-वर्षीय डिजिट एनालिटिक्स</span>
+                </span>
+                <span class="bg-blue-600 text-white font-black text-[9px] px-1.5 py-0.2 rounded-full uppercase tracking-wider">
+                  HOT
+                </span>
+              </div>
+              <span class="text-[11px] text-slate-600 block mt-0.5">
+                <span class="lang-en">5-year digit frequency, hot & cold numbers</span>
+                <span class="lang-bn">হট/কোল্ড নম্বর ও ৫ বছরের ফ্রিকোয়েন্সি</span>
+                <span class="lang-hi">हॉट व कोल्ड नंबर और 5-वर्षीय ट्रेंड्स</span>
+              </span>
+            </div>
+          </div>
+          <span class="text-blue-600 font-black text-sm ml-2">➔</span>
+        </a>
+
+        {/* Yesterday's Results */}
+        <a
+          href="/yesterday"
+          onclick="window.closeMobileMoreMenu && window.closeMobileMoreMenu()"
+          class={`flex items-center justify-between p-3 rounded-2xl border transition-all ${
+            currentPath === '/yesterday'
+              ? 'bg-amber-50 border-amber-400 shadow-xs'
+              : 'bg-white border-slate-200 hover:border-slate-300'
+          }`}
+        >
+          <div class="flex items-center gap-3">
+            <div class="w-10 h-10 rounded-xl bg-amber-500 text-white flex items-center justify-center text-lg shadow-sm flex-shrink-0">
+              📜
+            </div>
+            <div>
+              <span class="font-black text-sm text-slate-900 block">
+                <span class="lang-en">Yesterday's Results</span>
+                <span class="lang-bn">গতকালকের ফলাফল</span>
+                <span class="lang-hi">कल का रिजल्ट</span>
+              </span>
+              <span class="text-[11px] text-slate-600 block mt-0.5">
+                <span class="lang-en">1PM, 6PM & 8PM official winning sheets</span>
+                <span class="lang-bn">১PM, ৬PM ও ৮PM গেজেট রেজাল্ট</span>
+                <span class="lang-hi">1PM, 6PM और 8PM रिजल्ट शीट</span>
+              </span>
+            </div>
+          </div>
+          <span class="text-slate-400 font-bold text-sm ml-2">➔</span>
+        </a>
+
+        {/* Old Results 30 Days */}
+        <a
+          href="/old-results"
+          onclick="window.closeMobileMoreMenu && window.closeMobileMoreMenu()"
+          class={`flex items-center justify-between p-3 rounded-2xl border transition-all ${
+            currentPath === '/old-results'
+              ? 'bg-emerald-50 border-emerald-400 shadow-xs'
+              : 'bg-white border-slate-200 hover:border-slate-300'
+          }`}
+        >
+          <div class="flex items-center gap-3">
+            <div class="w-10 h-10 rounded-xl bg-emerald-600 text-white flex items-center justify-center text-lg shadow-sm flex-shrink-0">
+              📅
+            </div>
+            <div>
+              <span class="font-black text-sm text-slate-900 block">
+                <span class="lang-en">Old Results (30 Days)</span>
+                <span class="lang-bn">পুরনো রেজাল্ট আর্কাইভ</span>
+                <span class="lang-hi">पुराने नतीजे (30 दिन)</span>
+              </span>
+              <span class="text-[11px] text-slate-600 block mt-0.5">
+                <span class="lang-en">Download official state gazette PDFs</span>
+                <span class="lang-bn">গত ৩০ দিনের সমস্ত লটারি শিট ও গেজেট</span>
+                <span class="lang-hi">पिछले 30 दिनों के सभी ड्रॉ रिकॉर्ड</span>
+              </span>
+            </div>
+          </div>
+          <span class="text-slate-400 font-bold text-sm ml-2">➔</span>
+        </a>
+
+        {/* Quick App Install Trigger */}
+        <button
+          type="button"
+          onclick="window.closeMobileMoreMenu && window.closeMobileMoreMenu(); window.triggerPwaInstall && window.triggerPwaInstall();"
+          class="w-full flex items-center justify-between p-3 rounded-2xl border border-amber-300 bg-gradient-to-r from-amber-50 to-orange-50 text-left transition-all active:scale-[0.99] cursor-pointer"
+        >
+          <div class="flex items-center gap-3">
+            <div class="w-10 h-10 rounded-xl bg-amber-500 text-slate-950 flex items-center justify-center text-lg shadow-sm flex-shrink-0">
+              📲
+            </div>
+            <div>
+              <div class="flex items-center gap-1.5">
+                <span class="font-black text-sm text-slate-900">
+                  <span class="lang-en">Install Mobile App</span>
+                  <span class="lang-bn">মোবাইল অ্যাপ ইনস্টল</span>
+                  <span class="lang-hi">मोबाइल ऐप इंस्टॉल</span>
+                </span>
+                <span class="bg-amber-400 text-slate-950 font-black text-[9px] px-1.5 py-0.2 rounded-full uppercase">
+                  FAST
+                </span>
+              </div>
+              <span class="text-[11px] text-slate-600 block mt-0.5">
+                <span class="lang-en">Ad-free, 1-tap instant draws on home screen</span>
+                <span class="lang-bn">বিজ্ঞাপনহীন, হোম স্ক্রিনে সরাসরি রেজাল্ট</span>
+                <span class="lang-hi">बिना विज्ञापन, 1-टैप में सीधा परिणाम</span>
+              </span>
+            </div>
+          </div>
+          <span class="text-amber-700 font-black text-sm ml-2">➔</span>
+        </button>
+
+        {/* Bottom Secondary Links (Disclaimer, Terms, Contact) */}
+        <div class="pt-3 border-t border-slate-100 flex items-center justify-around text-xs text-slate-500 font-medium">
+          <a href="/disclaimer" onclick="window.closeMobileMoreMenu && window.closeMobileMoreMenu()" class="hover:text-blue-700 py-1 px-2">
+            <span class="lang-en">Disclaimer</span>
+            <span class="lang-bn">দাবিত্যাগ</span>
+            <span class="lang-hi">अस्वीकरण</span>
+          </a>
+          <span>•</span>
+          <a href="/terms" onclick="window.closeMobileMoreMenu && window.closeMobileMoreMenu()" class="hover:text-blue-700 py-1 px-2">
+            <span class="lang-en">Terms</span>
+            <span class="lang-bn">শর্তাবলী</span>
+            <span class="lang-hi">शर्तें</span>
+          </a>
+          <span>•</span>
+          <a href="/contact" onclick="window.closeMobileMoreMenu && window.closeMobileMoreMenu()" class="hover:text-blue-700 py-1 px-2">
+            <span class="lang-en">Contact</span>
+            <span class="lang-bn">যোগাযোগ</span>
+            <span class="lang-hi">संपर्क</span>
+          </a>
+        </div>
+      </div>
+    </div>
 
     {/* PWA Install Guidance Modal for Mobile & Desktop */}
     <div
@@ -345,6 +557,47 @@ const isCheckerActive = currentPath === '/checker';
 
     <script is:inline>
       (function() {
+        // Mobile "More" Bottom Sheet Controller
+        window.toggleMobileMoreMenu = function() {
+          var sheet = document.getElementById('mobile-more-sheet');
+          var backdrop = document.getElementById('mobile-more-sheet-backdrop');
+          var btn = document.getElementById('mobile-more-btn');
+          if (!sheet || !backdrop) return;
+          var isOpen = !sheet.classList.contains('translate-y-full');
+          if (isOpen) {
+            window.closeMobileMoreMenu();
+          } else {
+            backdrop.classList.remove('hidden');
+            void backdrop.offsetWidth;
+            backdrop.classList.remove('opacity-0');
+            sheet.classList.remove('translate-y-full');
+            sheet.classList.add('translate-y-0');
+            if (btn) btn.setAttribute('aria-expanded', 'true');
+            document.body.style.overflow = 'hidden';
+          }
+        };
+
+        window.closeMobileMoreMenu = function() {
+          var sheet = document.getElementById('mobile-more-sheet');
+          var backdrop = document.getElementById('mobile-more-sheet-backdrop');
+          var btn = document.getElementById('mobile-more-btn');
+          if (!sheet || !backdrop) return;
+          sheet.classList.remove('translate-y-0');
+          sheet.classList.add('translate-y-full');
+          backdrop.classList.add('opacity-0');
+          setTimeout(function() {
+            backdrop.classList.add('hidden');
+          }, 220);
+          if (btn) btn.setAttribute('aria-expanded', 'false');
+          document.body.style.overflow = '';
+        };
+
+        document.addEventListener('keydown', function(e) {
+          if (e.key === 'Escape') {
+            window.closeMobileMoreMenu();
+          }
+        });
+
         function checkPlatform() {
           var ua = navigator.userAgent || '';
           var isIOS = /iPad|iPhone|iPod/.test(ua) && !window.MSStream;
