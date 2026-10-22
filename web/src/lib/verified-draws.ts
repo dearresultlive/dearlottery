@@ -1316,7 +1316,7 @@ export function getVerifiedDraw(dateStr: string, slot: '1PM' | '6PM' | '8PM', is
   // 2. Today's date: check if verified official results are available
   if (dateStr === todayStr) {
     if (slotPrizes && slotPrizes.first_prize?.number) {
-      const localImagePath = `/results/${dateStr}/${slot.toLowerCase()}.jpg`;
+      const localImagePath = '/api/sheet-image?date=' + dateStr + '&slot=' + slot.toLowerCase();
       const fullData = {
         draw_id: drawId,
         draw_date: dateStr,

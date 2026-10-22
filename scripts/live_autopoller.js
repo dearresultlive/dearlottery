@@ -615,6 +615,17 @@ async function processSlot(dateStr, slot) {
   } else {
     console.log(`[Poller] ℹ️ Telegram alert already broadcasted for ${dateStr} [${slot}]. Suppressing duplicate Stage 2 broadcast.`);
   }
+  // Auto-sync with GitHub repository to trigger Cloudflare Pages static build
+  try {
+    const { execSync } = await import("child_process");
+    console.log(`[Poller] Auto-committing and pushing verified results to GitHub...`);
+    execSync(`git add web/src/data/live_draws.json web/public/results/${dateStr}/`, { stdio: "ignore" });
+    execSync(`git commit -m "chore(live): auto-publish verified results for ${dateStr} [${slot}]"`, { stdio: "ignore" });
+    execSync("git push origin main", { stdio: "ignore" });
+    console.log(`[Poller] Git push complete. Cloudflare Pages build triggered.`);
+  } catch (gitErr) {
+    console.log(`[Poller] Git auto-sync: ${gitErr.message || "Already up to date"}`);
+  }
   return true;
 }
 
