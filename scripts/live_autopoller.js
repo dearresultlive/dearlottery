@@ -42,16 +42,26 @@ function getISTDateString(d = getISTDate()) {
   return `${y}-${m}-${day}`;
 }
 
-function getAutoSlot(istDate = getISTDate()) {
+function getAutoSlot(istDate = getISTDate(), dateStr = getISTDateString(istDate)) {
   const h = istDate.getHours();
   const m = istDate.getMinutes();
   const totalMin = h * 60 + m;
 
-  // 1:00 PM is 780 min. Window: 775 to 900 -> 1PM
-  // 6:00 PM is 1080 min. Window: 1075 to 1190 -> 6PM
-  // 8:00 PM is 1200 min. After 1190 -> 8PM
-  if (totalMin < 900) return '1PM';
-  if (totalMin < 1190) return '6PM';
+  const db = loadLiveDraws();
+  const dayDb = db[dateStr] || {};
+
+  const is1pmVerified = Boolean(dayDb['1PM']?.first_prize?.number && dayDb['1PM']?.second_prize?.length >= 8);
+  const is6pmVerified = Boolean(dayDb['6PM']?.first_prize?.number && dayDb['6PM']?.second_prize?.length >= 8);
+
+  // If before 1:00 PM draw (or 1PM not yet verified and time < 17:50)
+  if (!is1pmVerified && totalMin < 1070) {
+    return '1PM';
+  }
+  // If 1PM verified and before 6PM draw (or 6PM not yet verified and time < 1190)
+  if (!is6pmVerified && totalMin < 1190) {
+    return '6PM';
+  }
+  // Otherwise check 8PM
   return '8PM';
 }
 
@@ -125,7 +135,10 @@ async function checkLotterySambad(dateStr, slot) {
  */
 async function checkNagalandLotteryResults(dateStr, slot) {
   const [year, month, day] = dateStr.split('-');
+  const dateCode = `${day}${month}${year.slice(2)}`; // e.g. "231026"
   const shortDate = `${day}/${month}/${year.slice(2)}`;
+  const dashDate = `${day}-${month}-${year}`;
+  const dotDate = `${day}.${month}.${year}`;
   const slotText = slot === '1PM' ? '1 PM' : slot === '6PM' ? '6 PM' : '8 PM';
   const slotAnchor = slot === '1PM' ? 'dear1pm' : slot === '6PM' ? 'dear6pm' : 'dear8pm';
 
@@ -145,6 +158,15 @@ async function checkNagalandLotteryResults(dateStr, slot) {
       if (b.includes('dls-success') && (b.includes(slotAnchor) || b.includes(slotText))) {
           const imgMatch = b.match(/<img[^>]+src=['"]([^'"]+)['"]/i);
           const imgUrl = imgMatch ? imgMatch[1] : null;
+          if (!imgUrl) continue;
+
+          // Strict Date Validation: Reject images from previous dates!
+          const matchesDateInUrl = imgUrl.includes(dateCode);
+          const matchesDateInBlock = b.includes(shortDate) || b.includes(dashDate) || b.includes(dotDate);
+          if (!matchesDateInUrl && !matchesDateInBlock) {
+            continue; // Belongs to previous day's draw
+          }
+
           const isWrongSlot = 
             (slot === '1PM' && (imgUrl.includes('/DN') || imgUrl.includes('/EN') || imgUrl.includes('6pm') || imgUrl.includes('8pm'))) ||
             (slot === '6PM' && (imgUrl.includes('/MN') || imgUrl.includes('/EN') || imgUrl.includes('1pm') || imgUrl.includes('8pm'))) ||
@@ -378,9 +400,10 @@ async function processSlot(dateStr, slot) {
 
   // If slot is in the distant future (more than 5 mins before draw)
   if (currentTotalMin < targetTotalMin - 5) {
-    const diffHours = ((targetTotalMin - currentTotalMin) / 60).toFixed(1);
+    const diffMin = targetTotalMin - currentTotalMin;
+    const diffHours = (diffMin / 60).toFixed(1);
     console.log(`[Poller] ${dateStr} [${slot}] is UPCOMING in ~${diffHours}h (scheduled for ${targetHour}:00 IST). Waiting...`);
-    return false;
+    return { status: 'UPCOMING', diffMin };
   }
 
   // Check existing local cache
@@ -389,7 +412,7 @@ async function processSlot(dateStr, slot) {
   if (dayDb[slot] && dayDb[slot].first_prize?.number) {
     if (dayDb[slot].telegram_sent && dayDb[slot].second_prize?.length >= 8) {
       console.log(`[Poller] ${dateStr} [${slot}] already fully verified: 1st Prize ${dayDb[slot].first_prize.series} ${dayDb[slot].first_prize.number}.`);
-      return true;
+      return { status: 'VERIFIED', diffMin: 0 };
     }
   }
 
@@ -424,7 +447,7 @@ async function processSlot(dateStr, slot) {
 
   if (!isPublished) {
     console.log(`[Poller] Result for ${dateStr} [${slot}] has NOT been declared yet by state directorate. State: DRAWING / PENDING.`);
-    return false;
+    return { status: 'PENDING', diffMin: 0 };
   }
 
   console.log(`[Poller] 🎉 OFFICIAL RESULT DETECTED FOR ${dateStr} [${slot}]! Initiating automated ingestion...`);
@@ -640,7 +663,7 @@ async function processSlot(dateStr, slot) {
   } catch (gitErr) {
     console.log(`[Poller] Git auto-sync: ${gitErr.message || "Already up to date"}`);
   }
-  return true;
+  return { status: 'SUCCESS', diffMin: 0 };
 }
 
 /**
@@ -675,20 +698,33 @@ async function main() {
   const sleepMs = 15000; // 15s interval for rapid ~15-second response to official releases
 
   for (let attempt = 1; attempt <= maxAttempts; attempt++) {
-    const slot = targetSlot || getAutoSlot();
+    const currentDateStr = targetDate || getISTDateString();
+    const slot = targetSlot || getAutoSlot(getISTDate(), currentDateStr);
     const timeLabel = new Date().toLocaleTimeString('en-US', { timeZone: 'Asia/Kolkata' });
-    console.log(`\n[${timeLabel} IST] [Attempt ${attempt}/${maxAttempts}] Checking slot: ${slot}...`);
+    console.log(`\n[${timeLabel} IST] [Surveillance ${attempt}/${maxAttempts}] Date: ${currentDateStr} | Slot: ${slot}...`);
 
-    const isVerified = await processSlot(dateStr, slot);
-    if (isVerified) {
-      console.log(`[Poller] ✅ Verified result secured for ${dateStr} [${slot}]. Pipeline successfully satisfied.`);
+    const res = await processSlot(currentDateStr, slot);
+    const status = typeof res === 'object' ? res.status : (res ? 'VERIFIED' : 'PENDING');
+    const diffMin = (typeof res === 'object' && res.diffMin) || 0;
+
+    if (status === 'SUCCESS' || status === 'VERIFIED') {
+      console.log(`[Poller] ✅ Verified result secured for ${currentDateStr} [${slot}].`);
       if (!isWatch) {
         process.exit(0);
       } else {
-        console.log('[Poller] 🕒 Watch mode active: Standing by for upcoming slots...');
+        console.log('[Poller] 🕒 Standing by for next slot...');
         await new Promise(r => setTimeout(r, 60000));
         continue;
       }
+    }
+
+    if (status === 'UPCOMING') {
+      if (!isWatch) {
+        process.exit(0);
+      }
+      const waitTime = diffMin > 10 ? 60000 : sleepMs;
+      await new Promise(r => setTimeout(r, waitTime));
+      continue;
     }
 
     if (attempt < maxAttempts) {

@@ -202,6 +202,10 @@ export async function pollAndIngestLiveDraw(
         });
         if (res.ok) {
           const nHtml = await res.text();
+          const dateCode = `${day}${month}${year.slice(2)}`; // e.g. "231026"
+          const shortDate = `${day}/${month}/${year.slice(2)}`;
+          const dashDate = `${day}-${month}-${year}`;
+          const dotDate = `${day}.${month}.${year}`;
           const slotText = slot === '1PM' ? '1 PM' : slot === '6PM' ? '6 PM' : '8 PM';
           const slotAnchor = slot === '1PM' ? 'dear1pm' : slot === '6PM' ? 'dear6pm' : 'dear8pm';
           const blocks = nHtml.match(/<div class=['"]dls-update[\s\S]*?<\/div>\s*<\/div>/gi) || [];
@@ -210,6 +214,14 @@ export async function pollAndIngestLiveDraw(
               const imgMatch = b.match(/<img[^>]+src=['"]([^'"]+)['"]/i);
               const imgUrl = imgMatch ? imgMatch[1] : undefined;
               if (!imgUrl) continue;
+
+              // Strict Date Validation: Reject images from previous dates!
+              const matchesDateInUrl = imgUrl.includes(dateCode);
+              const matchesDateInBlock = b.includes(shortDate) || b.includes(dashDate) || b.includes(dotDate);
+              if (!matchesDateInUrl && !matchesDateInBlock) {
+                continue; // Belongs to previous day's draw
+              }
+
               const isWrongSlot = 
                 (slot === '1PM' && (imgUrl.includes('/DN') || imgUrl.includes('/EN') || imgUrl.includes('6pm') || imgUrl.includes('8pm'))) ||
                 (slot === '6PM' && (imgUrl.includes('/MN') || imgUrl.includes('/EN') || imgUrl.includes('1pm') || imgUrl.includes('8pm'))) ||

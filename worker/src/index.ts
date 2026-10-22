@@ -194,24 +194,58 @@ app.post('/api/results', async (c) => {
 
 // ============================================================================
 // 3. Edge-Cached Latest Results (GET /api/results/latest)
-// Latency: <20ms at edge with stale-while-revalidate
+// Latency: <20ms at edge with stale-while-revalidate & D1 quota isolation
 // ============================================================================
 app.get('/api/results/latest', async (c) => {
+  const cache = (caches as any).default;
+  const cacheKey = new Request(c.req.url, c.req.raw);
+
+  try {
+    const cachedResponse = await cache.match(cacheKey);
+    if (cachedResponse) {
+      const resp = new Response(cachedResponse.body, cachedResponse);
+      resp.headers.set('X-Edge-Cache', 'HIT');
+      return resp;
+    }
+  } catch (_) {}
+
   const slotParam = c.req.query('slot') || c.req.query('time');
   const limitParam = c.req.query('limit');
   const limit = limitParam ? Math.min(parseInt(limitParam, 10), 10) : 3;
 
-  const draws = await getLatestDraws(c.env.DB, slotParam, limit);
+  try {
+    const draws = await getLatestDraws(c.env.DB, slotParam, limit);
 
-  c.header('Cache-Control', 'public, max-age=30, s-maxage=60, stale-while-revalidate=300');
-  return c.json({
-    slot: slotParam || 'ALL',
-    count: draws.length,
-    draws: draws.map(d => ({
-      ...d,
-      parsed_data: JSON.parse(d.raw_json)
-    }))
-  });
+    const headers = new Headers({
+      'Content-Type': 'application/json',
+      'Cache-Control': 'public, max-age=15, s-maxage=30, stale-while-revalidate=120',
+      'Access-Control-Allow-Origin': '*',
+      'X-Edge-Cache': 'MISS'
+    });
+
+    const response = new Response(JSON.stringify({
+      slot: slotParam || 'ALL',
+      count: draws.length,
+      draws: draws.map(d => ({
+        ...d,
+        parsed_data: JSON.parse(d.raw_json)
+      }))
+    }), { status: 200, headers });
+
+    if (c.executionCtx && draws.length > 0) {
+      c.executionCtx.waitUntil(cache.put(cacheKey, response.clone()));
+    }
+
+    return response;
+  } catch (err: any) {
+    console.error('getLatestDraws error:', err?.message || err);
+    return c.json({
+      slot: slotParam || 'ALL',
+      count: 0,
+      draws: [],
+      error: 'Database temporarily unavailable'
+    }, 200);
+  }
 });
 
 // ============================================================================
@@ -219,18 +253,46 @@ app.get('/api/results/latest', async (c) => {
 // ============================================================================
 app.get('/api/results/date/:date', async (c) => {
   const dateStr = c.req.param('date');
-  const draws = await getDrawsByDate(c.env.DB, dateStr);
+  const cache = (caches as any).default;
+  const cacheKey = new Request(c.req.url, c.req.raw);
 
-  // Past results are permanent and immutable
-  c.header('Cache-Control', 'public, max-age=3600, s-maxage=86400, stale-while-revalidate=604800');
-  return c.json({
-    date: dateStr,
-    count: draws.length,
-    draws: draws.map(d => ({
-      ...d,
-      parsed_data: JSON.parse(d.raw_json)
-    }))
-  });
+  try {
+    const cachedResponse = await cache.match(cacheKey);
+    if (cachedResponse) {
+      const resp = new Response(cachedResponse.body, cachedResponse);
+      resp.headers.set('X-Edge-Cache', 'HIT');
+      return resp;
+    }
+  } catch (_) {}
+
+  try {
+    const draws = await getDrawsByDate(c.env.DB, dateStr);
+
+    const headers = new Headers({
+      'Content-Type': 'application/json',
+      'Cache-Control': 'public, max-age=3600, s-maxage=86400, stale-while-revalidate=604800',
+      'Access-Control-Allow-Origin': '*',
+      'X-Edge-Cache': 'MISS'
+    });
+
+    const response = new Response(JSON.stringify({
+      date: dateStr,
+      count: draws.length,
+      draws: draws.map(d => ({
+        ...d,
+        parsed_data: JSON.parse(d.raw_json)
+      }))
+    }), { status: 200, headers });
+
+    if (c.executionCtx && draws.length > 0) {
+      c.executionCtx.waitUntil(cache.put(cacheKey, response.clone()));
+    }
+
+    return response;
+  } catch (err: any) {
+    console.error('getDrawsByDate error:', err?.message || err);
+    return c.json({ date: dateStr, count: 0, draws: [], error: 'Database temporarily unavailable' }, 200);
+  }
 });
 
 // ============================================================================
@@ -238,19 +300,48 @@ app.get('/api/results/date/:date', async (c) => {
 // ============================================================================
 app.get('/api/results/draw/:id', async (c) => {
   const id = c.req.param('id');
-  const draw = await getDrawById(c.env.DB, id);
+  const cache = (caches as any).default;
+  const cacheKey = new Request(c.req.url, c.req.raw);
 
-  if (!draw) {
-    return c.json({ error: 'Draw not found' }, 404);
-  }
-
-  c.header('Cache-Control', 'public, max-age=3600, s-maxage=86400');
-  return c.json({
-    draw: {
-      ...draw,
-      parsed_data: JSON.parse(draw.raw_json)
+  try {
+    const cachedResponse = await cache.match(cacheKey);
+    if (cachedResponse) {
+      const resp = new Response(cachedResponse.body, cachedResponse);
+      resp.headers.set('X-Edge-Cache', 'HIT');
+      return resp;
     }
-  });
+  } catch (_) {}
+
+  try {
+    const draw = await getDrawById(c.env.DB, id);
+
+    if (!draw) {
+      return c.json({ error: 'Draw not found' }, 404);
+    }
+
+    const headers = new Headers({
+      'Content-Type': 'application/json',
+      'Cache-Control': 'public, max-age=3600, s-maxage=86400',
+      'Access-Control-Allow-Origin': '*',
+      'X-Edge-Cache': 'MISS'
+    });
+
+    const response = new Response(JSON.stringify({
+      draw: {
+        ...draw,
+        parsed_data: JSON.parse(draw.raw_json)
+      }
+    }), { status: 200, headers });
+
+    if (c.executionCtx) {
+      c.executionCtx.waitUntil(cache.put(cacheKey, response.clone()));
+    }
+
+    return response;
+  } catch (err: any) {
+    console.error('getDrawById error:', err?.message || err);
+    return c.json({ error: 'Draw query failed' }, 500);
+  }
 });
 
 // ============================================================================
@@ -266,19 +357,30 @@ const handleTicketSearch = async (c: any) => {
     return c.json({ error: 'Query parameter "number" must be at least 4 digits.' }, 400);
   }
 
-  const matches = await checkTicket(c.env.DB, number, series, drawId);
+  try {
+    const matches = await checkTicket(c.env.DB, number, series, drawId);
 
-  return c.json({
-    query: {
-      number,
-      series: series || null,
-      draw_id: drawId || 'ALL'
-    },
-    matched: matches.length > 0,
-    prize_status: matches.length > 0 ? 'WINNER' : 'NO_PRIZE',
-    match_count: matches.length,
-    prizes: matches
-  });
+    return c.json({
+      query: {
+        number,
+        series: series || null,
+        draw_id: drawId || 'ALL'
+      },
+      matched: matches.length > 0,
+      prize_status: matches.length > 0 ? 'WINNER' : 'NO_PRIZE',
+      match_count: matches.length,
+      prizes: matches
+    });
+  } catch (err: any) {
+    console.error('checkTicket error:', err?.message || err);
+    return c.json({
+      query: { number, series: series || null, draw_id: drawId || 'ALL' },
+      matched: false,
+      prize_status: 'NO_PRIZE',
+      match_count: 0,
+      prizes: []
+    }, 200);
+  }
 };
 
 app.get('/api/results/search', handleTicketSearch);
@@ -287,27 +389,66 @@ app.get('/api/checker', handleTicketSearch);
 // ============================================================================
 // 7. Frequency Analytics (GET /api/analytics/frequency?days=30)
 // Aggregates most and least frequent 2-digit and 4-digit endings + position matrix
+// Edge cached with memory match to eliminate D1 table scans
 // ============================================================================
 app.get('/api/analytics/frequency', async (c) => {
   const daysParam = c.req.query('days');
   const days = daysParam ? parseInt(daysParam, 10) : 30;
 
-  const [endingsAnalysis, matrix, hotCold] = await Promise.all([
-    getEndingFrequencyAnalysis(c.env.DB, days),
-    getFrequencyMatrix(c.env.DB),
-    getHotAndColdNumbers(c.env.DB)
-  ]);
+  const cache = (caches as any).default;
+  const cacheKey = new Request(c.req.url, c.req.raw);
 
-  c.header('Cache-Control', 'public, max-age=300, s-maxage=1800, stale-while-revalidate=3600');
-  return c.json({
-    days: endingsAnalysis.days,
-    total_draws_analyzed: endingsAnalysis.total_draws_analyzed,
-    four_digit_endings: endingsAnalysis.four_digit_endings,
-    two_digit_endings: endingsAnalysis.two_digit_endings,
-    digit_frequency_matrix: matrix,
-    hot_numbers: hotCold.hotNumbers,
-    cold_numbers: hotCold.coldNumbers
-  });
+  try {
+    const cachedResponse = await cache.match(cacheKey);
+    if (cachedResponse) {
+      const resp = new Response(cachedResponse.body, cachedResponse);
+      resp.headers.set('X-Edge-Cache', 'HIT');
+      return resp;
+    }
+  } catch (_) {}
+
+  try {
+    const [endingsAnalysis, matrix, hotCold] = await Promise.all([
+      getEndingFrequencyAnalysis(c.env.DB, days),
+      getFrequencyMatrix(c.env.DB),
+      getHotAndColdNumbers(c.env.DB)
+    ]);
+
+    const headers = new Headers({
+      'Content-Type': 'application/json',
+      'Cache-Control': 'public, max-age=1800, s-maxage=3600, stale-while-revalidate=86400',
+      'Access-Control-Allow-Origin': '*',
+      'X-Edge-Cache': 'MISS'
+    });
+
+    const response = new Response(JSON.stringify({
+      days: endingsAnalysis.days,
+      total_draws_analyzed: endingsAnalysis.total_draws_analyzed,
+      four_digit_endings: endingsAnalysis.four_digit_endings,
+      two_digit_endings: endingsAnalysis.two_digit_endings,
+      digit_frequency_matrix: matrix,
+      hot_numbers: hotCold.hotNumbers,
+      cold_numbers: hotCold.coldNumbers
+    }), { status: 200, headers });
+
+    if (c.executionCtx) {
+      c.executionCtx.waitUntil(cache.put(cacheKey, response.clone()));
+    }
+
+    return response;
+  } catch (err: any) {
+    console.error('getFrequencyMatrix error:', err?.message || err);
+    return c.json({
+      days,
+      total_draws_analyzed: 0,
+      four_digit_endings: { most_frequent: [], least_frequent: [] },
+      two_digit_endings: { most_frequent: [], least_frequent: [] },
+      digit_frequency_matrix: [],
+      hot_numbers: [],
+      cold_numbers: [],
+      error: 'Analytics temporarily unavailable'
+    }, 200);
+  }
 });
 
 // ============================================================================
