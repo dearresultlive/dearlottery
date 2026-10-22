@@ -18,6 +18,7 @@ export default function HistoricalIntelligenceCard({
   const [historyHorizon, setHistoryHorizon] = useState<'1Y' | '3Y' | '5Y'>('3Y');
   const [showAllPastWins, setShowAllPastWins] = useState<boolean>(false);
   const [showSimilarNumbers, setShowSimilarNumbers] = useState<boolean>(false);
+  const [copied, setCopied] = useState<boolean>(false);
 
   const isFull = variant === 'full';
 
@@ -26,6 +27,24 @@ export default function HistoricalIntelligenceCard({
     if (historyHorizon === '3Y') return history.stats3Y;
     return history.stats5Y;
   }, [history, historyHorizon]);
+
+  const handleCopy = () => {
+    try {
+      if (typeof navigator !== 'undefined') {
+        if ((navigator as any).vibrate) (navigator as any).vibrate(15);
+        if (navigator.clipboard) {
+          navigator.clipboard.writeText(history.cleanNumber);
+        }
+      }
+      setCopied(true);
+      setTimeout(() => setCopied(false), 1800);
+    } catch (e) {
+      console.error(e);
+    }
+  };
+
+  const shareText = `📜 *Dear Lottery 5-Year History for #${history.cleanNumber}*\n🔥 Hot Score: ${history.hotScore}/100\n🏆 5Y Exact Wins: ${history.stats5Y.exactWinsCount} times\n🎯 Last 4 Matches: ${history.stats5Y.last4MatchesCount} times\n📊 Ending Rank: #${history.last2Rank} (..${history.last2Digits})\n\n👉 See full official records & live draws:\nhttps://dearresultlive.in/analytics?number=${history.cleanNumber}`;
+  const whatsappUrl = `https://api.whatsapp.com/send?text=${encodeURIComponent(shareText)}`;
 
   return (
     <div className="bg-white border border-slate-200 rounded-xl sm:rounded-2xl p-3.5 sm:p-4 text-left shadow-2xs space-y-3">
@@ -246,7 +265,45 @@ export default function HistoricalIntelligenceCard({
         </div>
       )}
 
-      {/* 7. SEO-Friendly CTA Button for Compact Variant (Redirects to Full Hub) */}
+      {/* 7. Action Bar for Full Variant */}
+      {isFull && (
+        <div className="flex items-center gap-2 pt-1 flex-wrap">
+          <a
+            href={`/checker?number=${history.cleanNumber}`}
+            className="flex-1 min-w-[140px] inline-flex items-center justify-center gap-1.5 bg-blue-700 hover:bg-blue-800 text-white font-black text-xs py-2 px-3 rounded-xl transition-all active:scale-95 shadow-2xs text-center"
+          >
+            <span>🔍</span>
+            <span>
+              {lang === 'bn' ? 'আজকের ড্র-তে মিলিয়ে নিন' : lang === 'hi' ? 'आज के ड्रॉ में चेक करें' : "Check in Today's Draw"}
+            </span>
+          </a>
+
+          <button
+            type="button"
+            onClick={handleCopy}
+            className="inline-flex items-center justify-center gap-1.5 bg-slate-100 hover:bg-slate-200 text-slate-800 font-bold text-xs py-2 px-3 rounded-xl transition-all active:scale-95 border border-slate-200 cursor-pointer"
+          >
+            <span>{copied ? '✓' : '📋'}</span>
+            <span>
+              {copied
+                ? (lang === 'bn' ? 'কপি হয়েছে!' : 'Copied!')
+                : (lang === 'bn' ? 'নম্বর কপি' : 'Copy Number')}
+            </span>
+          </button>
+
+          <a
+            href={whatsappUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center justify-center gap-1.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs py-2 px-3 rounded-xl transition-all active:scale-95 shadow-2xs"
+          >
+            <span>💬</span>
+            <span>{lang === 'bn' ? 'শেয়ার' : 'Share'}</span>
+          </a>
+        </div>
+      )}
+
+      {/* 8. SEO-Friendly CTA Button for Compact Variant (Redirects to Full Hub) */}
       {!isFull && (
         <a
           href={`/analytics?number=${history.cleanNumber}`}

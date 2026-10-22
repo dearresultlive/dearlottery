@@ -13,6 +13,10 @@ const initialNumber = Astro.url.searchParams.get('number') || '';
 // Schema.org FAQ items for SEO Rich Snippets
 const analyticsFaqItems = [
   {
+    question: "How does positional digit frequency (পজিশনাল ডিজিট ফ্রিকোয়েন্সি) work in Dear Lottery?",
+    answer: "Every 5-digit Dear Lottery ticket consists of 5 positions (1st, 2nd, 3rd, 4th, and 5th digits). Our 5-year database tracks the frequency of digits 0 through 9 across all 5 positions over 5,478+ draws, highlighting hot and cold digits."
+  },
+  {
     question: "How many years of Dear Lottery historical results are analyzed?",
     answer: "Our database analyzes 5 full years (5,478+ official draws from 2021 to 2026) across all 1:00 PM, 6:00 PM, and 8:00 PM draws for 1st prize, 2nd prize, and 5th prize numbers."
   },
@@ -28,8 +32,8 @@ const analyticsFaqItems = [
 ---
 
 <Layout
-  title={`Dear Lottery 5-Year Historical Intelligence & Number Analytics (1Y, 3Y, 5Y) • Repeating Numbers`}
-  description={`Search 5-year official Dear Lottery winning history (2021-2026). Find repeating numbers, past winning dates, draw times (1PM, 6PM, 8PM), and multi-year frequency analytics with zero latency.`}
+  title={`Dear Lottery 5-Year Digit Analytics & Winning History (2021-2026) • পজিশনাল হিটম্যাপ ও রিপিট নম্বর`}
+  description={`5-year official Dear Lottery digit frequency analytics (2021-2026). Position 1 to 5 digit heatmap (0-9), hot & cold numbers, repeating 5-digit winners, past winning dates, and smart combination picks.`}
   drawDate={todayDateStr}
   faqItems={analyticsFaqItems}
 >
@@ -39,24 +43,24 @@ const analyticsFaqItems = [
     <nav aria-label="Breadcrumb" class="flex items-center gap-2 text-xs text-slate-500 border-b border-slate-200 pb-2">
       <a href="/" class="hover:text-blue-700 font-medium">Home (হোম)</a>
       <span>/</span>
-      <span class="text-slate-900 font-bold">5-Year Historical Analytics (৫ বছরের অ্যানালিটিক্স)</span>
+      <span class="text-slate-900 font-bold">5-Year Digit Analytics (৫ বছরের ডিজিট অ্যানালিটিক্স)</span>
     </nav>
 
     {/* Header Banner */}
     <div class="bg-gradient-to-r from-blue-900 via-indigo-900 to-slate-900 text-white rounded-2xl p-4 sm:p-6 text-center shadow-sm space-y-2">
       <span class="inline-flex items-center gap-1.5 bg-blue-500/30 border border-blue-400/40 text-blue-200 text-[10px] sm:text-xs font-black px-3 py-1 rounded-full uppercase tracking-wider">
         <span>📊</span>
-        <span>5-Year Big Data Archive (2021–2026)</span>
+        <span>5-Year Big Data Archive & Digit Heatmap (2021–2026)</span>
       </span>
       <h1 class="text-lg sm:text-2xl font-black text-white">
-        <span class="lang-en">Dear Lottery 5-Year Winning History & Repeating Numbers</span>
-        <span class="lang-bn">ডিয়ার লটারি ৫ বছরের অতীতের রেকর্ড ও রিপিট নম্বর অ্যানালিটিক্স</span>
-        <span class="lang-hi">डियर लॉटरी 5 साल का पिछला रिकॉर्ड और रिपीट नंबर एनालिटिक्स</span>
+        <span class="lang-en">Dear Lottery 5-Year Digit Analytics & Repeating Numbers</span>
+        <span class="lang-bn">ডিয়ার লটারি ৫ বছরের ডিজিট অ্যানালিটিক্স ও রিপিট নম্বর</span>
+        <span class="lang-hi">डियर लॉटरी 5 साल का डिजिट एनालिटिक्स और रिपीट नंबर</span>
       </h1>
       <p class="text-xs sm:text-sm text-slate-300 max-w-xl mx-auto font-medium">
-        <span class="lang-en">Official historical database of 5,478+ draws. Discover exact past winning dates, draw times (1PM, 6PM, 8PM), and multi-year repeating number trends.</span>
-        <span class="lang-bn">৫,৪৭৮টি সরকারি ড্র-এর ঐতিহাসিক তথ্যভাণ্ডার। কোনো নম্বর আগে কবে জিতেছিল, তার তারিখ, সময় ও অনুরূপ সংখ্যার নির্ভুল পরিসংখ্যান।</span>
-        <span class="lang-hi">5,478 सरकारी ड्रॉ का ऐतिहासिक डेटाबेस। कोई नंबर पहले कब जीता था, उसकी तारीख, समय और सटीक आंकड़े।</span>
+        <span class="lang-en">Official historical database of 5,478+ draws. 1st to 5th positional digit heatmaps (0-9), hot & cold numbers, repeating winners, and 5Y smart picks.</span>
+        <span class="lang-bn">৫,৪৭৮টি সরকারি ড্র-এর ঐতিহাসিক তথ্যভাণ্ডার। ১ম থেকে ৫ম ঘরের পজিশনাল ডিজিট হিটম্যাপ (০-৯), হট ও কোল্ড ডিজিট, রিপিট নম্বর ও ৫ বছরের স্মার্ট টিকিট।</span>
+        <span class="lang-hi">5,478 ড্র-এর ঐতিহাসিক তথ্যভাণ্ডার। 1st से 5th पोजीशन तक डिजिट हीटमैप, हॉट व कोल्ड अंक, रिपीट नंबर और स्मार्ट टिकट।</span>
       </p>
     </div>
 
