@@ -203,7 +203,7 @@ function parseOcrLines(lines, slot, dateStr, sambadFirstPrize) {
   const consLast4 = firstPrize.number ? firstPrize.number.slice(-4) : '';
 
   // Identify 5th Prize start boundary
-  let fifthStartLine = lines.findIndex(l => /\b(?:5th|Fifth)\s*Prize/i.test(l));
+  let fifthStartLine = lines.findIndex(l => /(?:[5sS]th|Fifth|120\s*\/)/i.test(l));
   const beforeFifth = fifthStartLine !== -1 ? lines.slice(0, fifthStartLine).join(' ') : lines.join(' ');
   const afterFifth = fifthStartLine !== -1 ? lines.slice(fifthStartLine).join(' ') : '';
 
@@ -513,6 +513,7 @@ async function processSlot(dateStr, slot) {
       try {
         const sharp = (await import('sharp')).default;
         ocrInput = await sharp(localImgPath)
+          .resize({ width: 1200 })
           .greyscale()
           .normalize()
           .sharpen()
