@@ -38,14 +38,22 @@ const isCheckerPage = currentPath === '/checker';
 // Determine exact publication timestamp based on slot in IST (+05:30)
 const pubHour = drawTime?.includes('6') ? '18:00:00+05:30' : drawTime?.includes('8') ? '20:00:00+05:30' : '13:00:00+05:30';
 
+const now = new Date();
+const rawPublished = `${drawDate}T${pubHour}`;
+const parsedPubTime = new Date(rawPublished).getTime();
+// Guard against future publication dates (prohibited by Google Search Console guidelines)
+const datePublished = (!isNaN(parsedPubTime) && parsedPubTime <= now.getTime()) 
+  ? rawPublished 
+  : now.toISOString();
+
 // 1. JSON-LD NewsArticle Schema
 const lotterySchema = {
   "@context": "https://schema.org",
   "@type": "NewsArticle",
   "headline": title,
   "description": description,
-  "datePublished": `${drawDate}T${pubHour}`,
-  "dateModified": new Date().toISOString(),
+  "datePublished": datePublished,
+  "dateModified": now.toISOString(),
   "mainEntityOfPage": cleanCanonical,
   "author": {
     "@type": "Organization",

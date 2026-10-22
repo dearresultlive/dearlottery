@@ -31,24 +31,38 @@ if (rawSlug.includes('6') || rawSlug.includes('day')) {
 const slotHour = activeSlot === '6PM' ? '6 PM' : activeSlot === '8PM' ? '8 PM' : '1 PM';
 const slotKey = activeSlot.toLowerCase();
 
+// Strict Slot Matching - Never fall back to another slot's draw!
 const selectedDraw = allDraws.find(d => 
   d.draw_time?.includes(activeSlot.replace('PM', '')) || 
   d.id?.includes(activeSlot)
-) || allDraws[0];
+);
 
 const prizes = selectedDraw?.parsed_data?.prizes || selectedDraw?.prizes;
-const firstPrize = prizes?.first_prize;
+const firstPrize = prizes?.first_prize?.number ? prizes.first_prize : null;
+const isDeclared = Boolean(firstPrize?.number);
 
 const istNow = getISTNow();
 const todayStr = getISTDateString(istNow);
 const isToday = targetDate === todayStr;
+const isFuture = targetDate > todayStr;
 
-// Dynamic SEO Meta Tags based on state and temporal context (Today vs Past Date)
-const seoTitle = isToday
-  ? `Dear Lottery Result Today ${slotHour} Live - ${targetDate} | Lottery Sambad (লটারি সংবাদ / डियर लॉटरी)`
-  : `Dear Lottery Result ${slotHour} (${targetDate}) Official Gazette • 1st Prize Winner | Lottery Sambad`;
+// Dynamic, Google Search Console compliant Titles & Descriptions:
+let seoTitle = '';
+let seoDesc = '';
 
-const seoDesc = `Official Dear Lottery Sambad result for ${slotHour} draw on ${targetDate}. 1st Prize ₹1 Crore winning ticket is ${firstPrize ? `${firstPrize.series} ${firstPrize.number}` : 'Official Winner'}. Download official gazette PDF and check all prize tables.`;
+if (isDeclared && firstPrize) {
+  seoTitle = `Dear Lottery Result ${slotHour} (${targetDate}) • 1st Prize: ${firstPrize.series} ${firstPrize.number} | Official Gazette`;
+  seoDesc = `Official Dear Lottery Sambad result for ${slotHour} draw on ${targetDate}. 1st Prize ₹1 Crore winning ticket is ${firstPrize.series} ${firstPrize.number}. Download official signed gazette PDF and check all prize tables.`;
+} else if (isToday) {
+  seoTitle = `Dear Lottery Result Today ${slotHour} Live - ${targetDate} | Lottery Sambad (লটারি সংবাদ)`;
+  seoDesc = `Live tracking for official Dear Lottery Sambad ${slotHour} draw today (${targetDate}). Winning numbers and official signed gazette sheet will be published here live immediately upon declaration.`;
+} else if (isFuture) {
+  seoTitle = `Dear Lottery Result ${slotHour} (${targetDate}) • Schedule & Official Gazette | Lottery Sambad`;
+  seoDesc = `Official Dear Lottery Sambad schedule and live tracking for ${slotHour} draw on ${targetDate}. 1st Prize ₹1 Crore and all prize tiers published live immediately upon draw release.`;
+} else {
+  seoTitle = `Dear Lottery Result ${slotHour} (${targetDate}) Archive | Lottery Sambad`;
+  seoDesc = `Official Dear Lottery Sambad historical draw record for ${slotHour} on ${targetDate}. Download official state gazette PDF.`;
+}
 ---
 
 <Layout
@@ -56,7 +70,7 @@ const seoDesc = `Official Dear Lottery Sambad result for ${slotHour} draw on ${t
   description={seoDesc}
   drawDate={targetDate}
   drawTime={slotHour}
-  winningNumbers={firstPrize ? { firstPrize: `${firstPrize.series} ${firstPrize.number}` } : undefined}
+  winningNumbers={isDeclared && firstPrize ? { firstPrize: `${firstPrize.series} ${firstPrize.number}` } : undefined}
 >
   <div class="max-w-[620px] md:max-w-2xl lg:max-w-3xl mx-auto px-2.5 sm:px-4 py-3 sm:py-6 space-y-4 sm:space-y-6">
     

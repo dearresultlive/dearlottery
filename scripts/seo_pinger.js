@@ -20,6 +20,30 @@ const KEY_LOCATION = `https://${HOST}/${INDEXNOW_KEY}.txt`;
 const SITEMAP_URL = `https://${HOST}/sitemap.xml`;
 
 export async function pingSearchEngines(dateStr, slot = '') {
+  // SAFETY GATE: Protect Google Search Console & Search Bots from premature crawls
+  const istNow = new Date(Date.now() + 5.5 * 3600000);
+  const todayStr = istNow.toISOString().slice(0, 10);
+
+  if (dateStr && dateStr > todayStr) {
+    console.log(`[SEO-Pinger] 🛑 SAFETY SHIELD: Refusing to ping search engines for future date ${dateStr}. Protecting Search Console trust!`);
+    return;
+  }
+
+  // If slot is specified, verify that the slot is declared before pinging
+  if (dateStr && slot) {
+    try {
+      const liveFile = path.join(__dirname, '..', 'web', 'src', 'data', 'live_draws.json');
+      if (fs.existsSync(liveFile)) {
+        const liveData = JSON.parse(fs.readFileSync(liveFile, 'utf-8'));
+        const slotData = liveData[dateStr]?.[slot.toUpperCase()];
+        if (!slotData?.first_prize?.number) {
+          console.log(`[SEO-Pinger] 🛑 SAFETY SHIELD: Refusing to ping search engines for undeclared slot ${slot} on ${dateStr}. Protecting SEO credibility!`);
+          return;
+        }
+      }
+    } catch (_) {}
+  }
+
   const targetUrls = [
     `https://${HOST}/`,
     `https://${HOST}/sitemap.xml`,
