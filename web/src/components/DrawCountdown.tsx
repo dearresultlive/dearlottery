@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { getNextUpcomingDraw, getISTNow } from '../lib/lottery-utils';
+import { getNextUpcomingDraw, getISTNow, getISTDateString } from '../lib/lottery-utils';
 import { useLanguage } from '../lib/i18n';
 
 interface DrawCountdownProps {
@@ -34,10 +34,14 @@ export default function DrawCountdown({ onResultDetected, compact = false }: Dra
         const data = await res.json();
         const draws = data.draws || [];
         
+        const istNow = getISTNow();
+        const todayStr = getISTDateString(istNow);
         // Check if matching slot result is declared
         const found = draws.find((d: any) => 
-          d.draw_time?.includes(nextDraw.slot.replace('PM', '')) ||
-          d.id?.includes(nextDraw.slot)
+          d.draw_date === todayStr && (
+            d.draw_time?.includes(nextDraw.slot.replace('PM', '')) ||
+            d.id?.includes(nextDraw.slot)
+          )
         );
 
         if (found) {

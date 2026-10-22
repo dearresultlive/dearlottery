@@ -114,7 +114,10 @@ export async function checkAndFetchLiveSlot(
   // Secondary check: Nagaland official results portal
   try {
     const [year, month, day] = dateStr.split('-');
+    const dateCode = `${day}${month}${year.slice(2)}`;
     const shortDate = `${day}/${month}/${year.slice(2)}`;
+    const dashDate = `${day}-${month}-${year}`;
+    const dotDate = `${day}.${month}.${year}`;
     const slotText = slot === '1PM' ? '1 PM' : slot === '6PM' ? '6 PM' : '8 PM';
     const slotAnchor = slot === '1PM' ? 'dear1pm' : slot === '6PM' ? 'dear6pm' : 'dear8pm';
 
@@ -127,26 +130,54 @@ export async function checkAndFetchLiveSlot(
       const blocks = nHtml.match(/<div class=['"]dls-update[\s\S]*?<\/div>\s*<\/div>/gi) || [];
       for (const b of blocks) {
         if (b.includes('dls-success') && (b.includes(slotAnchor) || b.includes(slotText))) {
-          if (b.toLowerCase().includes('published') && (b.includes(shortDate) || b.includes(dateStr))) {
+          const matchesDate = b.includes(shortDate) || b.includes(dashDate) || b.includes(dotDate) || b.includes(dateStr);
+          if (b.toLowerCase().includes('published') && matchesDate) {
             const imgMatch = b.match(/<img[^>]+src=['"]([^'"]+)['"]/i);
             if (imgMatch) {
-              const existing = DYNAMIC_DRAWS_CACHE[dateStr]?.[slot] || {};
-              existing.image_r2_url = imgMatch[1];
-              if (!DYNAMIC_DRAWS_CACHE[dateStr]) DYNAMIC_DRAWS_CACHE[dateStr] = {};
-              DYNAMIC_DRAWS_CACHE[dateStr][slot] = existing;
+              const imgUrl = imgMatch[1];
+              const isWrongSlot = 
+                (slot === '1PM' && (imgUrl.includes('/DN') || imgUrl.includes('/EN') || imgUrl.includes('6pm') || imgUrl.includes('8pm'))) ||
+                (slot === '6PM' && (imgUrl.includes('/MN') || imgUrl.includes('/EN') || imgUrl.includes('1pm') || imgUrl.includes('8pm'))) ||
+                (slot === '8PM' && (imgUrl.includes('/MN') || imgUrl.includes('/DN') || imgUrl.includes('1pm') || imgUrl.includes('6pm')));
+              if (!isWrongSlot && !imgUrl.includes('WA00') && !imgUrl.includes('logo')) {
+                const existing = DYNAMIC_DRAWS_CACHE[dateStr]?.[slot] || {};
+                existing.image_r2_url = imgUrl;
+                if (!DYNAMIC_DRAWS_CACHE[dateStr]) DYNAMIC_DRAWS_CACHE[dateStr] = {};
+                DYNAMIC_DRAWS_CACHE[dateStr][slot] = existing;
 
-              return {
-                slot,
-                status: 'RESULT_OUT',
-                first_prize: existing.first_prize,
-                imageUrl: imgMatch[1],
-                prizes: existing
-              };
+                return {
+                  slot,
+                  status: 'RESULT_OUT',
+                  first_prize: existing.first_prize,
+                  imageUrl: imgUrl,
+                  prizes: existing
+                };
+              }
             }
           }
         }
       }
     }
+
+    // Direct image check fallback
+    const prefix = slot === '6PM' ? 'DN' : slot === '8PM' ? 'EN' : 'MN';
+    const directUrl = `https://www.nagalandlotteryresults.com/wp-content/uploads/${year}/${month}/${prefix}${day}${month}${year.slice(2)}_1.jpeg`;
+    try {
+      const headRes = await fetch(directUrl, { method: 'HEAD', signal: AbortSignal.timeout(3000) });
+      if (headRes.ok) {
+        const existing = DYNAMIC_DRAWS_CACHE[dateStr]?.[slot] || {};
+        existing.image_r2_url = directUrl;
+        if (!DYNAMIC_DRAWS_CACHE[dateStr]) DYNAMIC_DRAWS_CACHE[dateStr] = {};
+        DYNAMIC_DRAWS_CACHE[dateStr][slot] = existing;
+        return {
+          slot,
+          status: 'RESULT_OUT',
+          first_prize: existing.first_prize,
+          imageUrl: directUrl,
+          prizes: existing
+        };
+      }
+    } catch (_) {}
   } catch (e) {}
 
   // Not published yet, draw is currently underway
