@@ -657,7 +657,13 @@ async function main() {
     const isVerified = await processSlot(dateStr, slot);
     if (isVerified) {
       console.log(`[Poller] ✅ Verified result secured for ${dateStr} [${slot}]. Pipeline successfully satisfied.`);
-      process.exit(0);
+      if (!isWatch) {
+        process.exit(0);
+      } else {
+        console.log('[Poller] 🕒 Watch mode active: Standing by for upcoming slots...');
+        await new Promise(r => setTimeout(r, 60000));
+        continue;
+      }
     }
 
     if (attempt < maxAttempts) {
