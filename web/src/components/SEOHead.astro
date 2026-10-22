@@ -59,7 +59,9 @@ const lotterySchema = {
       "@type": "ImageObject",
       "url": "https://dearresultlive.in/publisher-wide-logo.png",
       "width": 600,
-      "height": 120
+      "height": 120,
+      "license": "https://dearresultlive.in/terms",
+      "acquireLicensePage": "https://dearresultlive.in/terms"
     }
   }
 };
@@ -177,9 +179,21 @@ const tableDatasetSchema = {
   "name": `Dear Lottery Official Winning Numbers & Prize Table - ${drawDate} ${drawTime || ''}`.trim(),
   "description": `Structured prize breakdown table and winning numbers for Dear Lottery draws on ${drawDate}. Lists 1st Prize ₹1 Crore, Consolation Prize ₹1,000, 2nd Prize ₹10,000, 3rd Prize ₹500, 4th Prize ₹250, and 5th Prize ₹120.`,
   "url": cleanCanonical,
+  "license": "https://dearresultlive.in/terms",
+  "isAccessibleForFree": true,
   "creator": {
     "@type": "Organization",
     "name": "Dear Result Live",
+    "url": "https://dearresultlive.in"
+  },
+  "publisher": {
+    "@type": "Organization",
+    "name": "Dear Result Live",
+    "url": "https://dearresultlive.in"
+  },
+  "includedInDataCatalog": {
+    "@type": "DataCatalog",
+    "name": "Dear Result Live Official Gazette Portal",
     "url": "https://dearresultlive.in"
   },
   "variableMeasured": [
