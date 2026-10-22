@@ -509,8 +509,22 @@ async function processSlot(dateStr, slot) {
   if (fs.existsSync(localImgPath)) {
     console.log(`[Poller] Executing local Tesseract OCR on ${localImgPath}...`);
     try {
+      let ocrInput = localImgPath;
+      try {
+        const sharp = (await import('sharp')).default;
+        ocrInput = await sharp(localImgPath)
+          .greyscale()
+          .normalize()
+          .sharpen()
+          .png()
+          .toBuffer();
+        console.log('[Poller] Preprocessed image via sharp (grayscale + normalized PNG) for maximum OCR accuracy');
+      } catch (sharpErr) {
+        console.warn('[Poller] sharp preprocessing fallback to raw path:', sharpErr.message);
+      }
+
       const worker = await createWorker('eng');
-      const ret = await worker.recognize(localImgPath);
+      const ret = await worker.recognize(ocrInput);
       await worker.terminate();
 
       const lines = ret.data.text.split('\n');
@@ -530,11 +544,26 @@ async function processSlot(dateStr, slot) {
     prizeData = {
       first_prize: sambadFirstPrize,
       consolation_prize_amount: 1000,
-      second_prize: [],
-      third_prize: [],
-      fourth_prize: [],
-      fifth_prize: []
+      second_prize: dayDb[slot]?.second_prize || [],
+      third_prize: dayDb[slot]?.third_prize || [],
+      fourth_prize: dayDb[slot]?.fourth_prize || [],
+      fifth_prize: dayDb[slot]?.fifth_prize || []
     };
+  }
+
+  if (prizeData) {
+    if ((!prizeData.second_prize || prizeData.second_prize.length === 0) && dayDb[slot]?.second_prize?.length) {
+      prizeData.second_prize = dayDb[slot].second_prize;
+    }
+    if ((!prizeData.third_prize || prizeData.third_prize.length === 0) && dayDb[slot]?.third_prize?.length) {
+      prizeData.third_prize = dayDb[slot].third_prize;
+    }
+    if ((!prizeData.fourth_prize || prizeData.fourth_prize.length === 0) && dayDb[slot]?.fourth_prize?.length) {
+      prizeData.fourth_prize = dayDb[slot].fourth_prize;
+    }
+    if ((!prizeData.fifth_prize || prizeData.fifth_prize.length === 0) && dayDb[slot]?.fifth_prize?.length) {
+      prizeData.fifth_prize = dayDb[slot].fifth_prize;
+    }
   }
 
   if (!prizeData || !prizeData.first_prize?.number) {

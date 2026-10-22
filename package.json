@@ -11,6 +11,7 @@
     "auto-poll": "node scripts/live_autopoller.js"
   },
   "dependencies": {
+    "sharp": "^0.35.5",
     "tesseract.js": "^7.0.0"
   }
 }

@@ -161,18 +161,22 @@ export async function pollAndIngestLiveDraw(
   console.log(`[EdgePoller] Checking slot: ${slot} for ${dateStr}...`);
 
   // 1. Check if draw is already declared in D1
+  let existingPrizes: any = null;
   const existing = await getDrawById(env.DB, drawId);
   if (existing) {
     try {
       const parsed = JSON.parse(existing.raw_json);
       if (parsed.status === 'DECLARED' && parsed.prizes?.first_prize?.number) {
-        return {
-          ingested: false,
-          dateStr,
-          slot,
-          message: `Draw ${drawId} already declared with 1st Prize ${parsed.prizes.first_prize.series || ''} ${parsed.prizes.first_prize.number}`,
-          first_prize: parsed.prizes.first_prize
-        };
+        if (parsed.prizes?.fifth_prize?.length >= 50) {
+          return {
+            ingested: false,
+            dateStr,
+            slot,
+            message: `Draw ${drawId} already fully declared with 1st Prize ${parsed.prizes.first_prize.series || ''} ${parsed.prizes.first_prize.number} and ${parsed.prizes.fifth_prize.length} prizes`,
+            first_prize: parsed.prizes.first_prize
+          };
+        }
+        existingPrizes = parsed.prizes;
       }
     } catch (e) {
       // Ignore JSON parse error and proceed
@@ -356,10 +360,10 @@ export async function pollAndIngestLiveDraw(
     prizes: {
       first_prize: { series, number },
       consolation_prize_amount: 1000,
-      second_prize: [],
-      third_prize: [],
-      fourth_prize: [],
-      fifth_prize: []
+      second_prize: existingPrizes?.second_prize?.length ? existingPrizes.second_prize : [],
+      third_prize: existingPrizes?.third_prize?.length ? existingPrizes.third_prize : [],
+      fourth_prize: existingPrizes?.fourth_prize?.length ? existingPrizes.fourth_prize : [],
+      fifth_prize: existingPrizes?.fifth_prize?.length ? existingPrizes.fifth_prize : []
     }
   });
 
