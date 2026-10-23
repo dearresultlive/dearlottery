@@ -786,53 +786,48 @@ export default function LiveResultsTabs({
         </div>
       </div>
 
-      {/* 4. Direct Scanned Gazette Paper Preview (Visible for both Declared & Live Upcoming Draws) */}
-      <div className="bg-white border border-slate-200 rounded-2xl p-2 sm:p-2.5 shadow-sm text-center">
-        <div className="flex items-center justify-between px-2 py-1.5 mb-1.5 border-b border-slate-100 text-xs font-bold text-slate-700">
-          <span className="flex items-center gap-1.5">
-            <span>📰</span>
-            <span>
-              {hasPrizes
-                ? (lang === 'bn' ? 'অফিসিয়াল গেজেট শিট' : lang === 'hi' ? 'ऑफिशियल गजट शीट' : 'Official Gazette Sheet')
-                : (lang === 'bn' ? 'অফিসিয়াল গেজেট লাইভ ট্র্যাকিং' : lang === 'hi' ? 'ऑफिशियल गजट लाइव ट्रैकिंग' : 'Official Gazette Live Sheet')}
+      {/* 4. Direct Scanned Gazette Paper Preview (Only when Result is DECLARED) */}
+      {hasPrizes && activeStatus === 'RESULT_OUT' && (
+        <div className="bg-white border border-slate-200 rounded-2xl p-2 sm:p-2.5 shadow-sm text-center animate-in fade-in duration-200">
+          <div className="flex items-center justify-between px-2 py-1.5 mb-1.5 border-b border-slate-100 text-xs font-bold text-slate-700">
+            <span className="flex items-center gap-1.5">
+              <span>📰</span>
+              <span>
+                {lang === 'bn' ? 'অফিসিয়াল গেজেট শিট' : lang === 'hi' ? 'ऑफिशियल गजट शीट' : 'Official Gazette Sheet'}
+              </span>
             </span>
-          </span>
-          <span className={`text-[10px] font-black px-2 py-0.5 rounded-full ${hasPrizes ? 'bg-emerald-100 text-emerald-800' : 'bg-amber-100 text-amber-800'}`}>
-            {hasPrizes ? '100% VERIFIED' : (activeStatus === 'DRAWING' ? 'DRAWING LIVE' : 'UPCOMING')}
-          </span>
-        </div>
+            <span className="text-[10px] font-black px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800">
+              100% VERIFIED
+            </span>
+          </div>
 
-        <div
-          onClick={() => openImageLightbox(activeSheetUrl)}
-          style={{ minHeight: '360px' }}
-          className="cursor-zoom-in relative rounded-xl overflow-hidden border border-slate-200 bg-[#fcfbf7] group shadow-inner aspect-[1/1.414] max-w-[480px] mx-auto"
-        >
-          <img
-            src={activeSheetUrl}
-            alt={`Official Gazette Result Sheet ${currentDraw?.draw_name || 'Dear Lottery'} ${currentSlotInfo.time}`}
-            width={557}
-            height={788}
-            decoding="async"
-            className="w-full h-full object-contain transition-transform group-hover:scale-[1.01]"
-            loading="eager"
-            onError={(e) => {
-              const img = e.target as HTMLImageElement;
-              const currentSrc = img.src;
-              if (!currentSrc.includes('/api/sheet-image') && !currentSrc.includes('/api/gazette-sheet.svg')) {
-                img.src = proxySheetUrl;
-              } else if (!currentSrc.includes('/api/gazette-sheet.svg')) {
-                img.src = sheetSvgUrl;
-              }
-            }}
-          />
-        </div>
+          <div
+            onClick={() => openImageLightbox(activeSheetUrl)}
+            style={{ minHeight: '360px' }}
+            className="cursor-zoom-in relative rounded-xl overflow-hidden border border-slate-200 bg-[#fcfbf7] group shadow-inner aspect-[1/1.414] max-w-[480px] mx-auto"
+          >
+            <img
+              src={activeSheetUrl}
+              alt={`Official Gazette Result Sheet ${currentDraw?.draw_name || 'Dear Lottery'} ${currentSlotInfo.time}`}
+              width={557}
+              height={788}
+              decoding="async"
+              className="w-full h-full object-contain transition-transform group-hover:scale-[1.01]"
+              loading="eager"
+              onError={(e) => {
+                const img = e.target as HTMLImageElement;
+                if (!img.src.includes('/api/gazette-sheet.svg')) {
+                  img.src = sheetSvgUrl;
+                }
+              }}
+            />
+          </div>
 
-        <p className="text-[11px] text-slate-500 font-medium mt-1.5">
-          {hasPrizes
-            ? (lang === 'bn' ? '🔍 সম্পূর্ণ রেজাল্ট শিট বড় করে দেখতে ছবির উপর ক্লিক করুন' : lang === 'hi' ? '🔍 पूरी रिजल्ट शीट बड़ी करने के लिए फोटो पर क्लिक करें' : '🔍 Tap/Click image to zoom full official gazette sheet')
-            : (lang === 'bn' ? '⏳ ড্র ঘোষণার সাথে সাথে আসল রেজাল্ট শিট এখানে লাইভ আপডেট হবে' : lang === 'hi' ? '⏳ ड्रॉ घोषित होते ही असली रिजल्ट शीट यहाँ लाइव अपडेट होगी' : '⏳ Official government gazette will appear here live upon draw release')}
-        </p>
-      </div>
+          <p className="text-[11px] text-slate-500 font-medium mt-1.5">
+            {lang === 'bn' ? '🔍 সম্পূর্ণ রেজাল্ট শিট বড় করে দেখতে ছবির উপর ক্লিক করুন' : lang === 'hi' ? '🔍 पूरी रिजल्ट शीट बड़ी करने के लिए फोटो पर क्लिक करें' : '🔍 Tap/Click image to zoom full official gazette sheet'}
+          </p>
+        </div>
+      )}
 
       {/* 5. WhatsApp Share Button & 6. Clean Structured Text Prize Tables (Declared Results Only) */}
       {activeStatus === 'RESULT_OUT' && (
