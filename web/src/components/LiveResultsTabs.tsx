@@ -396,9 +396,7 @@ export default function LiveResultsTabs({
   const sheetSvgUrl = `/api/gazette-sheet.svg?date=${activeDateStr}&slot=${activeSlot.toLowerCase()}`;
   const cacheKey = currentDraw?.checksum ? encodeURIComponent(currentDraw.checksum) : activeDateStr;
   const proxySheetUrl = `/api/sheet-image?date=${activeDateStr}&slot=${activeSlot.toLowerCase()}&v=${cacheKey}`;
-  const activeSheetUrl = hasPrizes
-    ? directStaticUrl
-    : sheetSvgUrl;
+  const activeSheetUrl = directStaticUrl;
 
   const dateLabel = isToday
     ? (lang === 'bn' ? 'আজকের' : 'Today')
