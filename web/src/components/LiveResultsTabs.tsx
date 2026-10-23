@@ -391,10 +391,10 @@ export default function LiveResultsTabs({
   }, [firstPrize.number, activeDateStr]);
 
   const sambadDirectUrl = `https://lottery.sambad.com/images/lottery-sambad-${activeSlot.toLowerCase()}-${activeDateStr.split('-').reverse().join('-')}.jpg`;
-  const directStaticUrl = `/results/${activeDateStr}/${activeSlot.toLowerCase()}.jpg`;
+  const cacheKey = currentDraw?.checksum ? encodeURIComponent(currentDraw.checksum) : (firstPrize.number ? `${activeDateStr}-${firstPrize.number}` : `${activeDateStr}-live`);
+  const directStaticUrl = `/results/${activeDateStr}/${activeSlot.toLowerCase()}.jpg?v=${cacheKey}`;
   const pdfUrl = `/pdf/${activeDateStr}/${activeSlot.toLowerCase()}.pdf`;
   const sheetSvgUrl = `/api/gazette-sheet.svg?date=${activeDateStr}&slot=${activeSlot.toLowerCase()}`;
-  const cacheKey = currentDraw?.checksum ? encodeURIComponent(currentDraw.checksum) : activeDateStr;
   const proxySheetUrl = `/api/sheet-image?date=${activeDateStr}&slot=${activeSlot.toLowerCase()}&v=${cacheKey}`;
   const activeSheetUrl = directStaticUrl;
 
