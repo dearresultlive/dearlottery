@@ -390,15 +390,14 @@ export default function LiveResultsTabs({
     return analyzeNumberHistory(firstPrize.number, activeDateStr);
   }, [firstPrize.number, activeDateStr]);
 
+  const sambadDirectUrl = `https://lottery.sambad.com/images/lottery-sambad-${activeSlot.toLowerCase()}-${activeDateStr.split('-').reverse().join('-')}.jpg`;
   const directStaticUrl = `/results/${activeDateStr}/${activeSlot.toLowerCase()}.jpg`;
   const pdfUrl = `/pdf/${activeDateStr}/${activeSlot.toLowerCase()}.pdf`;
   const sheetSvgUrl = `/api/gazette-sheet.svg?date=${activeDateStr}&slot=${activeSlot.toLowerCase()}`;
   const cacheKey = currentDraw?.checksum ? encodeURIComponent(currentDraw.checksum) : activeDateStr;
   const proxySheetUrl = `/api/sheet-image?date=${activeDateStr}&slot=${activeSlot.toLowerCase()}&v=${cacheKey}`;
   const activeSheetUrl = hasPrizes
-    ? (currentDraw?.image_r2_url && !currentDraw.image_r2_url.includes('lottery.sambad.com') && !currentDraw.image_r2_url.includes('/api/sheet-image')
-        ? currentDraw.image_r2_url
-        : proxySheetUrl)
+    ? directStaticUrl
     : sheetSvgUrl;
 
   const dateLabel = isToday
@@ -816,8 +815,8 @@ export default function LiveResultsTabs({
               loading="eager"
               onError={(e) => {
                 const img = e.target as HTMLImageElement;
-                if (!img.src.includes('/api/gazette-sheet.svg')) {
-                  img.src = sheetSvgUrl;
+                if (!img.src.includes('lottery.sambad.com')) {
+                  img.src = sambadDirectUrl;
                 }
               }}
             />
@@ -1023,7 +1022,10 @@ export default function LiveResultsTabs({
               onClick={toggleImageZoom}
               title={zoomScale === 1 ? 'Click to zoom in' : 'Click to reset zoom'}
               onError={(e) => {
-                (e.target as HTMLImageElement).src = sheetSvgUrl;
+                const img = e.target as HTMLImageElement;
+                if (!img.src.includes('lottery.sambad.com')) {
+                  img.src = sambadDirectUrl;
+                }
               }}
               style={{
                 transform: `scale(${zoomScale})`,

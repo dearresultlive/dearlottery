@@ -29,7 +29,7 @@ export const GET: APIRoute = async ({ request }) => {
     });
     if (staticRes.ok) {
       const contentType = staticRes.headers.get('content-type') || 'image/jpeg';
-      if (contentType.startsWith('image/')) {
+      if (contentType.startsWith('image/') && !contentType.includes('svg')) {
         const imageBytes = await staticRes.arrayBuffer();
         return new Response(imageBytes, {
           status: 200,
@@ -105,7 +105,7 @@ export const GET: APIRoute = async ({ request }) => {
 
       if (upstreamRes.ok) {
         const contentType = upstreamRes.headers.get('content-type') || (targetUrl.endsWith('.webp') ? 'image/webp' : 'image/jpeg');
-        if (contentType.startsWith('image/')) {
+        if (contentType.startsWith('image/') && !contentType.includes('svg')) {
           const imageBytes = await upstreamRes.arrayBuffer();
           return new Response(imageBytes, {
             status: 200,
@@ -125,28 +125,13 @@ export const GET: APIRoute = async ({ request }) => {
     }
   }
 
-  // 3. Priority 3: Resilient Fallback: Authentic Vector SVG Gazette Replica
-  // Guarantees zero broken images and authentic Indian newspaper gazette appearance
-  const draw = getVerifiedDraw(dateParam, slotUpper, istNow);
-  const hasRealPrizes = Boolean(draw.status === 'DECLARED' && draw.prizes?.first_prize?.number);
-  const isPending = !hasRealPrizes;
-
-  const svgContent = generateGazetteSvg({
-    drawDate: dateParam,
-    drawTime: draw.draw_time,
-    drawName: draw.draw_name,
-    drawNumber: draw.draw_number || (slotUpper === '1PM' ? '50' : '74'),
-    isPending: isPending,
-    prizes: isPending ? undefined : (draw.prizes || undefined)
-  });
-
-  return new Response(svgContent, {
-    status: 200,
+  // 3. Fallback: Redirect directly to official Lottery Sambad JPEG URL
+  // Client browsers load official Sambad JPEG directly without datacenter WAF blocks
+  return new Response(null, {
+    status: 302,
     headers: {
-      'Content-Type': 'image/svg+xml; charset=utf-8',
-      'Cache-Control': isPending ? 'public, max-age=15, stale-while-revalidate=30' : 'public, max-age=3600, s-maxage=86400',
-      'Access-Control-Allow-Origin': '*',
-      'X-Proxy-Fallback': 'SVG-Replica'
+      'Location': sambadJpgUrl,
+      'Cache-Control': 'no-cache, no-store'
     }
   });
 };
