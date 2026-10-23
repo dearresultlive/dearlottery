@@ -63,11 +63,39 @@ export default function LiveResultsTabs({
 
   const todayStr = todayDateStr || getISTDateString();
   const { lang, t } = useLanguage();
+
+  // Yesterday date resolution
+  const yesterdayDateStr = (yesterdayDraws && yesterdayDraws[0]?.draw_date) || (() => {
+    const y = new Date(getISTNow());
+    y.setDate(y.getDate() - 1);
+    return getISTDateString(y);
+  })();
+
+  // Check if today has any published results
+  const hasInitialTodayResults = (draws || []).some(d => 
+    d.draw_date === todayStr && 
+    Boolean(d.parsed_data?.prizes?.first_prize?.number || d.prizes?.first_prize?.number)
+  );
+
+  // Smart Morning Mode check (midnight 00:00 to 12:45 PM IST and no today results declared yet)
+  const isMorningWindow = (d: Date = getISTNow()): boolean => {
+    const totalMin = d.getHours() * 60 + d.getMinutes();
+    return totalMin < 765; // Before 12:45 PM IST
+  };
+
+  const isSmartMorningInitial = !isYesterdayPage && !initialSlot && isMorningWindow() && !hasInitialTodayResults;
+
   const [activeDateStr, setActiveDateStr] = useState<string>(
-    todayDateStr || getISTDateString()
+    initialSlot
+      ? (todayDateStr || getISTDateString())
+      : isYesterdayPage
+      ? (todayDateStr || yesterdayDateStr)
+      : isSmartMorningInitial
+      ? yesterdayDateStr
+      : (todayDateStr || getISTDateString())
   );
   const [activeSlot, setActiveSlot] = useState<'1PM' | '6PM' | '8PM'>(
-    initialSlot || (isYesterdayPage ? '8PM' : '1PM')
+    initialSlot || (isYesterdayPage || isSmartMorningInitial ? '8PM' : '1PM')
   );
   const [drawsList, setDrawsList] = useState<DrawRecord[]>(draws);
   const [showImageModal, setShowImageModal] = useState<boolean>(false);
@@ -140,14 +168,8 @@ export default function LiveResultsTabs({
     Boolean(d.parsed_data?.prizes?.first_prize?.number || d.prizes?.first_prize?.number)
   );
 
-  // Yesterday date resolution
-  const yesterdayDateStr = (yesterdayDraws && yesterdayDraws[0]?.draw_date) || (() => {
-    const y = new Date(getISTNow());
-    y.setDate(y.getDate() - 1);
-    return getISTDateString(y);
-  })();
-
-  // Auto-detect Morning mode: before 1PM, if today has no results yet, default to Last Night 8PM!
+  // Auto-detect Morning mode / Slot selection:
+  // Before 12:45 PM, if today has no results yet, default to Last Night 8PM!
   useEffect(() => {
     if (initialSlot) {
       if (todayDateStr) setActiveDateStr(todayDateStr);
@@ -163,13 +185,23 @@ export default function LiveResultsTabs({
 
     const istNow = getISTNow();
     const hour = istNow.getHours();
-    if (hour >= 20) {
+    const min = istNow.getMinutes();
+    const totalMin = hour * 60 + min;
+
+    // Morning window: before 12:45 PM and today has no results yet
+    if (totalMin < 765 && !hasTodayResults) {
+      setActiveDateStr(yesterdayDateStr);
+      setActiveSlot('8PM');
+    } else if (totalMin >= 1170) {
+      // 7:30 PM onwards: focus on 8PM
       setActiveDateStr(todayStr);
       setActiveSlot('8PM');
-    } else if (hour >= 18) {
+    } else if (totalMin >= 1050) {
+      // 5:30 PM to 7:30 PM: focus on 6PM
       setActiveDateStr(todayStr);
       setActiveSlot('6PM');
     } else {
+      // 12:45 PM to 5:30 PM: focus on 1PM
       setActiveDateStr(todayStr);
       setActiveSlot('1PM');
     }
@@ -185,8 +217,15 @@ export default function LiveResultsTabs({
       const min = istNow.getMinutes();
       const totalMin = hour * 60 + min;
 
+      // 1. At 12:45 PM (765 min), automatically switch from Morning Mode (yesterday 8PM) to Today's 1:00 PM Live Countdown!
+      if (totalMin >= 765 && totalMin < 1050) {
+        if (activeDateStr === yesterdayDateStr && !userOverrodeRef.current) {
+          setActiveDateStr(todayStr);
+          setActiveSlot('1PM');
+        }
+      }
       // 1:00 PM draw window (780 min to 820 min = 1:00 PM to 1:40 PM)
-      if (totalMin >= 780 && totalMin < 820) {
+      else if (totalMin >= 780 && totalMin < 820) {
         if (activeDateStr !== todayStr || activeSlot !== '1PM') {
           const is1pmDeclared = drawsList.some(d => 
             d.draw_date === todayStr && 
@@ -502,14 +541,16 @@ export default function LiveResultsTabs({
     if (typeof window !== 'undefined') {
       const params = new URLSearchParams(window.location.search);
       const qDate = params.get('date');
-      // If user arrived on root homepage '/' with yesterday's date query or stale date, clean it up and show today!
+      // If user arrived on root homepage '/' with yesterday's date query or stale date, clean it up
       const isRootHome = window.location.pathname === '/' || window.location.pathname === '';
       if (isRootHome && qDate) {
         const url = new URL(window.location.href);
         url.searchParams.delete('date');
         window.history.replaceState({}, '', url.toString());
-        setActiveDateStr(todayStr);
-        setActiveSlot(getSmartTodaySlot());
+        if (!isSmartMorningInitial) {
+          setActiveDateStr(todayStr);
+          setActiveSlot(getSmartTodaySlot());
+        }
         return;
       }
       if (qDate && qDate !== todayStr && /^\d{4}-\d{2}-\d{2}$/.test(qDate)) {
@@ -523,34 +564,40 @@ export default function LiveResultsTabs({
       
 
 
-      {/* Yesterday Mode Notice Banner */}
+      {/* Smart Morning Mode / Yesterday Notice Banner */}
       {isYesterday && (
-        <div className="bg-emerald-50 border border-emerald-300 rounded-xl p-2.5 text-xs flex items-center justify-between text-emerald-950 shadow-2xs">
-          <div className="flex items-center gap-2">
-            <span className="text-base flex-shrink-0">🌙</span>
+        <div className="bg-gradient-to-r from-emerald-950 via-slate-900 to-emerald-950 border border-emerald-500/40 rounded-2xl p-3 sm:p-3.5 text-xs flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-white shadow-md">
+          <div className="flex items-start sm:items-center gap-2.5">
+            <span className="text-2xl flex-shrink-0">🌙</span>
             <div>
-              <span className="font-black text-slate-900 block leading-tight">
-                {lang === 'bn' 
-                  ? `গতকালকের (${yesterdayDateStr.split('-').reverse().join('/')}) ${currentSlotInfo.time} ফলাফল শিট`
-                  : lang === 'hi'
-                  ? `कल (${yesterdayDateStr.split('-').reverse().join('/')}) ${currentSlotInfo.time} परिणाम शीट`
-                  : `Yesterday's (${yesterdayDateStr}) ${currentSlotInfo.time} Official Gazette Result`}
-              </span>
-              <span className="text-[10px] text-emerald-800 font-medium block">
+              <div className="flex items-center gap-2 flex-wrap">
+                <span className="font-black text-amber-300 text-xs sm:text-sm tracking-tight">
+                  {lang === 'bn' 
+                    ? `গতরাতের (${yesterdayDateStr.split('-').reverse().join('/')}) ${currentSlotInfo.time} ফলাফল শিট`
+                    : lang === 'hi'
+                    ? `कल रात (${yesterdayDateStr.split('-').reverse().join('/')}) ${currentSlotInfo.time} परिणाम शीट`
+                    : `Last Night's (${yesterdayDateStr.split('-').reverse().join('/')}) ${currentSlotInfo.time} Official Result`}
+                </span>
+                <span className="bg-emerald-500/20 text-emerald-300 text-[10px] font-black px-2 py-0.5 rounded-full border border-emerald-500/30 uppercase tracking-wider">
+                  {lang === 'bn' ? 'সর্বশেষ অফিশিয়াল রেজাল্ট' : lang === 'hi' ? 'नवीनतम परिणाम' : 'Latest Declared'}
+                </span>
+              </div>
+              <span className="text-[11px] text-slate-300 font-medium block mt-0.5">
                 {lang === 'bn'
-                  ? `আজকের ১:০০ দুপুর ড্র শুরু হতে বাকি: ${upcoming1pmCountdown.hours > 0 ? `${upcoming1pmCountdown.hours}ঘণ্টা ` : ''}${upcoming1pmCountdown.minutes}মিনিট`
+                  ? `আজকের (${todayStr.split('-').reverse().join('/')}) ১ম ড্র দুপুর ১:০০ টায় • শুরু হতে বাকি: ${upcoming1pmCountdown.hours > 0 ? `${upcoming1pmCountdown.hours}ঘণ্টা ` : ''}${upcoming1pmCountdown.minutes}মিনিট ${upcoming1pmCountdown.seconds}সেকেন্ড`
                   : lang === 'hi'
-                  ? `आज का दोपहर 1:00 बजे का ड्रॉ शुरू होने में शेष: ${upcoming1pmCountdown.hours > 0 ? `${upcoming1pmCountdown.hours}घंटे ` : ''}${upcoming1pmCountdown.minutes}मिनट`
-                  : `Next draw today at 1:00 PM (starts in ${upcoming1pmCountdown.hours > 0 ? `${upcoming1pmCountdown.hours}h ` : ''}${upcoming1pmCountdown.minutes}m)`}
+                  ? `आज का (${todayStr.split('-').reverse().join('/')}) पहला ड्रॉ दोपहर 1:00 बजे • शेष समय: ${upcoming1pmCountdown.hours > 0 ? `${upcoming1pmCountdown.hours}घंटे ` : ''}${upcoming1pmCountdown.minutes}मिनट ${upcoming1pmCountdown.seconds}सेकंड`
+                  : `Today's (${todayStr.split('-').reverse().join('/')}) 1st draw starts at 1:00 PM • in ${upcoming1pmCountdown.hours > 0 ? `${upcoming1pmCountdown.hours}h ` : ''}${upcoming1pmCountdown.minutes}m ${upcoming1pmCountdown.seconds}s`}
               </span>
             </div>
           </div>
           <button
             type="button"
             onClick={handleGoToToday}
-            className="bg-emerald-700 hover:bg-emerald-800 text-white font-black text-[11px] px-2.5 py-1.5 rounded-lg shadow-2xs ml-2 flex-shrink-0 active:scale-95 transition-all"
+            className="bg-amber-400 hover:bg-amber-300 active:scale-95 text-slate-950 font-black text-xs px-3.5 py-2 rounded-xl shadow-sm flex items-center justify-center gap-1.5 flex-shrink-0 transition-all self-end sm:self-auto cursor-pointer"
           >
-            {lang === 'bn' ? 'আজকের ড্র ➔' : lang === 'hi' ? 'आज का ड्रॉ ➔' : "Today's Draw ➔"}
+            <span>{lang === 'bn' ? 'আজকের লাইভ কাউন্টডাউন' : lang === 'hi' ? 'आज का लाइव কাউন্টডাউন' : "Today's Live Countdown"}</span>
+            <span>➔</span>
           </button>
         </div>
       )}
