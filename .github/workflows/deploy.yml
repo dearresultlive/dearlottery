@@ -1,15 +1,13 @@
 name: Deploy to Cloudflare Ecosystem (Pages & Worker)
 
 on:
-  push:
-    branches:
-      - main
   workflow_dispatch:
 
 jobs:
   deploy-worker:
     name: Deploy Cloudflare Worker API & D1
     runs-on: ubuntu-latest
+    if: ${{ secrets.CLOUDFLARE_API_TOKEN != '' }}
     continue-on-error: true
     steps:
       - name: Checkout Code
@@ -38,6 +36,7 @@ jobs:
   deploy-pages:
     name: Deploy Cloudflare Pages Frontend
     runs-on: ubuntu-latest
+    if: ${{ secrets.CLOUDFLARE_API_TOKEN != '' }}
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
