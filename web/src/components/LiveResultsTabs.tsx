@@ -163,10 +163,7 @@ export default function LiveResultsTabs({
 
     const istNow = getISTNow();
     const hour = istNow.getHours();
-    if (!hasTodayResults && hour < 13) {
-      setActiveDateStr(yesterdayDateStr);
-      setActiveSlot('8PM');
-    } else if (hour >= 20) {
+    if (hour >= 20) {
       setActiveDateStr(todayStr);
       setActiveSlot('8PM');
     } else if (hour >= 18) {
@@ -334,9 +331,10 @@ export default function LiveResultsTabs({
     ? getSlotStatus(todayStr, activeSlot, hasPrizes)
     : (hasPrizes ? 'RESULT_OUT' : (isSyncing ? 'DRAWING' : 'RESULT_OUT'));
 
-  // Autonomous live polling when active slot is in DRAWING state (Zero-refresh live reveal)
+  // Autonomous live polling when active slot is in DRAWING or upcoming active drawing window
   useEffect(() => {
-    if (activeStatus !== 'DRAWING') return;
+    const shouldPoll = activeStatus === 'DRAWING' || (isToday && !hasPrizes && activeSlot === getSmartTodaySlot());
+    if (!shouldPoll) return;
 
     let isPolling = true;
 
@@ -395,11 +393,12 @@ export default function LiveResultsTabs({
   const directStaticUrl = `/results/${activeDateStr}/${activeSlot.toLowerCase()}.jpg`;
   const pdfUrl = `/pdf/${activeDateStr}/${activeSlot.toLowerCase()}.pdf`;
   const sheetSvgUrl = `/api/gazette-sheet.svg?date=${activeDateStr}&slot=${activeSlot.toLowerCase()}`;
-  const proxySheetUrl = `/api/sheet-image?date=${activeDateStr}&slot=${activeSlot.toLowerCase()}`;
+  const cacheKey = currentDraw?.checksum ? encodeURIComponent(currentDraw.checksum) : activeDateStr;
+  const proxySheetUrl = `/api/sheet-image?date=${activeDateStr}&slot=${activeSlot.toLowerCase()}&v=${cacheKey}`;
   const activeSheetUrl = hasPrizes
     ? (currentDraw?.image_r2_url && !currentDraw.image_r2_url.includes('lottery.sambad.com') && !currentDraw.image_r2_url.includes('/api/sheet-image')
         ? currentDraw.image_r2_url
-        : directStaticUrl)
+        : proxySheetUrl)
     : sheetSvgUrl;
 
   const dateLabel = isToday
@@ -503,11 +502,21 @@ export default function LiveResultsTabs({
     if (typeof window !== 'undefined') {
       const params = new URLSearchParams(window.location.search);
       const qDate = params.get('date');
+      // If user arrived on root homepage '/' with yesterday's date query or stale date, clean it up and show today!
+      const isRootHome = window.location.pathname === '/' || window.location.pathname === '';
+      if (isRootHome && qDate) {
+        const url = new URL(window.location.href);
+        url.searchParams.delete('date');
+        window.history.replaceState({}, '', url.toString());
+        setActiveDateStr(todayStr);
+        setActiveSlot(getSmartTodaySlot());
+        return;
+      }
       if (qDate && qDate !== todayStr && /^\d{4}-\d{2}-\d{2}$/.test(qDate)) {
         handleDateChange(qDate);
       }
     }
-  }, []);
+  }, [todayStr]);
 
   return (
     <div className="space-y-3 sm:space-y-3.5 max-w-[557px] mx-auto">
@@ -725,7 +734,7 @@ export default function LiveResultsTabs({
               </div>
               <button
                 type="button"
-                onClick={() => { setDateMode('YESTERDAY'); setActiveSlot('8PM'); }}
+                onClick={() => { handleDateChange(yesterdayDateStr); setActiveSlot('8PM'); }}
                 className="bg-amber-500 hover:bg-amber-600 active:scale-95 text-white text-xs font-black px-3 py-2 rounded-xl shadow-xs transition-all flex-shrink-0 flex items-center gap-1"
               >
                 <span>{lang === 'bn' ? 'শিট দেখুন' : lang === 'hi' ? 'शीट देखें' : 'View Sheet'}</span>

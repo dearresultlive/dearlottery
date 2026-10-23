@@ -1,5 +1,5 @@
 // PWA Service Worker for Dear Result Live
-const CACHE_NAME = 'dearlottery-pwa-v1';
+const CACHE_NAME = 'dearlottery-pwa-v2';
 const PRECACHE_ASSETS = [
   '/',
   '/favicon.svg',

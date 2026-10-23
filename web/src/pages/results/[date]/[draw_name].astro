@@ -10,6 +10,20 @@ const { date, draw_name } = Astro.params;
 const targetDate = date || getISTDateString();
 const rawSlug = (draw_name || '').toLowerCase();
 
+// Prevent static images and PDFs from executing SSR layout and poisoning Cloudflare HTML cache
+if (rawSlug.endsWith('.jpg') || rawSlug.endsWith('.jpeg') || rawSlug.endsWith('.png') || rawSlug.endsWith('.webp')) {
+  let targetSlot = '1pm';
+  if (rawSlug.includes('6')) targetSlot = '6pm';
+  else if (rawSlug.includes('8')) targetSlot = '8pm';
+  return Astro.redirect(`/api/sheet-image?date=${targetDate}&slot=${targetSlot}`, 302);
+}
+if (rawSlug.endsWith('.pdf')) {
+  let targetSlot = '1pm';
+  if (rawSlug.includes('6')) targetSlot = '6pm';
+  else if (rawSlug.includes('8')) targetSlot = '8pm';
+  return Astro.redirect(`/pdf/${targetDate}/${targetSlot}.pdf`, 302);
+}
+
 // Fetch all draws for the target date
 const allDraws = await fetchDrawsByDate(targetDate);
 
