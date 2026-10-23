@@ -46,7 +46,11 @@ const datePublished = (!isNaN(parsedPubTime) && parsedPubTime <= now.getTime())
   ? rawPublished 
   : now.toISOString();
 
-// 1. JSON-LD NewsArticle Schema
+// 1. JSON-LD NewsArticle Schema with Compliant Image Metadata
+const articleImage = isResultPage && drawDate && drawTime
+  ? `https://dearresultlive.in/results/${drawDate}/${drawTime.toLowerCase().replace(/[^0-9a-z]/g, '')}.jpg`
+  : 'https://dearresultlive.in/og-image.jpg';
+
 const lotterySchema = {
   "@context": "https://schema.org",
   "@type": "NewsArticle",
@@ -55,6 +59,21 @@ const lotterySchema = {
   "datePublished": datePublished,
   "dateModified": now.toISOString(),
   "mainEntityOfPage": cleanCanonical,
+  "image": {
+    "@type": "ImageObject",
+    "url": articleImage,
+    "width": 1200,
+    "height": 630,
+    "caption": "Official Dear Lottery Winning Gazette Result Sheet",
+    "creator": {
+      "@type": "Organization",
+      "name": "Dear Result Live"
+    },
+    "creditText": "Dear Result Live",
+    "copyrightNotice": "© 2026 Dear Result Live. All rights reserved.",
+    "license": "https://dearresultlive.in/terms",
+    "acquireLicensePage": "https://dearresultlive.in/terms"
+  },
   "author": {
     "@type": "Organization",
     "name": "Dear Result Live",
@@ -68,6 +87,13 @@ const lotterySchema = {
       "url": "https://dearresultlive.in/publisher-wide-logo.png",
       "width": 600,
       "height": 120,
+      "caption": "Dear Result Live Official Logo",
+      "creator": {
+        "@type": "Organization",
+        "name": "Dear Result Live"
+      },
+      "creditText": "Dear Result Live",
+      "copyrightNotice": "© 2026 Dear Result Live. All rights reserved.",
       "license": "https://dearresultlive.in/terms",
       "acquireLicensePage": "https://dearresultlive.in/terms"
     }
