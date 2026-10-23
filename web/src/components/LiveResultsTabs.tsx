@@ -391,6 +391,9 @@ export default function LiveResultsTabs({
   }, [firstPrize.number, activeDateStr]);
 
   const sambadDirectUrl = `https://lottery.sambad.com/images/lottery-sambad-${activeSlot.toLowerCase()}-${activeDateStr.split('-').reverse().join('-')}.jpg`;
+  const [yearStr, monthStr, dayStr] = activeDateStr.split('-');
+  const nagalandPrefix = activeSlot.includes('6') ? 'DN' : activeSlot.includes('8') ? 'EN' : 'MN';
+  const nagalandDirectUrl = `https://www.nagalandlotteryresults.com/wp-content/uploads/${yearStr}/${monthStr}/${nagalandPrefix}${dayStr}${monthStr}${yearStr.slice(2)}_1.jpeg`;
   const cacheKey = currentDraw?.checksum ? encodeURIComponent(currentDraw.checksum) : (firstPrize.number ? `${activeDateStr}-${firstPrize.number}` : `${activeDateStr}-live`);
   const directStaticUrl = `/results/${activeDateStr}/${activeSlot.toLowerCase()}.jpg?v=${cacheKey}`;
   const pdfUrl = `/pdf/${activeDateStr}/${activeSlot.toLowerCase()}.pdf`;
@@ -813,8 +816,12 @@ export default function LiveResultsTabs({
               loading="eager"
               onError={(e) => {
                 const img = e.target as HTMLImageElement;
-                if (!img.src.includes('lottery.sambad.com')) {
+                if (!img.src.includes('lottery.sambad.com') && !img.src.includes('nagalandlotteryresults.com') && !img.src.includes('/api/sheet-image')) {
                   img.src = sambadDirectUrl;
+                } else if (img.src.includes('lottery.sambad.com')) {
+                  img.src = nagalandDirectUrl;
+                } else if (img.src.includes('nagalandlotteryresults.com')) {
+                  img.src = proxySheetUrl;
                 }
               }}
             />
@@ -1021,8 +1028,12 @@ export default function LiveResultsTabs({
               title={zoomScale === 1 ? 'Click to zoom in' : 'Click to reset zoom'}
               onError={(e) => {
                 const img = e.target as HTMLImageElement;
-                if (!img.src.includes('lottery.sambad.com')) {
+                if (!img.src.includes('lottery.sambad.com') && !img.src.includes('nagalandlotteryresults.com') && !img.src.includes('/api/sheet-image')) {
                   img.src = sambadDirectUrl;
+                } else if (img.src.includes('lottery.sambad.com')) {
+                  img.src = nagalandDirectUrl;
+                } else if (img.src.includes('nagalandlotteryresults.com')) {
+                  img.src = proxySheetUrl;
                 }
               }}
               style={{
