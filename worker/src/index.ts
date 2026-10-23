@@ -596,9 +596,8 @@ const handleSheetImage = async (c: any) => {
     // Continue
   }
 
-  // Fallback: Redirect to Frontend SVG Gazette Sheet
-  const frontendBase = c.env.FRONTEND_URL || 'https://dearresultlive.in';
-  return c.redirect(`${frontendBase}/api/gazette-sheet.svg?date=${dateStr}&slot=${slotKey}`, 302);
+  // Fallback: Redirect directly to official Lottery Sambad JPEG
+  return c.redirect(`https://lottery.sambad.com/images/lottery-sambad-${slotKey}-${dateKey}.jpg`, 302);
 };
 
 app.get('/api/sheet-image', handleSheetImage);
