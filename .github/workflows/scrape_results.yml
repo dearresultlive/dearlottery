@@ -102,7 +102,10 @@ jobs:
           npm run build
 
       - name: Deploy Frontend to Cloudflare Pages
-        if: steps.git-commit.outputs.has_changes == 'true'
+        if: steps.git-commit.outputs.has_changes == 'true' && env.CLOUDFLARE_API_TOKEN != ''
+        continue-on-error: true
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
         uses: cloudflare/wrangler-action@v3
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
