@@ -9,18 +9,28 @@ export default function PushNotifyBanner() {
   const [isLoading, setIsLoading] = useState<boolean>(false);
 
   useEffect(() => {
-    if (typeof window !== 'undefined' && 'Notification' in window) {
-      setIsSupported(true);
-      
-      if (Notification.permission === 'granted') {
+    if (typeof window !== 'undefined') {
+      const hasGrantedPermission = 'Notification' in window && Notification.permission === 'granted';
+      const hasStoredSub = localStorage.getItem('dear_push_subscribed') === 'true';
+
+      if (hasGrantedPermission || hasStoredSub) {
         setIsSubscribed(true);
+        return;
       }
 
-      const dismissedAt = localStorage.getItem('dear_push_prompt_dismissed');
-      if (dismissedAt) {
-        const timeDiff = Date.now() - parseInt(dismissedAt, 10);
-        if (timeDiff < 24 * 60 * 60 * 1000) {
+      if ('Notification' in window) {
+        setIsSupported(true);
+        if (Notification.permission === 'denied') {
           setIsDismissed(true);
+          return;
+        }
+
+        const dismissedAt = localStorage.getItem('dear_push_prompt_dismissed');
+        if (dismissedAt) {
+          const timeDiff = Date.now() - parseInt(dismissedAt, 10);
+          if (timeDiff < 7 * 24 * 60 * 60 * 1000) {
+            setIsDismissed(true);
+          }
         }
       }
     }
@@ -42,6 +52,7 @@ export default function PushNotifyBanner() {
 
       if (Notification.permission === 'granted') {
         setIsSubscribed(true);
+        localStorage.setItem('dear_push_subscribed', 'true');
         localStorage.removeItem('dear_push_prompt_dismissed');
       }
     } catch (err) {

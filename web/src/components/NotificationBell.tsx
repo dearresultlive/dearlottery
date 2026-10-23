@@ -4,8 +4,9 @@ import { useLanguage } from '../lib/i18n';
 export default function NotificationBell() {
   const { lang } = useLanguage();
   const [isSubscribed, setIsSubscribed] = useState(() => {
-    if (typeof window !== 'undefined' && 'Notification' in window) {
-      return Notification.permission === 'granted';
+    if (typeof window !== 'undefined') {
+      if ('Notification' in window && Notification.permission === 'granted') return true;
+      if (localStorage.getItem('dear_push_subscribed') === 'true') return true;
     }
     return false;
   });
@@ -16,6 +17,7 @@ export default function NotificationBell() {
     if (typeof window !== 'undefined' && 'Notification' in window) {
       if (Notification.permission === 'granted') {
         setIsSubscribed(true);
+        localStorage.setItem('dear_push_subscribed', 'true');
         document.documentElement.classList.add('notifications-granted');
       }
     }

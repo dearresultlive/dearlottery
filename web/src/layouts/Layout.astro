@@ -56,7 +56,7 @@ const isMoreActive = currentPath === '/analytics' || currentPath === '/yesterday
 
     // Instant notification pre-paint check: suppresses 1s bell icon flicker on page refresh
     try {
-      if (typeof window !== 'undefined' && 'Notification' in window && Notification.permission === 'granted') {
+      if (typeof window !== 'undefined' && ('Notification' in window && Notification.permission === 'granted') || localStorage.getItem('dear_push_subscribed') === 'true') {
         document.documentElement.classList.add('notifications-granted');
       }
     } catch (e) {}

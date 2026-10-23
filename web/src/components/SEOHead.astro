@@ -362,8 +362,24 @@ const speakableSchema = {
           await OneSignal.init({
             appId: "7ede11f8-0188-4e67-88b0-d3947320982a",
             notifyButton: { enable: false },
-            allowLocalhostAsSecureOrigin: true
+            allowLocalhostAsSecureOrigin: true,
+            autoResubscribe: true,
+            promptOptions: {
+              slidedown: {
+                prompts: []
+              }
+            }
           });
+
+          // Silent background subscription sync when permission is already granted (No popups)
+          if ('Notification' in window && Notification.permission === 'granted') {
+            try {
+              if (OneSignal.User && OneSignal.User.PushSubscription && !OneSignal.User.PushSubscription.optedIn) {
+                await OneSignal.User.PushSubscription.optIn();
+              }
+              localStorage.setItem('dear_push_subscribed', 'true');
+            } catch (e) {}
+          }
         });
       }
       if ('requestIdleCallback' in window) {
