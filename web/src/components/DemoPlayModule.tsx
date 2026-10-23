@@ -299,8 +299,8 @@ function RealPaperTicket({
               {evalRes.isWin ? (
                 <span className="text-emerald-700 font-black">
                   {lang === 'bn' 
-                    ? `প্রাইজ: ₹${formatINR(evalRes.prizeAmount)} • নিট লাভ: +₹${formatINR(netTicketPnl)}` 
-                    : `Prize: ₹${formatINR(evalRes.prizeAmount)} • Net: +₹${formatINR(netTicketPnl)}`}
+                    ? `প্রাইজ: ${formatINR(evalRes.prizeAmount)} • নিট লাভ: +${formatINR(netTicketPnl)}` 
+                    : `Prize: ${formatINR(evalRes.prizeAmount)} • Net: +${formatINR(netTicketPnl)}`}
                 </span>
               ) : evalRes.status === 'RESULT_OUT' ? (
                 <span className="text-rose-700 font-bold">
@@ -384,10 +384,10 @@ function RealPaperTicket({
                   <span>{evalRes.prizeTitle}</span>
                 </div>
                 <div className="text-[10px] text-emerald-900 font-mono font-bold mt-0.5">
-                  Win: ₹{formatINR(evalRes.prizeAmount)}
+                  Win: {formatINR(evalRes.prizeAmount)}
                 </div>
                 <div className="text-[10px] sm:text-xs text-emerald-950 font-mono font-black border-t border-emerald-700/20 pt-0.5 mt-0.5">
-                  Net: +₹{formatINR(netTicketPnl)}
+                  Net: +{formatINR(netTicketPnl)}
                 </div>
               </div>
             ) : evalRes.status === 'DRAWING' ? (
@@ -446,6 +446,16 @@ export default function DemoPlayModule({ initialDraws = [] }: DemoPlayModuleProp
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [successMsg, setSuccessMsg] = useState<string | null>(null);
   const [purchaseFeedback, setPurchaseFeedback] = useState<PurchaseFeedback | null>(null);
+
+  // Auto-dismiss ticket printed toast notification after 4 seconds
+  useEffect(() => {
+    if (purchaseFeedback) {
+      const timer = setTimeout(() => {
+        setPurchaseFeedback(null);
+      }, 4000);
+      return () => clearTimeout(timer);
+    }
+  }, [purchaseFeedback]);
 
   // Tickets stored in localStorage
   const [myTickets, setMyTickets] = useState<LuckyTicket[]>([]);
@@ -1085,8 +1095,9 @@ export default function DemoPlayModule({ initialDraws = [] }: DemoPlayModuleProp
           </p>
         </div>
         <div className="text-right shrink-0">
-          <span className="font-mono text-[11px] font-bold text-amber-300 bg-white/10 px-2 py-0.5 rounded">
-            {selectedDate.split('-').reverse().join('/')}
+          <span className="inline-flex items-center gap-1 text-[10px] font-bold text-emerald-400 bg-emerald-950/60 border border-emerald-500/30 px-2 py-0.5 rounded-full">
+            <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
+            <span>Live 1:1</span>
           </span>
         </div>
       </div>
@@ -1137,80 +1148,46 @@ export default function DemoPlayModule({ initialDraws = [] }: DemoPlayModuleProp
           {/* Game Date & Slot Selector */}
           <div className="bg-white border border-slate-200 rounded-2xl p-2.5 sm:p-3 shadow-2xs space-y-2">
             
-            {/* Game Date & Smart History Dropdown Switcher */}
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-100 pb-2 px-0.5">
-              <div className="flex items-center justify-between sm:justify-start gap-1.5 flex-wrap">
-                <span className="text-[11px] font-bold text-slate-600 flex items-center gap-1">
-                  <span>📅</span>
-                  <span>{lang === 'bn' ? 'তারিখ:' : lang === 'hi' ? 'तारीख:' : 'Date:'}</span>
-                </span>
+            {/* Unified Clean Date Selector */}
+            <div className="flex items-center justify-between gap-1.5 border-b border-slate-100 pb-2 px-0.5">
+              <div className="flex items-center gap-1.5">
+                <button
+                  type="button"
+                  onClick={() => { setSelectedDate(todayStr); setErrorMsg(null); }}
+                  className={`px-3 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 ${
+                    selectedDate === todayStr
+                      ? 'bg-blue-600 text-white shadow-xs'
+                      : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
+                  }`}
+                >
+                  <span>{lang === 'bn' ? 'আজ' : lang === 'hi' ? 'आज' : 'Today'}</span>
+                  {myTickets.filter(t => t.date === todayStr).length > 0 && (
+                    <span className={`text-[10px] px-1.5 py-0.2 rounded-full font-mono font-bold ${selectedDate === todayStr ? 'bg-white/25 text-white' : 'bg-slate-200 text-slate-700'}`}>
+                      {myTickets.filter(t => t.date === todayStr).length}
+                    </span>
+                  )}
+                </button>
 
-                <div className="flex items-center gap-1">
-                  <button
-                    type="button"
-                    onClick={() => { setSelectedDate(todayStr); setErrorMsg(null); }}
-                    className={`px-2.5 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer ${
-                      selectedDate === todayStr
-                        ? 'bg-blue-700 text-white shadow-2xs'
-                        : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
-                    }`}
-                  >
-                    {lang === 'bn' ? 'আজ' : lang === 'hi' ? 'आज' : 'Today'}
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => { setSelectedDate(yesterdayStr); setErrorMsg(null); }}
-                    className={`px-2.5 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer ${
-                      selectedDate === yesterdayStr
-                        ? 'bg-blue-700 text-white shadow-2xs'
-                        : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
-                    }`}
-                  >
-                    {lang === 'bn' ? 'গতকাল' : lang === 'hi' ? 'कल' : 'Yesterday'}
-                  </button>
-                </div>
+                <button
+                  type="button"
+                  onClick={() => { setSelectedDate(yesterdayStr); setErrorMsg(null); }}
+                  className={`px-3 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 ${
+                    selectedDate === yesterdayStr
+                      ? 'bg-blue-600 text-white shadow-xs'
+                      : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
+                  }`}
+                >
+                  <span>{lang === 'bn' ? 'গতকাল' : lang === 'hi' ? 'कल' : 'Yesterday'}</span>
+                  {myTickets.filter(t => t.date === yesterdayStr).length > 0 && (
+                    <span className={`text-[10px] px-1.5 py-0.2 rounded-full font-mono font-bold ${selectedDate === yesterdayStr ? 'bg-white/25 text-white' : 'bg-slate-200 text-slate-700'}`}>
+                      {myTickets.filter(t => t.date === yesterdayStr).length}
+                    </span>
+                  )}
+                </button>
               </div>
 
-              {/* Smart History Dropdown (Past Dates with Tickets) & Calendar Picker */}
-              <div className="flex items-center gap-1.5">
-                <div className="relative flex-1 sm:flex-none min-w-[170px]">
-                  <select
-                    value={selectedDate}
-                    onChange={(e) => {
-                      setSelectedDate(e.target.value);
-                      setErrorMsg(null);
-                    }}
-                    className={`w-full text-xs font-bold py-1 pl-2.5 pr-6 rounded-lg border appearance-none cursor-pointer transition-all ${
-                      selectedDate !== todayStr && selectedDate !== yesterdayStr
-                        ? 'bg-amber-100 border-amber-400 text-amber-950 font-black ring-1 ring-amber-400 shadow-2xs'
-                        : 'bg-slate-50 hover:bg-slate-100 border-slate-300 text-slate-700'
-                    }`}
-                    title={lang === 'bn' ? 'অতীত তারিখের টিকিট ও খরচ দেখুন' : 'View past printed tickets & spending'}
-                  >
-                    <option value={todayStr}>
-                      📅 {todayStr.split('-').reverse().join('/')} ({lang === 'bn' ? 'আজ' : 'Today'})
-                      {myTickets.filter(t => t.date === todayStr).length > 0 ? ` • ${myTickets.filter(t => t.date === todayStr).length} ${lang === 'bn' ? 'টিকিট' : 'tickets'}` : ''}
-                    </option>
-                    <option value={yesterdayStr}>
-                      📅 {yesterdayStr.split('-').reverse().join('/')} ({lang === 'bn' ? 'গতকাল' : 'Yesterday'})
-                      {myTickets.filter(t => t.date === yesterdayStr).length > 0 ? ` • ${myTickets.filter(t => t.date === yesterdayStr).length} ${lang === 'bn' ? 'টিকিট' : 'tickets'}` : ''}
-                    </option>
-                    
-                    {/* All past dates where tickets are recorded */}
-                    {pastDatesWithTickets
-                      .filter(d => d.date !== todayStr && d.date !== yesterdayStr)
-                      .map(d => (
-                        <option key={d.date} value={d.date}>
-                          🎟️ {d.date.split('-').reverse().join('/')} — {d.totalTickets} {lang === 'bn' ? 'টিকিট' : 'tickets'} (₹{d.totalCost})
-                        </option>
-                      ))}
-                  </select>
-                  <span className="absolute right-2 top-1/2 -translate-y-1/2 pointer-events-none text-[9px] text-slate-500">
-                    ▼
-                  </span>
-                </div>
-
-                {/* Direct Native HTML5 Date Picker for picking any historical date */}
+              {/* Native Calendar Picker for Historical Dates */}
+              <div className="flex items-center gap-1">
                 <input
                   type="date"
                   value={selectedDate}
@@ -1221,8 +1198,12 @@ export default function DemoPlayModule({ initialDraws = [] }: DemoPlayModuleProp
                       setErrorMsg(null);
                     }
                   }}
-                  className="text-xs bg-slate-50 border border-slate-300 rounded-lg py-1 px-1.5 text-slate-700 cursor-pointer hover:bg-slate-100 shrink-0"
-                  title={lang === 'bn' ? 'ক্যালেন্ডার থেকে তারিখ বাছুন' : 'Pick date from calendar'}
+                  className={`text-xs font-bold py-1 px-2 rounded-lg border cursor-pointer transition-all ${
+                    selectedDate !== todayStr && selectedDate !== yesterdayStr
+                      ? 'bg-amber-100 border-amber-400 text-amber-950 font-black ring-1 ring-amber-400 shadow-2xs'
+                      : 'bg-slate-50 border-slate-300 text-slate-700 hover:bg-slate-100'
+                  }`}
+                  title={lang === 'bn' ? 'ক্যালেন্ডার থেকে তারিখ বাছুন' : 'Pick other date'}
                 />
               </div>
             </div>
@@ -1428,9 +1409,9 @@ export default function DemoPlayModule({ initialDraws = [] }: DemoPlayModuleProp
                       {purchaseFeedback.evalRes.status === 'RESULT_OUT' ? (
                         purchaseFeedback.evalRes.isWin ? (
                           <div className="text-xs font-black text-amber-300 font-mono flex items-center gap-1.5">
-                            <span>🏆 {purchaseFeedback.evalRes.prizeTitle} (+₹{formatINR(purchaseFeedback.evalRes.prizeAmount)})</span>
+                            <span>🏆 {purchaseFeedback.evalRes.prizeTitle} (+{formatINR(purchaseFeedback.evalRes.prizeAmount)})</span>
                             <span>•</span>
-                            <span className="text-emerald-200">Net: +₹{formatINR(purchaseFeedback.netPnl)}</span>
+                            <span className="text-emerald-200">Net: +{formatINR(purchaseFeedback.netPnl)}</span>
                           </div>
                         ) : (
                           <div className="text-[11px] text-slate-300 flex items-center gap-1.5">
@@ -1509,7 +1490,7 @@ export default function DemoPlayModule({ initialDraws = [] }: DemoPlayModuleProp
                     {lang === 'bn' ? 'মোট জয়' : 'Won'}
                   </span>
                   <span className="font-mono text-xs sm:text-sm font-bold text-amber-400">
-                    ₹{formatINR(gameStats.totalReturns)}
+                    {formatINR(gameStats.totalReturns)}
                   </span>
                 </div>
 
@@ -1529,8 +1510,8 @@ export default function DemoPlayModule({ initialDraws = [] }: DemoPlayModuleProp
                     {gameStats.isPending 
                       ? (lang === 'bn' ? 'ড্র অপেক্ষায়' : 'Awaiting') 
                       : gameStats.netPnl >= 0 
-                      ? `+₹${formatINR(gameStats.netPnl)}` 
-                      : `-₹${formatINR(Math.abs(gameStats.netPnl))}`}
+                      ? `+${formatINR(gameStats.netPnl)}` 
+                      : `-${formatINR(Math.abs(gameStats.netPnl))}`}
                   </span>
                 </div>
               </div>
@@ -1541,8 +1522,8 @@ export default function DemoPlayModule({ initialDraws = [] }: DemoPlayModuleProp
                   {gameStats.isPending
                     ? (lang === 'bn' ? 'ড্র-এর ফলাফল প্রকাশ হলে প্রফিট হিসাব হবে' : lang === 'hi' ? 'ड्रॉ रिजल्ट के बाद लाभ तय होगा' : 'P/L settles after official draw')
                     : gameStats.netPnl > 0
-                    ? (lang === 'bn' ? `🎉 লাভ: +₹${formatINR(gameStats.netPnl)}` : lang === 'hi' ? `🎉 लाभ: +₹${formatINR(gameStats.netPnl)}` : `🎉 Profit: +₹${formatINR(gameStats.netPnl)}`)
-                    : (lang === 'bn' ? `ক্ষতি: -₹${formatINR(Math.abs(gameStats.netPnl))}` : lang === 'hi' ? `हानि: -₹${formatINR(Math.abs(gameStats.netPnl))}` : `Loss: -₹${formatINR(Math.abs(gameStats.netPnl))}`)}
+                    ? (lang === 'bn' ? `🎉 লাভ: +${formatINR(gameStats.netPnl)}` : lang === 'hi' ? `🎉 लाभ: +${formatINR(gameStats.netPnl)}` : `🎉 Profit: +${formatINR(gameStats.netPnl)}`)
+                    : (lang === 'bn' ? `ক্ষতি: -${formatINR(Math.abs(gameStats.netPnl))}` : lang === 'hi' ? `हानि: -${formatINR(Math.abs(gameStats.netPnl))}` : `Loss: -${formatINR(Math.abs(gameStats.netPnl))}`)}
                 </span>
 
                 <button
@@ -1571,12 +1552,12 @@ export default function DemoPlayModule({ initialDraws = [] }: DemoPlayModuleProp
                     </div>
                     <div className="bg-black/20 p-1.5 rounded">
                       <span className="text-[8px] text-slate-400 block">{lang === 'bn' ? 'মোট জয়' : lang === 'hi' ? 'कुल जीत' : 'Total Won'}</span>
-                      <span className="font-mono font-bold text-emerald-400">₹{formatINR(globalStats.totalReturns)}</span>
+                      <span className="font-mono font-bold text-emerald-400">{formatINR(globalStats.totalReturns)}</span>
                     </div>
                     <div className="bg-black/20 p-1.5 rounded">
                       <span className="text-[8px] text-slate-400 block">{lang === 'bn' ? 'লাইফটাইম P/L' : lang === 'hi' ? 'लाइफटाइम P/L' : 'Lifetime P/L'}</span>
                       <span className={`font-mono font-bold ${globalStats.overallNetPnl >= 0 ? 'text-emerald-400' : 'text-rose-400'}`}>
-                        {globalStats.overallNetPnl >= 0 ? `+₹${formatINR(globalStats.overallNetPnl)}` : `-₹${formatINR(Math.abs(globalStats.overallNetPnl))}`}
+                        {globalStats.overallNetPnl >= 0 ? `+${formatINR(globalStats.overallNetPnl)}` : `-${formatINR(Math.abs(globalStats.overallNetPnl))}`}
                       </span>
                     </div>
                   </div>
@@ -1762,7 +1743,7 @@ export default function DemoPlayModule({ initialDraws = [] }: DemoPlayModuleProp
                         )}
                         {isWinner && (
                           <span className="bg-emerald-600 text-white text-[9px] font-black px-1.5 py-0.2 rounded-md shrink-0 shadow-2xs animate-pulse">
-                            🎉 WIN: +₹{formatINR(previewNetProfit)}
+                            🎉 WIN: +{formatINR(previewNetProfit)}
                           </span>
                         )}
                       </div>
@@ -1777,7 +1758,7 @@ export default function DemoPlayModule({ initialDraws = [] }: DemoPlayModuleProp
 
                       {isWinner && (
                         <div className="text-[9px] font-bold text-emerald-800 mt-0.5">
-                          {previewEval.prizeTitle} (+₹{formatINR(previewEval.prizeAmount)})
+                          {previewEval.prizeTitle} (+{formatINR(previewEval.prizeAmount)})
                         </div>
                       )}
                     </div>
