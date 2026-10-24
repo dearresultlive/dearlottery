@@ -1,6 +1,7 @@
 ---
 import Layout from '../layouts/Layout.astro';
 import TargetNumbersTool from '../components/TargetNumbersTool';
+import TelegramBanner from '../components/TelegramBanner.astro';
 import { fetchFrequencyAnalytics } from '../lib/api';
 import { getISTDateString, getISTNow } from '../lib/lottery-utils';
 
@@ -69,6 +70,9 @@ const targetFaqItems = [
         initialCold={analytics.coldNumbers}
       />
     </section>
+
+    {/* Official WhatsApp & Telegram Channels Join CTA */}
+    <TelegramBanner />
 
     {/* Sleek Ticket Checker Direct Link Banner */}
     <div class="bg-gradient-to-r from-blue-50 via-white to-indigo-50 border border-blue-200/90 rounded-2xl p-3.5 sm:p-4 flex flex-col sm:flex-row items-center justify-between gap-3 shadow-xs">

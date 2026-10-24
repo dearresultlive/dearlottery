@@ -1,6 +1,7 @@
 ---
 import Layout from '../layouts/Layout.astro';
 import DemoPlayModule from '../components/DemoPlayModule';
+import TelegramBanner from '../components/TelegramBanner.astro';
 import { fetchLatestDraws, fetchDrawsByDate } from '../lib/api';
 import { getISTDateString, getISTNow } from '../lib/lottery-utils';
 
@@ -51,6 +52,9 @@ const luckyTicketFaqItems = [
     <section id="lucky-ticket-module">
       <DemoPlayModule client:load initialDraws={allDraws} />
     </section>
+
+    {/* Official WhatsApp & Telegram Channels Join CTA */}
+    <TelegramBanner />
 
     {/* Quick Links Footer */}
     <div class="flex items-center justify-center gap-3 pt-2 text-xs border-t border-slate-200">
