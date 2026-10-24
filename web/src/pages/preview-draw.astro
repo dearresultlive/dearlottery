@@ -1,0 +1,52 @@
+---
+import Layout from '../layouts/Layout.astro';
+import LiveDrawProgressCard from '../components/LiveDrawProgressCard';
+---
+
+<Layout
+  title="Live Draw Simulator Preview (Private Test) • Dear Result Live"
+  description="Private test preview for real-world lottery tumbler live draw simulation."
+>
+  <div class="max-w-[620px] md:max-w-2xl mx-auto px-2.5 sm:px-4 py-4 space-y-4">
+    
+    <!-- Test Notice -->
+    <div class="bg-blue-50 border border-blue-200 rounded-2xl p-3 text-xs text-blue-900 flex items-center justify-between shadow-2xs">
+      <div class="flex items-center gap-2">
+        <span class="text-base">🧪</span>
+        <div>
+          <strong class="font-bold">Live Draw Visual Simulator (Private Demo)</strong>
+          <span class="block text-[10px] text-blue-700">This page is for visual testing only and does not affect live production data or SEO.</span>
+        </div>
+      </div>
+      <a href="/" class="bg-blue-700 hover:bg-blue-800 text-white font-bold text-[11px] px-3 py-1.5 rounded-xl shadow-2xs">
+        Back to Live Site ➔
+      </a>
+    </div>
+
+    <!-- The Redesigned Golden Amber & Pearl Lottery Stage Component -->
+    <section id="demo-card">
+      <LiveDrawProgressCard
+        client:load
+        slot="1PM"
+        slotTime="1:00 PM"
+        drawName="DEAR MORNING"
+        lang="bn"
+      />
+    </section>
+
+    <!-- Alternative Variations (English & Hindi) -->
+    <div class="space-y-4 pt-4 border-t border-slate-200">
+      <h3 class="text-xs font-black uppercase text-slate-500 tracking-wider">
+        English Variant (6:00 PM Day Draw)
+      </h3>
+      <LiveDrawProgressCard
+        client:load
+        slot="6PM"
+        slotTime="6:00 PM"
+        drawName="DEAR DAY"
+        lang="en"
+      />
+    </div>
+
+  </div>
+</Layout>
