@@ -31,6 +31,9 @@ const luckyTicketFaqItems = [
     answer: "হ্যাঁ, এটি সম্পূর্ণ বিনামূল্যে শিক্ষামূলক পেপার টিকিট সিমুলেটর। আসল টাকা কাউন্টারে খরচ করার আগে আপনার পছন্দের নম্বর বা হিট ম্যাপ নম্বর টেস্ট করার জন্য এটি তৈরি।"
   }
 ];
+
+// Daily lucky ticket generator - cache at edge for 5 mins
+Astro.response.headers.set('Cache-Control', 'public, max-age=60, s-maxage=300, stale-while-revalidate=900');
 ---
 
 <Layout

@@ -24,6 +24,9 @@ const targetFaqItems = [
     answer: "Every Dear Lottery draw awards 1,000 fifth prizes of ₹120 each based on the last 4 digits of tickets across all active series."
   }
 ];
+
+// Daily statistical predictions change once per day - cache at edge for 5 mins
+Astro.response.headers.set('Cache-Control', 'public, max-age=60, s-maxage=300, stale-while-revalidate=900');
 ---
 
 <Layout

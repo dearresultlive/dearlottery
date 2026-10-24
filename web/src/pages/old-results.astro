@@ -27,6 +27,9 @@ const oldResultsFaqItems = [
     answer: "নাগাল্যান্ড স্টেট লটারি বিধিমালার অধীনে ফলাফল ঘোষণার তারিখ থেকে ৩০ দিনের মধ্যে আসল অবিকৃত টিকিটসহ সরকার অনুমোদিত লটারি ডিলার বা ডিরেক্টরেটে প্রাইজ দাবি করতে হয়।"
   }
 ];
+
+// Archive index - cache at edge for 24 hours
+Astro.response.headers.set('Cache-Control', 'public, max-age=3600, s-maxage=86400, stale-while-revalidate=604800');
 ---
 
 <Layout

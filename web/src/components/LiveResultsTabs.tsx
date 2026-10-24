@@ -854,6 +854,7 @@ export default function LiveResultsTabs({
             className="cursor-zoom-in relative rounded-xl overflow-hidden border border-slate-200 bg-[#fcfbf7] group shadow-inner aspect-[1/1.414] max-w-[480px] mx-auto"
           >
             <img
+              key={`gazette-sheet-${activeDateStr}-${activeSlot}`}
               src={activeSheetUrl}
               alt={`Official Gazette Result Sheet ${currentDraw?.draw_name || 'Dear Lottery'} ${currentSlotInfo.time}`}
               width={557}
@@ -1069,6 +1070,7 @@ export default function LiveResultsTabs({
             onClick={e => e.stopPropagation()}
           >
             <img
+              key={`modal-img-${selectedImageUrl}`}
               src={selectedImageUrl}
               alt="Official Dear Lottery Gazette Sheet"
               onClick={toggleImageZoom}

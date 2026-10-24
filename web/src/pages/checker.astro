@@ -27,6 +27,9 @@ const checkerFaqItems = [
     answer: "The consolation prize is ₹1,000. It is awarded when your ticket matches all 5 digits of the 1st prize winning ticket, but under a different series."
   }
 ];
+
+// Ticket checker tool - cache at edge for 2 mins
+Astro.response.headers.set('Cache-Control', 'public, max-age=30, s-maxage=120, stale-while-revalidate=300');
 ---
 
 <Layout

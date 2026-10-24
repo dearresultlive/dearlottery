@@ -48,6 +48,9 @@ const yesterdayFaqItems = [
     answer: `এই পেজের 'Ticket Checker' বক্সে আপনার টিকিট নম্বর অথবা শেষের ৪-৫টি ডিজিট লিখে চেক বাটনে চাপুন। ১ম থেকে ৫ম পুরস্কারের সকল তালিকার সাথে আপনার নম্বর স্বয়ংক্রিয়ভাবে মিলিয়ে ফলাফল জানিয়ে দেওয়া হবে।`
   }
 ];
+
+// Yesterday's results are 100% declared and permanent - cache at edge for 1 hour
+Astro.response.headers.set('Cache-Control', 'public, max-age=300, s-maxage=3600, stale-while-revalidate=86400');
 ---
 
 <Layout

@@ -1,5 +1,8 @@
 ---
 import Layout from '../layouts/Layout.astro';
+
+// Static legal & informational pages - cache at edge for 7 days
+Astro.response.headers.set('Cache-Control', 'public, max-age=86400, s-maxage=604800, stale-while-revalidate=2592000');
 ---
 
 <Layout

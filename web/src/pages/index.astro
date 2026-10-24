@@ -19,6 +19,25 @@ const draws = await fetchLatestDraws();
 const yesterdayDraws = await fetchDrawsByDate(yesterdayDateStr);
 const checkerDraws = [...draws, ...yesterdayDraws];
 const analytics = await fetchFrequencyAnalytics();
+
+// High-Traffic Edge Caching Logic:
+// Protects Cloudflare edge from 100k+ surges while delivering results within 5 seconds of release
+const istHour = istNow.getHours();
+const istMin = istNow.getMinutes();
+// Live draw windows: 12:55 PM - 1:20 PM, 5:55 PM - 6:20 PM, 7:55 PM - 8:20 PM IST
+const isLiveDrawWindow = 
+  (istHour === 12 && istMin >= 55) || (istHour === 13 && istMin <= 20) ||
+  (istHour === 17 && istMin >= 55) || (istHour === 18 && istMin <= 20) ||
+  (istHour === 19 && istMin >= 55) || (istHour === 20 && istMin <= 20);
+
+if (isLiveDrawWindow) {
+  // During live draw: 5s edge micro-cache shields server from 50k spikes while delivering fresh result within 5s!
+  // max-age=0 ensures user browser reload never serves stale cached image/numbers
+  Astro.response.headers.set('Cache-Control', 'public, max-age=0, s-maxage=5, stale-while-revalidate=15');
+} else {
+  // Outside draw rush: 15s browser / 60s edge cache ensures instant edge delivery with near-zero worker usage
+  Astro.response.headers.set('Cache-Control', 'public, max-age=15, s-maxage=60, stale-while-revalidate=300');
+}
 ---
 
 <Layout

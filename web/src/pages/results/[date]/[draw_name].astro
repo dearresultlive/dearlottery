@@ -78,6 +78,18 @@ if (isDeclared && firstPrize) {
   seoTitle = `Dear Lottery Result ${slotHour} (${targetDate}) Archive | Lottery Sambad`;
   seoDesc = `Official Dear Lottery Sambad historical draw record for ${slotHour} on ${targetDate}. Download official state gazette PDF.`;
 }
+
+// Time-Aware Edge Caching:
+if (!isToday) {
+  // Past archive results are 100% permanent and immutable
+  Astro.response.headers.set('Cache-Control', 'public, max-age=3600, s-maxage=86400, stale-while-revalidate=604800');
+} else if (isDeclared) {
+  // Today's result is officially declared and confirmed
+  Astro.response.headers.set('Cache-Control', 'public, max-age=30, s-maxage=120, stale-while-revalidate=600');
+} else {
+  // Today's result is upcoming or currently drawing: 5s micro-cache so user gets result immediately when uploaded
+  Astro.response.headers.set('Cache-Control', 'public, max-age=0, s-maxage=5, stale-while-revalidate=15');
+}
 ---
 
 <Layout
