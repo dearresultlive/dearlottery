@@ -50,7 +50,7 @@ export default function LiveDrawProgressCard({
     }
   ];
 
-  // Rapid digit rolling ticker (60ms interval, super lightweight pure state, compositor friendly)
+  // Rapid digit rolling ticker (compositor friendly pure state)
   useEffect(() => {
     const digitInterval = setInterval(() => {
       setShufflingDigits([
@@ -61,7 +61,7 @@ export default function LiveDrawProgressCard({
         digitsPool[Math.floor(Math.random() * 10)]
       ]);
       setShufflingSeries(seriesPool[Math.floor(Math.random() * seriesPool.length)]);
-    }, 90);
+    }, 85);
 
     // Rotate status step every 3.5 seconds
     const statusInterval = setInterval(() => {
@@ -77,90 +77,106 @@ export default function LiveDrawProgressCard({
   const currentStep = statusSteps[statusStepIndex] || statusSteps[0];
 
   return (
-    <div className="relative overflow-hidden bg-gradient-to-br from-slate-950 via-slate-900 to-indigo-950 border-2 border-amber-500/50 rounded-2xl p-4 sm:p-6 text-white shadow-xl shadow-amber-500/10">
+    <div className="relative overflow-hidden bg-gradient-to-b from-amber-50/95 via-white to-amber-100/70 border-2 border-amber-400 rounded-3xl p-4 sm:p-6 text-slate-800 shadow-xl shadow-amber-500/10">
       
-      {/* Background Ambient Glow & Mechanical Grid Texture */}
-      <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,_var(--tw-gradient-stops))] from-amber-500/15 via-transparent to-transparent pointer-events-none" />
-      <div className="absolute -top-12 -right-12 w-40 h-40 bg-red-600/20 rounded-full blur-3xl pointer-events-none" />
-      <div className="absolute -bottom-12 -left-12 w-40 h-40 bg-amber-500/20 rounded-full blur-3xl pointer-events-none" />
+      {/* Background Ambient Spotlight Glare */}
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,_rgba(245,158,11,0.12),transparent_70%)] pointer-events-none" />
+      <div className="absolute -top-16 -right-16 w-48 h-48 bg-amber-400/20 rounded-full blur-3xl pointer-events-none" />
+      <div className="absolute -bottom-16 -left-16 w-48 h-48 bg-emerald-400/15 rounded-full blur-3xl pointer-events-none" />
 
       <div className="relative z-10 space-y-4">
         
-        {/* Top Header: Directorate Live Feed Badge */}
-        <div className="flex flex-wrap items-center justify-between gap-2 border-b border-white/10 pb-3">
+        {/* Top Header: Directorate Live Broadcast Badge */}
+        <div className="flex flex-wrap items-center justify-between gap-2 border-b border-amber-200/80 pb-3">
           <div className="flex items-center gap-2">
             <span className="relative flex h-3 w-3">
-              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
-              <span className="relative inline-flex rounded-full h-3 w-3 bg-red-500"></span>
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-500 opacity-75"></span>
+              <span className="relative inline-flex rounded-full h-3 w-3 bg-red-600"></span>
             </span>
-            <span className="text-xs font-black uppercase tracking-wider text-red-400 bg-red-950/80 border border-red-500/40 px-2.5 py-0.5 rounded-full">
-              {lang === 'bn' ? '🔴 ড্র চলছে • LIVE DRAW' : lang === 'hi' ? '🔴 ड्रा प्रगति पर है • LIVE DRAW' : '🔴 LIVE DRAW IN PROGRESS'}
+            <span className="text-xs font-black uppercase tracking-wider text-red-700 bg-red-100 border border-red-300 px-2.5 py-0.5 rounded-full shadow-2xs">
+              {lang === 'bn' ? '🔴 ড্র চলছে • LIVE DRAW' : lang === 'hi' ? '🔴 ड्रा जारी है • LIVE DRAW' : '🔴 LIVE DRAW IN PROGRESS'}
             </span>
           </div>
 
-          <div className="text-[11px] font-bold text-amber-300/90 bg-amber-950/60 border border-amber-500/30 px-2.5 py-0.5 rounded-full flex items-center gap-1.5">
-            <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
+          <div className="text-[11px] font-black text-amber-900 bg-amber-200/80 border border-amber-400 px-3 py-1 rounded-full flex items-center gap-1.5 shadow-2xs">
+            <span className="w-2 h-2 rounded-full bg-emerald-600 animate-pulse"></span>
             <span>{slotTime} {drawName}</span>
           </div>
         </div>
 
-        {/* Centerpiece: Real-World Lottery Tumbler Simulation */}
-        <div className="py-2 text-center space-y-3">
+        {/* Centerpiece: Real-World Authentic Lottery Tumbler Simulation */}
+        <div className="py-2 text-center space-y-3.5">
           
-          <div className="text-xs sm:text-sm font-black text-amber-200 tracking-wide">
-            {lang === 'bn' 
-              ? '১ম পুরস্কার ₹১ কোটি বল ড্রাম ঘুরছে (ফলাফল তৈরি হচ্ছে)' 
-              : lang === 'hi'
-              ? 'प्रथम पुरस्कार ₹1 करोड़ बॉल टंबलर घूम रहा है (नंबर तैयार हो रहे हैं)'
-              : '1st Prize ₹1 Crore Ball Tumbler In Motion (Extracting Winning Digits)'}
+          <div className="space-y-0.5">
+            <div className="inline-flex items-center gap-1.5 text-xs sm:text-sm font-black text-amber-950 uppercase tracking-wide">
+              <span>🎰</span>
+              <span>
+                {lang === 'bn' 
+                  ? '১ম পুরস্কার ₹১ কোটি বল ড্রাম ঘুরছে (ফলাফল তৈরি হচ্ছে)' 
+                  : lang === 'hi'
+                  ? 'प्रथम पुरस्कार ₹1 करोड़ बॉल टंबलर घूम रहा है'
+                  : 'Official 1st Prize ₹1 Crore Ball Tumbler In Motion'}
+              </span>
+            </div>
+            <p className="text-[11px] text-slate-500 font-medium">
+              {lang === 'bn'
+                ? 'নাগাল্যান্ড রাজ্য লটারি যান্ত্রিক এয়ার-মিক্স ড্র চেম্বার'
+                : lang === 'hi'
+                ? 'नागालैंड राज्य लॉटरी मैकेनिकल एयर-मिक्स ड्रा चैंबर'
+                : 'Directorate Mechanical Air-Mix Lottery Chamber (Kohima)'}
+            </p>
           </div>
 
-          {/* Mechanical Shuffling Digit Reels */}
+          {/* 3D Glossy Realistic Lottery Balls (Series + 5 Digits) */}
           <div className="flex items-center justify-center gap-1.5 sm:gap-2.5 pt-1">
             
-            {/* Series Reel */}
+            {/* Series Ball (Golden Glossy Sphere) */}
             <div className="flex flex-col items-center">
-              <div className="w-12 sm:w-16 h-14 sm:h-16 bg-gradient-to-b from-amber-600 via-amber-500 to-amber-700 border-2 border-amber-300 rounded-xl flex items-center justify-center shadow-lg shadow-amber-500/30 transform transition-transform">
-                <span className="font-mono font-black text-base sm:text-xl text-slate-950 tracking-wider">
+              <div className="w-13 sm:w-16 h-13 sm:h-16 rounded-2xl bg-gradient-to-br from-amber-300 via-amber-400 to-amber-600 border-2 border-amber-300 flex items-center justify-center shadow-lg shadow-amber-500/30 relative overflow-hidden group transform hover:scale-105 transition-transform">
+                {/* 3D Spherical Light Glare */}
+                <div className="absolute top-1 left-2 w-4 h-2 bg-white/70 rounded-full blur-[0.5px] pointer-events-none" />
+                <span className="font-mono font-black text-base sm:text-xl text-slate-950 tracking-wider drop-shadow-xs">
                   {shufflingSeries}
                 </span>
               </div>
-              <span className="text-[9px] sm:text-[10px] font-bold text-amber-300/80 uppercase tracking-widest mt-1">
+              <span className="text-[9px] sm:text-[10px] font-black text-amber-900 uppercase tracking-widest mt-1">
                 SERIES
               </span>
             </div>
 
-            <span className="text-amber-400 font-black text-xl sm:text-2xl self-center pb-4 select-none">
+            <span className="text-amber-500 font-black text-2xl sm:text-3xl self-center pb-3 select-none">
               •
             </span>
 
-            {/* 5 Number Reels */}
+            {/* 5 Digit Lottery Balls (Glossy White & Pearl 3D Balls) */}
             {shufflingDigits.map((digit, idx) => (
               <div key={idx} className="flex flex-col items-center">
-                <div className="w-10 sm:w-13 h-14 sm:h-16 bg-gradient-to-b from-slate-800 via-slate-900 to-slate-950 border-2 border-amber-400/60 rounded-xl flex items-center justify-center shadow-inner relative overflow-hidden group">
-                  {/* Subtle Glass glare overlay */}
-                  <div className="absolute inset-x-0 top-0 h-1/2 bg-white/10 pointer-events-none rounded-t-lg" />
-                  <span className="font-mono font-black text-xl sm:text-2xl text-amber-300 animate-pulse">
+                <div className="w-11 sm:w-14 h-11 sm:h-14 rounded-full bg-gradient-to-b from-white via-slate-50 to-amber-50 border-2 border-amber-400/90 flex items-center justify-center shadow-md shadow-amber-900/10 relative overflow-hidden group">
+                  {/* Realistic Top Gloss Glare */}
+                  <div className="absolute top-1 left-2 sm:left-3 w-3 sm:w-4 h-1.5 bg-white rounded-full opacity-90 blur-[0.3px] pointer-events-none" />
+                  {/* Subtle Ball Seam Line */}
+                  <div className="absolute inset-x-0 top-1/2 h-[1px] bg-amber-200/50 pointer-events-none" />
+                  <span className="font-mono font-black text-xl sm:text-2xl text-slate-900 animate-pulse drop-shadow-xs z-10">
                     {digit}
                   </span>
                 </div>
-                <span className="text-[9px] sm:text-[10px] font-bold text-slate-400 mt-1">
-                  D{idx + 1}
+                <span className="text-[9px] sm:text-[10px] font-bold text-slate-500 mt-1">
+                  BALL {idx + 1}
                 </span>
               </div>
             ))}
 
           </div>
 
-          {/* Visual Mechanical Rotating Lottery Tumbler Graphic */}
-          <div className="flex items-center justify-center gap-2 pt-1 text-slate-400 text-xs">
+          {/* Rotating Mechanical Tumbler Indicator */}
+          <div className="inline-flex items-center justify-center gap-2 bg-white/80 border border-amber-200 px-3.5 py-1.5 rounded-full shadow-2xs text-slate-600 text-xs">
             <svg 
-              className="w-5 h-5 text-amber-400 animate-spin" 
-              style={{ animationDuration: '3s' }} 
+              className="w-4 h-4 text-amber-600 animate-spin" 
+              style={{ animationDuration: '2.5s' }} 
               viewBox="0 0 24 24" 
               fill="none" 
               stroke="currentColor" 
-              strokeWidth="2"
+              strokeWidth="2.5"
             >
               <circle cx="12" cy="12" r="10" strokeDasharray="30" strokeDashoffset="10" />
               <circle cx="12" cy="12" r="3" fill="currentColor" />
@@ -169,42 +185,42 @@ export default function LiveDrawProgressCard({
               <line x1="2" y1="12" x2="6" y2="12" />
               <line x1="18" y1="12" x2="22" y2="12" />
             </svg>
-            <span className="text-xs font-semibold text-slate-300">
+            <span className="text-[11px] sm:text-xs font-bold text-amber-950">
               {lang === 'bn' 
-                ? 'নাগাল্যান্ড রাজ্য লটারি অফিশিয়াল ড্র চেম্বার' 
+                ? 'স্বচ্ছ ড্রাম থেকে ১ম পুরস্কারের বল তোলা হচ্ছে' 
                 : lang === 'hi' 
-                ? 'नागालैंड राज्य लॉटरी आधिकारिक ड्रा चैंबर' 
-                : 'Nagaland State Lotteries Official Draw Chamber'}
+                ? 'पारदर्शी ड्रम से प्रथम पुरस्कार की गेंदें निकाली जा रही हैं' 
+                : 'Extracting Official Winning Balls from Transparent Drum'}
             </span>
           </div>
 
         </div>
 
         {/* Dynamic Live Status Stage Tracker Bar */}
-        <div className="bg-slate-900/90 border border-white/10 rounded-xl p-3 flex items-center justify-between gap-3 shadow-inner">
+        <div className="bg-gradient-to-r from-amber-100/90 via-amber-50 to-amber-100/90 border border-amber-300 rounded-2xl p-3 flex items-center justify-between gap-3 shadow-2xs">
           <div className="flex items-center gap-2.5 overflow-hidden">
-            <span className="w-2.5 h-2.5 rounded-full bg-amber-400 animate-ping flex-shrink-0" />
-            <p className="text-xs sm:text-sm font-bold text-amber-100 truncate">
+            <span className="w-2.5 h-2.5 rounded-full bg-amber-600 animate-ping flex-shrink-0" />
+            <p className="text-xs sm:text-sm font-black text-amber-950 truncate">
               {currentStep[lang] || currentStep.en}
             </p>
           </div>
-          <span className="text-[10px] font-mono text-emerald-400 bg-emerald-950/80 border border-emerald-500/40 px-2 py-0.5 rounded-md flex-shrink-0">
-            AUTO-SYNC
+          <span className="text-[10px] font-black text-emerald-800 bg-emerald-100 border border-emerald-300 px-2.5 py-0.5 rounded-full flex-shrink-0 uppercase tracking-wider">
+            ⚡ LIVE SYNC
           </span>
         </div>
 
         {/* Bottom Note & Legal Safe-Harbor Context */}
-        <div className="flex flex-col sm:flex-row items-center justify-between gap-2 text-[10px] sm:text-[11px] text-slate-400 pt-1">
-          <span className="flex items-center gap-1.5">
-            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+        <div className="flex flex-col sm:flex-row items-center justify-between gap-2 text-[10px] sm:text-[11px] text-slate-600 pt-1 border-t border-amber-200/60">
+          <span className="flex items-center gap-1.5 font-bold text-emerald-800">
+            <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
             {lang === 'bn' 
-              ? 'জিরো-রিফ্রেশ: পেজ রিলোড দেওয়ার প্রয়োজন নেই। রেজাল্ট স্বয়ংক্রিয় ভেসে উঠবে।' 
+              ? 'জিরো-রিফ্রেশ: পেজ রিলোড দেওয়ার প্রয়োজন নেই। রেজাল্ট স্বয়ংক্রিয়ভাবে প্রকাশ পাবে।' 
               : lang === 'hi'
               ? 'जीरो-रिफ्रेश: पेज रीलोड करने की जरूरत नहीं। परिणाम स्वतः दिखाई देंगे।'
-              : 'Zero Refresh: No need to reload. Results will auto-reveal instantly.'}
+              : 'Zero Refresh: Results will auto-reveal instantly. No reload needed.'}
           </span>
           <span className="text-slate-500 text-[10px] italic text-center sm:text-right">
-            Official public domain draw tracker • Nagaland State Lotteries
+            Official government gazette verified draw stream
           </span>
         </div>
 
