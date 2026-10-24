@@ -2,6 +2,7 @@
 import Layout from '../layouts/Layout.astro';
 import LiveResultsTabs from '../components/LiveResultsTabs';
 import TicketChecker from '../components/TicketChecker';
+import TelegramBanner from '../components/TelegramBanner.astro';
 import { fetchDrawsByDate } from '../lib/api';
 import { getISTNow, getISTDateString } from '../lib/lottery-utils';
 
@@ -9,6 +10,7 @@ const istNow = getISTNow();
 const yesterday = new Date(istNow);
 yesterday.setDate(yesterday.getDate() - 1);
 const yesterdayDateStr = getISTDateString(yesterday);
+const yesterdayFormatted = yesterdayDateStr.split('-').reverse().join('/');
 
 const dayBeforeYesterday = new Date(yesterday);
 dayBeforeYesterday.setDate(dayBeforeYesterday.getDate() - 1);
@@ -19,11 +21,23 @@ const yesterdayDraws = await fetchDrawsByDate(yesterdayDateStr);
 const olderDraws = await fetchDrawsByDate(dayBeforeDateStr);
 const checkerDraws = [...yesterdayDraws, ...olderDraws];
 
+// Extract 8:00 PM 1st Prize Winner number for high-CTR Google search snippet injection
+const yest8pmDraw = yesterdayDraws.find(d => d.draw_time?.includes('8') || d.id?.includes('8PM'));
+const yest8pmPrize = yest8pmDraw?.parsed_data?.prizes?.first_prize || yest8pmDraw?.prizes?.first_prize;
+const yest8pmWinner = yest8pmPrize?.number ? `${yest8pmPrize.series || ''} ${yest8pmPrize.number}`.trim() : '';
+
+// High-CTR Title & Description targeting top-ranked queries (201+ impressions on "yesterday 8pm")
+const pageTitle = yest8pmWinner
+  ? `Dear Lottery Result Yesterday 8PM (1st Prize: ${yest8pmWinner}) • ${yesterdayFormatted} | Lottery Sambad Official Gazette PDF`
+  : `Dear Lottery Result Yesterday 8PM, 1PM, 6PM (${yesterdayFormatted}) • গতকালকের রেজাল্ট | Lottery Sambad Official Gazette PDF`;
+
+const pageDesc = `Check official Dear Lottery Sambad yesterday result (${yesterdayFormatted}) for 8:00 PM Night, 1:00 PM Morning & 6:00 PM Day.${yest8pmWinner ? ` 1st Prize ₹1 Crore winning ticket is ${yest8pmWinner}.` : ''} Download official signed Gazette sheet JPEG/PDF, check all prize tables and verify your ticket instantly.`;
+
 // Targeted FAQ Schema for Google Rich Snippets & High-Intent Search Queries
 const yesterdayFaqItems = [
   {
     question: `গতকাল রাত ৮:০০ টার ডিয়ার লটারি রেজাল্ট (Dear Lottery Yesterday 8PM Result) কীভাবে দেখবেন?`,
-    answer: `এই পেজের উপরে '8:00 PM' ট্যাবে ক্লিক করলেই গতকাল (${yesterdayDateStr}) রাত ৮:০০ টার নাইট ড্র-এর ১ম পুরস্কার ₹১ কোটি বিজয়ী টিকিট নম্বর এবং সম্পূ্র্ণ প্রাইজ তালিকা দেখা যাবে।`
+    answer: `এই পেজের উপরে '8:00 PM' ট্যাবে ক্লিক করলেই গতকাল (${yesterdayFormatted}) রাত ৮:০০ টার নাইট ড্র-এর ১ম পুরস্কার ₹১ কোটি বিজয়ী টিকিট নম্বর ${yest8pmWinner ? `(${yest8pmWinner})` : ''} এবং সম্পূ্র্ণ প্রাইজ তালিকা দেখা যাবে।`
   },
   {
     question: `গতকালকের ডিয়ার লটারি রেজাল্ট শিট PDF/JPEG কীভাবে ডাউনলোড করবেন?`,
@@ -37,8 +51,8 @@ const yesterdayFaqItems = [
 ---
 
 <Layout
-  title={`Dear Lottery Result Yesterday 8PM, 1PM, 6PM (${yesterdayDateStr}) • গতকালকের রেজাল্ট | Lottery Sambad Gazette PDF`}
-  description={`Check official Dear Lottery Sambad yesterday result (${yesterdayDateStr}) for 8:00 PM Night, 1:00 PM Morning & 6:00 PM Day. Download official Gazette sheet JPEG/PDF & ₹1 Crore winning numbers.`}
+  title={pageTitle}
+  description={pageDesc}
   drawDate={yesterdayDateStr}
   faqItems={yesterdayFaqItems}
 >
@@ -48,20 +62,26 @@ const yesterdayFaqItems = [
     <nav aria-label="Breadcrumb" class="flex items-center gap-2 text-xs text-slate-500 border-b border-slate-200 pb-2">
       <a href="/" class="hover:text-blue-700 font-medium">Home (হোম)</a>
       <span>/</span>
-      <span class="text-slate-900 font-bold">Yesterday's Results ({yesterdayDateStr})</span>
+      <span class="text-slate-900 font-bold">Yesterday's Results ({yesterdayFormatted})</span>
     </nav>
 
     {/* Yesterday Banner Header */}
-    <div class="bg-gradient-to-r from-amber-50 via-white to-amber-50 border border-amber-300 rounded-2xl p-3.5 text-center shadow-xs">
+    <div class="bg-gradient-to-r from-amber-50 via-white to-amber-50 border border-amber-300 rounded-2xl p-3.5 sm:p-4 text-center shadow-xs">
       <span class="inline-flex items-center gap-1.5 bg-amber-500 text-white text-[10px] sm:text-xs font-black px-2.5 py-0.5 rounded-full uppercase tracking-wider">
         <span>📅</span>
         <span>Yesterday's Official Results • গতকালকের রেজাল্ট</span>
       </span>
-      <h1 class="text-base sm:text-xl font-black text-slate-900 mt-1">
-        Dear Lottery Result Yesterday 8PM, 1PM, 6PM ({yesterdayDateStr})
+      <h1 class="text-base sm:text-xl font-black text-slate-900 mt-1.5 leading-snug">
+        Dear Lottery Result Yesterday 8PM, 1PM, 6PM ({yesterdayFormatted})
       </h1>
-      <p class="text-[11px] sm:text-xs text-slate-600 mt-0.5">
-        Official Nagaland & Sikkim Sambad winning numbers and Gazette PDF/JPEG sheets.
+      <p class="text-[11px] sm:text-xs text-slate-600 mt-1 max-w-lg mx-auto">
+        {yest8pmWinner ? (
+          <span>
+            গতকাল রাত ৮টার ১ম পুরস্কার ১ কোটি বিজয়ী নম্বর: <strong class="text-slate-950 font-black">{yest8pmWinner}</strong> • সম্পূর্ণ অফিসিয়াল গেজেট শিট PDF ও প্রাইজ তালিকা নিচে দেওয়া হলো।
+          </span>
+        ) : (
+          <span>Official Nagaland &amp; Sikkim Sambad winning numbers and Gazette PDF/JPEG sheets.</span>
+        )}
       </p>
     </div>
 
@@ -75,11 +95,14 @@ const yesterdayFaqItems = [
       <TicketChecker client:load initialDraws={checkerDraws} variant="slim" />
     </section>
 
+    {/* Official WhatsApp & Telegram Channels Join CTA */}
+    <TelegramBanner />
+
     {/* High-Intent Internal Navigation CTAs */}
     <div class="grid grid-cols-1 sm:grid-cols-3 gap-2 pt-1 text-center text-xs">
       <a
         href="/"
-        class="bg-blue-700 hover:bg-blue-800 text-white font-bold py-2 px-3 rounded-xl shadow-2xs transition-all flex items-center justify-center gap-1.5"
+        class="bg-blue-700 hover:bg-blue-800 text-white font-bold py-2.5 px-3 rounded-xl shadow-2xs transition-all flex items-center justify-center gap-1.5"
       >
         <span>👈</span>
         <span>Today's Live Result (আজকের রেজাল্ট)</span>
@@ -87,7 +110,7 @@ const yesterdayFaqItems = [
 
       <a
         href="/target-numbers"
-        class="bg-amber-600 hover:bg-amber-700 text-white font-bold py-2 px-3 rounded-xl shadow-2xs transition-all flex items-center justify-center gap-1.5"
+        class="bg-amber-600 hover:bg-amber-700 text-white font-bold py-2.5 px-3 rounded-xl shadow-2xs transition-all flex items-center justify-center gap-1.5"
       >
         <span>🎯</span>
         <span>Target Numbers (টার্গেট নম্বর)</span>
@@ -95,7 +118,7 @@ const yesterdayFaqItems = [
 
       <a
         href="/old-results"
-        class="bg-slate-800 hover:bg-slate-900 text-white font-bold py-2 px-3 rounded-xl shadow-2xs transition-all flex items-center justify-center gap-1.5"
+        class="bg-slate-800 hover:bg-slate-900 text-white font-bold py-2.5 px-3 rounded-xl shadow-2xs transition-all flex items-center justify-center gap-1.5"
       >
         <span>📚</span>
         <span>Old 30D Results (পুরনো রেজাল্ট)</span>
