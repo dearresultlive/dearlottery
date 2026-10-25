@@ -3,6 +3,7 @@ import Layout from '../layouts/Layout.astro';
 import DrawCountdown from '../components/DrawCountdown';
 import TicketChecker from '../components/TicketChecker';
 import LiveResultsTabs from '../components/LiveResultsTabs';
+import PushNotifyBanner from '../components/PushNotifyBanner';
 import TelegramBanner from '../components/TelegramBanner.astro';
 import { fetchLatestDraws, fetchDrawsByDate, fetchFrequencyAnalytics } from '../lib/api';
 import { getISTNow, getISTDateString } from '../lib/lottery-utils';
@@ -59,7 +60,9 @@ if (isLiveDrawWindow) {
     {/* Official Telegram Channel Join CTA */}
     <TelegramBanner />
 
-    
+    {/* OneSignal Push Notification Opt-in Prompt (Strictly 1-Time, Auto-Dismisses Forever) */}
+    <PushNotifyBanner client:idle />
+
     {/* Quick Target Numbers / Common Middle Prediction Teaser */}
     <a
       href="/target-numbers"
