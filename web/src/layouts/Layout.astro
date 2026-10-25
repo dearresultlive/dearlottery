@@ -355,36 +355,39 @@ const isMoreActive = currentPath === '/analytics' || currentPath === '/yesterday
           <span class="text-slate-400 font-bold text-sm ml-2">➔</span>
         </a>
 
-        {/* Quick App Install Trigger */}
-        <button
-          type="button"
-          onclick="window.closeMobileMoreMenu && window.closeMobileMoreMenu(); window.triggerPwaInstall && window.triggerPwaInstall();"
-          class="w-full flex items-center justify-between p-3 rounded-2xl border border-amber-300 bg-gradient-to-r from-amber-50 to-orange-50 text-left transition-all active:scale-[0.99] cursor-pointer"
+        {/* Official WhatsApp Channel Join Link */}
+        <a
+          href="https://whatsapp.com/channel/0029Vb9QMeoInlqLecSjJ927"
+          target="_blank"
+          rel="noopener noreferrer"
+          class="w-full flex items-center justify-between p-3 rounded-2xl border border-emerald-300 bg-gradient-to-r from-emerald-50 via-white to-green-50 text-left transition-all active:scale-[0.99] cursor-pointer hover:border-emerald-400 shadow-2xs group"
         >
           <div class="flex items-center gap-3">
-            <div class="w-10 h-10 rounded-xl bg-amber-500 text-slate-950 flex items-center justify-center text-lg shadow-sm flex-shrink-0">
-              📲
+            <div class="w-10 h-10 rounded-xl bg-[#25D366] text-white flex items-center justify-center text-lg shadow-sm flex-shrink-0 group-hover:scale-105 transition-transform">
+              <svg class="w-5 h-5 fill-current text-white" viewBox="0 0 24 24">
+                <path d="M12.04 2C6.58 2 2.13 6.45 2.13 11.91C2.13 13.66 2.59 15.36 3.45 16.86L2.05 22L7.3 20.62C8.75 21.41 10.38 21.83 12.04 21.83C17.5 21.83 21.95 17.38 21.95 11.92C21.95 9.27 20.92 6.78 19.05 4.91C17.18 3.03 14.69 2 12.04 2M12.05 3.67C14.25 3.67 16.31 4.53 17.87 6.09C19.42 7.65 20.28 9.72 20.28 11.92C20.28 16.46 16.58 20.15 12.04 20.15C10.56 20.15 9.11 19.76 7.85 19L7.55 18.83L4.43 19.65L5.26 16.61L5.06 16.29C4.24 14.99 3.8 13.47 3.8 11.91C3.81 7.37 7.5 3.67 12.05 3.67M8.53 7.33C8.37 7.33 8.1 7.39 7.87 7.64C7.65 7.89 7.02 8.48 7.02 9.68C7.02 10.88 7.89 12.04 8.01 12.2C8.13 12.37 9.71 14.81 12.14 15.86C14.16 16.73 14.57 16.56 15.02 16.52C15.46 16.47 16.46 15.92 16.67 15.33C16.87 14.75 16.87 14.25 16.81 14.15C16.75 14.05 16.59 13.99 16.35 13.87C16.1 13.75 14.91 13.16 14.69 13.08C14.47 13 14.31 12.96 14.15 13.2C13.99 13.45 13.52 14.01 13.38 14.17C13.24 14.33 13.1 14.35 12.86 14.23C12.61 14.11 11.82 13.85 10.88 13.01C10.15 12.36 9.66 11.55 9.52 11.31C9.38 11.07 9.5 10.94 9.62 10.82C9.73 10.71 9.87 10.53 10 10.38C10.12 10.22 10.16 10.1 10.24 9.94C10.32 9.78 10.28 9.64 10.22 9.52C10.16 9.4 9.69 8.24 9.49 7.77C9.3 7.3 9.1 7.37 8.95 7.36C8.81 7.35 8.67 7.33 8.53 7.33Z"/>
+              </svg>
             </div>
             <div>
               <div class="flex items-center gap-1.5">
                 <span class="font-black text-sm text-slate-900">
-                  <span class="lang-en">Install Mobile App</span>
-                  <span class="lang-bn">মোবাইল অ্যাপ ইনস্টল</span>
-                  <span class="lang-hi">मोबाइल ऐप इंस्टॉल</span>
+                  <span class="lang-en">Join WhatsApp Channel</span>
+                  <span class="lang-bn">হোয়াটসঅ্যাপ চ্যানেলে যুক্ত হন</span>
+                  <span class="lang-hi">व्हाट्सएप चैनल से जुड़ें</span>
                 </span>
-                <span class="bg-amber-400 text-slate-950 font-black text-[9px] px-1.5 py-0.2 rounded-full uppercase">
+                <span class="bg-[#25D366] text-white font-black text-[9px] px-1.5 py-0.2 rounded-full uppercase tracking-wider">
                   FAST
                 </span>
               </div>
               <span class="text-[11px] text-slate-600 block mt-0.5">
-                <span class="lang-en">Ad-free, 1-tap instant draws on home screen</span>
-                <span class="lang-bn">বিজ্ঞাপনহীন, হোম স্ক্রিনে সরাসরি রেজাল্ট</span>
-                <span class="lang-hi">बिना विज्ञापन, 1-टैप में सीधा परिणाम</span>
+                <span class="lang-en">Instant 1st prize ₹1 Cr alerts &amp; gazette PDFs</span>
+                <span class="lang-bn">ড্র হওয়া মাত্র ১ম পুরস্কার ও গেজেট PDF সবার আগে পেতে</span>
+                <span class="lang-hi">ड्रॉ होते ही 1st प्राइज और गजट PDF तुरंत पाने के लिए</span>
               </span>
             </div>
           </div>
-          <span class="text-amber-700 font-black text-sm ml-2">➔</span>
-        </button>
+          <span class="text-emerald-700 font-black text-sm ml-2 group-hover:translate-x-0.5 transition-transform">➔</span>
+        </a>
 
         {/* Bottom Secondary Links (Disclaimer, Terms, Contact) */}
         <div class="pt-3 border-t border-slate-100 flex items-center justify-around text-xs text-slate-500 font-medium">
