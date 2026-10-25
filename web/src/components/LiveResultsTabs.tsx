@@ -435,6 +435,7 @@ export default function LiveResultsTabs({
   const nagalandDirectUrl = `https://www.nagalandlotteryresults.com/wp-content/uploads/${yearStr}/${monthStr}/${nagalandPrefix}${dayStr}${monthStr}${yearStr.slice(2)}_1.jpeg`;
   const cacheKey = currentDraw?.checksum ? encodeURIComponent(currentDraw.checksum) : (firstPrize.number ? `${activeDateStr}-${firstPrize.number}` : `${activeDateStr}-live`);
   const directStaticUrl = `/results/${activeDateStr}/${activeSlot.toLowerCase()}.jpg?v=${cacheKey}`;
+  const directWebpUrl = `/results/${activeDateStr}/${activeSlot.toLowerCase()}.webp?v=${cacheKey}`;
   const pdfUrl = `/pdf/${activeDateStr}/${activeSlot.toLowerCase()}.pdf`;
   const sheetSvgUrl = `/api/gazette-sheet.svg?date=${activeDateStr}&slot=${activeSlot.toLowerCase()}`;
   const proxySheetUrl = `/api/sheet-image?date=${activeDateStr}&slot=${activeSlot.toLowerCase()}&v=${cacheKey}`;
@@ -853,26 +854,31 @@ export default function LiveResultsTabs({
             style={{ minHeight: '360px' }}
             className="cursor-zoom-in relative rounded-xl overflow-hidden border border-slate-200 bg-[#fcfbf7] group shadow-inner aspect-[1/1.414] max-w-[480px] mx-auto"
           >
-            <img
-              key={`gazette-sheet-${activeDateStr}-${activeSlot}`}
-              src={activeSheetUrl}
-              alt={`Official Gazette Result Sheet ${currentDraw?.draw_name || 'Dear Lottery'} ${currentSlotInfo.time}`}
-              width={557}
-              height={788}
-              decoding="async"
-              className="w-full h-full object-contain transition-transform group-hover:scale-[1.01]"
-              loading="eager"
-              onError={(e) => {
-                const img = e.target as HTMLImageElement;
-                if (!img.src.includes('lottery.sambad.com') && !img.src.includes('nagalandlotteryresults.com') && !img.src.includes('/api/sheet-image')) {
-                  img.src = sambadDirectUrl;
-                } else if (img.src.includes('lottery.sambad.com')) {
-                  img.src = nagalandDirectUrl;
-                } else if (img.src.includes('nagalandlotteryresults.com')) {
-                  img.src = proxySheetUrl;
-                }
-              }}
-            />
+            <picture className="w-full h-full flex items-center justify-center">
+              <source type="image/webp" srcSet={directWebpUrl} />
+              <img
+                key={`gazette-sheet-${activeDateStr}-${activeSlot}`}
+                src={directWebpUrl}
+                alt={`Official Gazette Result Sheet ${currentDraw?.draw_name || 'Dear Lottery'} ${currentSlotInfo.time}`}
+                width={550}
+                height={778}
+                decoding="async"
+                className="w-full h-full object-contain transition-transform group-hover:scale-[1.01]"
+                loading="eager"
+                onError={(e) => {
+                  const img = e.target as HTMLImageElement;
+                  if (img.src.includes('.webp')) {
+                    img.src = directStaticUrl;
+                  } else if (!img.src.includes('lottery.sambad.com') && !img.src.includes('nagalandlotteryresults.com') && !img.src.includes('/api/sheet-image')) {
+                    img.src = sambadDirectUrl;
+                  } else if (img.src.includes('lottery.sambad.com')) {
+                    img.src = nagalandDirectUrl;
+                  } else if (img.src.includes('nagalandlotteryresults.com')) {
+                    img.src = proxySheetUrl;
+                  }
+                }}
+              />
+            </picture>
           </div>
 
           <p className="text-[11px] text-slate-500 font-medium mt-1.5">

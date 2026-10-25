@@ -482,6 +482,22 @@ async function processSlot(dateStr, slot) {
     }
   }
 
+  // Generate responsive mobile WebP (<105 KB) for instant sub-1.5s LCP & green Core Web Vitals
+  if (imageBuffer) {
+    try {
+      const sharp = (await import('sharp')).default;
+      const localWebpPath = path.join(localDir, `${slot.toLowerCase()}.webp`);
+      const webpBuffer = await sharp(imageBuffer)
+        .resize({ width: 550, withoutEnlargement: true })
+        .webp({ quality: 78, effort: 5 })
+        .toBuffer();
+      fs.writeFileSync(localWebpPath, webpBuffer);
+      console.log(`[Poller] ⚡ Generated responsive mobile WebP (${Math.round(webpBuffer.length / 1024)} KB) -> ${localWebpPath}`);
+    } catch (err) {
+      console.warn('[Poller] Failed to generate WebP image:', err.message);
+    }
+  }
+
   let sambadFirstPrize = null;
   if (sambadRes && sambadRes.number) {
     sambadFirstPrize = { series: sambadRes.series, number: sambadRes.number };

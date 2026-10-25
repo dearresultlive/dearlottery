@@ -22,29 +22,36 @@ export const GET: APIRoute = async ({ request }) => {
   const dateKey = `${day}-${month}-${year}`;
 
   // 0. Priority 0: Check if static gazette sheet is already cached locally on origin (Instant <15ms)
-  try {
-    const originStaticUrl = new URL(`/results/${dateParam}/${slotKey}.jpg`, request.url).toString();
-    const staticRes = await fetch(originStaticUrl, {
-      signal: AbortSignal.timeout(2000)
-    });
-    if (staticRes.ok) {
-      const contentType = staticRes.headers.get('content-type') || 'image/jpeg';
-      if (contentType.startsWith('image/') && !contentType.includes('svg')) {
-        const imageBytes = await staticRes.arrayBuffer();
-        return new Response(imageBytes, {
-          status: 200,
-          headers: {
-            'Content-Type': contentType,
-            'Content-Length': String(imageBytes.byteLength),
-            'Cache-Control': 'public, max-age=86400, s-maxage=604800, stale-while-revalidate=2592000',
-            'Access-Control-Allow-Origin': '*',
-            'X-Proxy-Origin': 'Local-Static-Asset'
-          }
-        });
+  const acceptHeader = request.headers.get('accept') || '';
+  const prefersWebp = acceptHeader.includes('image/webp') || url.searchParams.get('format') === 'webp';
+  const localExtensions = prefersWebp ? ['webp', 'jpg'] : ['jpg', 'webp'];
+
+  for (const ext of localExtensions) {
+    try {
+      const originStaticUrl = new URL(`/results/${dateParam}/${slotKey}.${ext}`, request.url).toString();
+      const staticRes = await fetch(originStaticUrl, {
+        signal: AbortSignal.timeout(2000)
+      });
+      if (staticRes.ok) {
+        const contentType = staticRes.headers.get('content-type') || (ext === 'webp' ? 'image/webp' : 'image/jpeg');
+        if (contentType.startsWith('image/') && !contentType.includes('svg')) {
+          const imageBytes = await staticRes.arrayBuffer();
+          return new Response(imageBytes, {
+            status: 200,
+            headers: {
+              'Content-Type': contentType,
+              'Content-Length': String(imageBytes.byteLength),
+              'Cache-Control': 'public, max-age=86400, s-maxage=604800, stale-while-revalidate=2592000',
+              'Access-Control-Allow-Origin': '*',
+              'X-Proxy-Origin': `Local-Static-Asset-${ext.toUpperCase()}`,
+              'Vary': 'Accept'
+            }
+          });
+        }
       }
+    } catch (staticErr) {
+      // Continue to next extension or live relays
     }
-  } catch (staticErr) {
-    // Continue to live relays
   }
 
   const sambadJpgUrl = `https://lottery.sambad.com/images/lottery-sambad-${slotKey}-${dateKey}.jpg`;

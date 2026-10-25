@@ -17,9 +17,13 @@ interface Props {
     question: string;
     answer: string;
   }>;
+  preloadImage?: {
+    url: string;
+    type?: string;
+  };
 }
 
-const { title, description, drawDate, drawTime, winningNumbers, faqItems } = Astro.props;
+const { title, description, drawDate, drawTime, winningNumbers, faqItems, preloadImage } = Astro.props;
 const currentPath = Astro.url.pathname;
 const isHomeActive = currentPath === '/' || (currentPath.startsWith('/results') && !currentPath.includes('yesterday'));
 const isLuckyActive = currentPath === '/lucky-ticket' || currentPath === '/demo';
@@ -37,6 +41,7 @@ const isMoreActive = currentPath === '/analytics' || currentPath === '/yesterday
     drawTime={drawTime}
     winningNumbers={winningNumbers}
     faqItems={faqItems}
+    preloadImage={preloadImage}
   />
   <script is:inline>
     try {
