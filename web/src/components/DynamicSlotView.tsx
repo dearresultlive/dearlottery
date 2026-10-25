@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import DrawCountdown from './DrawCountdown';
-import PushNotifyBanner from './PushNotifyBanner';
 import LotteryTicketVoucher from './LotteryTicketVoucher';
 import { useLanguage } from '../lib/i18n';
 
@@ -195,8 +194,7 @@ export default function DynamicSlotView({
             </p>
           </div>
 
-          <PushNotifyBanner />
-
+          
         </div>
       ) : (
         /* State B: DECLARED / PUBLISHED */

@@ -2,7 +2,6 @@
 import SEOHead from '../components/SEOHead.astro';
 import Header from '../components/Header.astro';
 import Footer from '../components/Footer.astro';
-import PwaInstallBanner from '../components/PwaInstallBanner';
 
 interface Props {
   title?: string;
@@ -135,9 +134,7 @@ const isMoreActive = currentPath === '/analytics' || currentPath === '/yesterday
     </main>
     <Footer />
     
-    {/* PWA Floating Bottom Install Banner (Available on all pages) */}
-    <PwaInstallBanner client:idle />
-
+    
     {/* Mobile Sticky Bottom Navigation Dock (5-Tab Standard Mobile Ergonomics) */}
     <nav aria-label="Mobile Quick Dock" style="padding-bottom: max(0.4rem, env(safe-area-inset-bottom));" class="md:hidden fixed bottom-0 inset-x-0 z-40 bg-white/95 backdrop-blur-md border-t border-slate-200/90 shadow-[0_-4px_16px_rgba(0,0,0,0.06)] px-1 pt-1.5 flex items-center justify-around text-center select-none notranslate" translate="no">
       <a
