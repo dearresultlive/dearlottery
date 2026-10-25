@@ -566,23 +566,23 @@ export default function LiveResultsTabs({
 
       {/* Smart Morning Mode / Yesterday Notice Banner */}
       {isYesterday && (
-        <div className="bg-gradient-to-r from-emerald-950 via-slate-900 to-emerald-950 border border-emerald-500/40 rounded-2xl p-3 sm:p-3.5 text-xs flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-white shadow-md">
+        <div className="bg-gradient-to-r from-amber-50/90 via-white to-emerald-50/90 border border-amber-200/90 rounded-2xl p-3 sm:p-3.5 text-xs flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-slate-900 shadow-sm">
           <div className="flex items-start sm:items-center gap-2.5">
             <span className="text-2xl flex-shrink-0">🌙</span>
             <div>
               <div className="flex items-center gap-2 flex-wrap">
-                <span className="font-black text-amber-300 text-xs sm:text-sm tracking-tight">
+                <span className="font-black text-amber-950 text-xs sm:text-sm tracking-tight">
                   {lang === 'bn' 
                     ? `গতরাতের (${yesterdayDateStr.split('-').reverse().join('/')}) ${currentSlotInfo.time} ফলাফল শিট`
                     : lang === 'hi'
                     ? `कल रात (${yesterdayDateStr.split('-').reverse().join('/')}) ${currentSlotInfo.time} परिणाम शीट`
                     : `Last Night's (${yesterdayDateStr.split('-').reverse().join('/')}) ${currentSlotInfo.time} Official Result`}
                 </span>
-                <span className="bg-emerald-500/20 text-emerald-300 text-[10px] font-black px-2 py-0.5 rounded-full border border-emerald-500/30 uppercase tracking-wider">
+                <span className="bg-emerald-100 text-emerald-800 text-[10px] font-black px-2.5 py-0.5 rounded-full border border-emerald-300 uppercase tracking-wider shadow-2xs">
                   {lang === 'bn' ? 'সর্বশেষ অফিশিয়াল রেজাল্ট' : lang === 'hi' ? 'नवीनतम परिणाम' : 'Latest Declared'}
                 </span>
               </div>
-              <span className="text-[11px] text-slate-300 font-medium block mt-0.5">
+              <span className="text-[11px] text-slate-600 font-medium block mt-0.5">
                 {lang === 'bn'
                   ? `আজকের (${todayStr.split('-').reverse().join('/')}) ১ম ড্র দুপুর ১:০০ টায় • শুরু হতে বাকি: ${upcoming1pmCountdown.hours > 0 ? `${upcoming1pmCountdown.hours}ঘণ্টা ` : ''}${upcoming1pmCountdown.minutes}মিনিট ${upcoming1pmCountdown.seconds}সেকেন্ড`
                   : lang === 'hi'
@@ -594,7 +594,7 @@ export default function LiveResultsTabs({
           <button
             type="button"
             onClick={handleGoToToday}
-            className="bg-amber-400 hover:bg-amber-300 active:scale-95 text-slate-950 font-black text-xs px-3.5 py-2 rounded-xl shadow-sm flex items-center justify-center gap-1.5 flex-shrink-0 transition-all self-end sm:self-auto cursor-pointer"
+            className="bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 active:scale-95 text-white font-black text-xs px-3.5 py-2 rounded-xl shadow-xs flex items-center justify-center gap-1.5 flex-shrink-0 transition-all self-end sm:self-auto cursor-pointer border border-amber-600/30"
           >
             <span>{lang === 'bn' ? 'আজকের লাইভ কাউন্টডাউন' : lang === 'hi' ? 'आज का लाइव কাউন্টডাউন' : "Today's Live Countdown"}</span>
             <span>➔</span>
