@@ -2,6 +2,7 @@
 import SEOHead from '../components/SEOHead.astro';
 import Header from '../components/Header.astro';
 import Footer from '../components/Footer.astro';
+import PwaInstallBanner from '../components/PwaInstallBanner';
 
 interface Props {
   title?: string;
@@ -133,6 +134,9 @@ const isMoreActive = currentPath === '/analytics' || currentPath === '/yesterday
       <slot />
     </main>
     <Footer />
+
+    {/* Slim Floating App Install Capsule (Strict 7-Day Dismissal & 5s Delay) */}
+    <PwaInstallBanner client:idle />
     
     
     {/* Mobile Sticky Bottom Navigation Dock (5-Tab Standard Mobile Ergonomics) */}
