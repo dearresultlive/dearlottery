@@ -89,7 +89,8 @@ export default function LiveResultsTabs({
   const computeInitialSlot = (): '1PM' | '6PM' | '8PM' => {
     if (initialSlot) return initialSlot;
     if (isYesterdayPage) return '8PM';
-    const totalMin = nowIST.getHours() * 60 + nowIST.getMinutes();
+    const ist = getISTNow();
+    const totalMin = ist.getHours() * 60 + ist.getMinutes();
     if (totalMin < 765 && !hasInitialTodayResults) return '8PM';
     if (totalMin >= 1170) return '8PM'; // 7:30 PM onwards
     if (totalMin >= 1050) return '6PM'; // 5:30 PM to 7:30 PM
@@ -99,7 +100,8 @@ export default function LiveResultsTabs({
   const computeInitialDate = (): string => {
     if (initialSlot) return todayDateStr || getISTDateString();
     if (isYesterdayPage) return todayDateStr || yesterdayDateStr;
-    const totalMin = nowIST.getHours() * 60 + nowIST.getMinutes();
+    const ist = getISTNow();
+    const totalMin = ist.getHours() * 60 + ist.getMinutes();
     if (totalMin < 765 && !hasInitialTodayResults) return yesterdayDateStr;
     return todayDateStr || getISTDateString();
   };
