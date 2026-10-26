@@ -45,14 +45,14 @@ const hasTodayDeclared = (draws || []).some(d => Boolean(d.parsed_data?.prizes?.
 const isMorningEmpty = totalMinutes < 765 && !hasTodayDeclared;
 const lcpDate = isMorningEmpty ? yesterdayDateStr : todayDateStr;
 const lcpSlot = isMorningEmpty ? '8pm' : (totalMinutes >= 1170 ? '8pm' : totalMinutes >= 1050 ? '6pm' : '1pm');
-const lcpPreloadUrl = `/results/${lcpDate}/${lcpSlot}.webp`;
+const lcpPreloadUrl = `/results/${lcpDate}/${lcpSlot}.avif`;
 ---
 
 <Layout
   title={`Dear Lottery Result Today ${todayDateStr} Live (1PM, 6PM, 8PM) • আজকের রেজাল্ট | Lottery Sambad`}
   description={`Official Dear Lottery Result Today (${todayDateStr}) for 1:00 PM Morning, 6:00 PM Day, and 8:00 PM Night. 1st Prize ₹1 Crore winning ticket number, official gazette sheet JPG/PDF, and all prize tables.`}
   drawDate={todayDateStr}
-  preloadImage={{ url: lcpPreloadUrl, type: 'image/webp' }}
+  preloadImage={{ url: lcpPreloadUrl, type: 'image/avif' }}
 >
   <div class="max-w-[620px] md:max-w-2xl lg:max-w-3xl mx-auto px-2.5 sm:px-4 py-2 sm:py-4 space-y-3 sm:space-y-4">
     

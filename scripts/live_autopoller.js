@@ -399,7 +399,9 @@ async function processSlot(dateStr, slot) {
   const targetTotalMin = targetHour * 60;
 
   // If slot is in the distant future (more than 5 mins before draw)
-  if (currentTotalMin < targetTotalMin - 5) {
+  const todayStr = getISTDateString(istDate);
+  // If slot is in the distant future on TODAY (more than 5 mins before draw) or dateStr is in the future
+  if (dateStr > todayStr || (dateStr === todayStr && currentTotalMin < targetTotalMin - 5)) {
     const diffMin = targetTotalMin - currentTotalMin;
     const diffHours = (diffMin / 60).toFixed(1);
     console.log(`[Poller] ${dateStr} [${slot}] is UPCOMING in ~${diffHours}h (scheduled for ${targetHour}:00 IST). Waiting...`);
@@ -482,21 +484,60 @@ async function processSlot(dateStr, slot) {
     }
   }
 
-  // Generate responsive mobile WebP (<105 KB) for instant sub-1.5s LCP & green Core Web Vitals
-  if (imageBuffer) {
+  // Generate ultra-fast mobile AVIF (~45 KB) & WebP (~85 KB) for instant sub-0.8s LCP
+  const localAvifPath = path.join(localDir, `${slot.toLowerCase()}.avif`);
+  const localWebpPath = path.join(localDir, `${slot.toLowerCase()}.webp`);
+  const [imYear, imMonth, imDay] = dateStr.split('-');
+  const imDateKey = `${imDay}-${imMonth}-${imYear}`;
+  const imSlotKey = slot.toLowerCase();
+  const sambadAvifUrl = `https://lottery.sambad.com/images/mobile/lottery-sambad-${imSlotKey}-${imDateKey}.avif`;
+  const sambadWebpUrl = `https://lottery.sambad.com/images/mobile/lottery-sambad-${imSlotKey}-${imDateKey}.webp`;
+
+  let avifSaved = false;
+  let webpSaved = false;
+
+  try {
+    const avifBuf = await downloadBuffer(sambadAvifUrl, 1);
+    if (avifBuf && avifBuf.length > 5000) {
+      fs.writeFileSync(localAvifPath, avifBuf);
+      console.log(`[Poller] ⚡ Ingested official mobile AVIF (${Math.round(avifBuf.length / 1024)} KB) -> ${localAvifPath}`);
+      avifSaved = true;
+    }
+  } catch (e) {}
+
+  try {
+    const webpBuf = await downloadBuffer(sambadWebpUrl, 1);
+    if (webpBuf && webpBuf.length > 5000) {
+      fs.writeFileSync(localWebpPath, webpBuf);
+      console.log(`[Poller] ⚡ Ingested official mobile WebP (${Math.round(webpBuf.length / 1024)} KB) -> ${localWebpPath}`);
+      webpSaved = true;
+    }
+  } catch (e) {}
+
+  if (imageBuffer && (!avifSaved || !webpSaved)) {
     try {
       const sharp = (await import('sharp')).default;
-      const localWebpPath = path.join(localDir, `${slot.toLowerCase()}.webp`);
-      const webpBuffer = await sharp(imageBuffer)
-        .resize({ width: 550, withoutEnlargement: true })
-        .webp({ quality: 78, effort: 5 })
-        .toBuffer();
-      fs.writeFileSync(localWebpPath, webpBuffer);
-      console.log(`[Poller] ⚡ Generated responsive mobile WebP (${Math.round(webpBuffer.length / 1024)} KB) -> ${localWebpPath}`);
+      if (!avifSaved) {
+        const avifBuffer = await sharp(imageBuffer)
+          .resize({ width: 525, withoutEnlargement: true })
+          .avif({ quality: 60, effort: 4 })
+          .toBuffer();
+        fs.writeFileSync(localAvifPath, avifBuffer);
+        console.log(`[Poller] ⚡ Generated responsive mobile AVIF (${Math.round(avifBuffer.length / 1024)} KB) -> ${localAvifPath}`);
+      }
+      if (!webpSaved) {
+        const webpBuffer = await sharp(imageBuffer)
+          .resize({ width: 550, withoutEnlargement: true })
+          .webp({ quality: 78, effort: 5 })
+          .toBuffer();
+        fs.writeFileSync(localWebpPath, webpBuffer);
+        console.log(`[Poller] ⚡ Generated responsive mobile WebP (${Math.round(webpBuffer.length / 1024)} KB) -> ${localWebpPath}`);
+      }
     } catch (err) {
-      console.warn('[Poller] Failed to generate WebP image:', err.message);
+      console.warn('[Poller] Failed to generate modern responsive images with sharp:', err.message);
     }
   }
+  
 
   let sambadFirstPrize = null;
   if (sambadRes && sambadRes.number) {

@@ -11,7 +11,7 @@ const targetDate = date || getISTDateString();
 const rawSlug = (draw_name || '').toLowerCase();
 
 // Prevent static images and PDFs from executing SSR layout and poisoning Cloudflare HTML cache
-if (rawSlug.endsWith('.jpg') || rawSlug.endsWith('.jpeg') || rawSlug.endsWith('.png') || rawSlug.endsWith('.webp')) {
+if (rawSlug.endsWith('.jpg') || rawSlug.endsWith('.jpeg') || rawSlug.endsWith('.png') || rawSlug.endsWith('.webp') || rawSlug.endsWith('.avif')) {
   let targetSlot = '1pm';
   if (rawSlug.includes('6')) targetSlot = '6pm';
   else if (rawSlug.includes('8')) targetSlot = '8pm';
@@ -98,7 +98,7 @@ if (!isToday) {
   drawDate={targetDate}
   drawTime={slotHour}
   winningNumbers={isDeclared && firstPrize ? { firstPrize: `${firstPrize.series} ${firstPrize.number}` } : undefined}
-  preloadImage={{ url: `/results/${targetDate}/${slotKey}.webp`, type: 'image/webp' }}
+  preloadImage={{ url: `/results/${targetDate}/${slotKey}.avif`, type: 'image/avif' }}
 >
   <div class="max-w-[620px] md:max-w-2xl lg:max-w-3xl mx-auto px-2.5 sm:px-4 py-3 sm:py-6 space-y-4 sm:space-y-6">
     
