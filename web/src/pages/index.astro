@@ -43,7 +43,7 @@ if (isLiveDrawWindow) {
 const totalMinutes = istHour * 60 + istMin;
 const isMorningEmpty = totalMinutes < 765 && draws.length === 0;
 const lcpDate = isMorningEmpty ? yesterdayDateStr : todayDateStr;
-const lcpSlot = isMorningEmpty ? '8pm' : (totalMinutes >= 1170 ? '8pm' : totalMinutes >= 1050 ? '8pm' : totalMinutes >= 930 ? '6pm' : '1pm');
+const lcpSlot = isMorningEmpty ? '8pm' : (totalMinutes >= 1170 ? '8pm' : totalMinutes >= 1050 ? '6pm' : '1pm');
 const lcpPreloadUrl = `/results/${lcpDate}/${lcpSlot}.webp`;
 ---
 

@@ -85,18 +85,27 @@ export default function LiveResultsTabs({
 
   const isSmartMorningInitial = !isYesterdayPage && !initialSlot && isMorningWindow() && !hasInitialTodayResults;
 
-  const [activeDateStr, setActiveDateStr] = useState<string>(
-    initialSlot
-      ? (todayDateStr || getISTDateString())
-      : isYesterdayPage
-      ? (todayDateStr || yesterdayDateStr)
-      : isSmartMorningInitial
-      ? yesterdayDateStr
-      : (todayDateStr || getISTDateString())
-  );
-  const [activeSlot, setActiveSlot] = useState<'1PM' | '6PM' | '8PM'>(
-    initialSlot || (isYesterdayPage || isSmartMorningInitial ? '8PM' : '1PM')
-  );
+  // Immediate SSR/Mount slot calculation - Prevents slot flipping & double-fetch
+  const computeInitialSlot = (): '1PM' | '6PM' | '8PM' => {
+    if (initialSlot) return initialSlot;
+    if (isYesterdayPage) return '8PM';
+    const totalMin = nowIST.getHours() * 60 + nowIST.getMinutes();
+    if (totalMin < 765 && !hasInitialTodayResults) return '8PM';
+    if (totalMin >= 1170) return '8PM'; // 7:30 PM onwards
+    if (totalMin >= 1050) return '6PM'; // 5:30 PM to 7:30 PM
+    return '1PM'; // 12:45 PM to 5:30 PM
+  };
+
+  const computeInitialDate = (): string => {
+    if (initialSlot) return todayDateStr || getISTDateString();
+    if (isYesterdayPage) return todayDateStr || yesterdayDateStr;
+    const totalMin = nowIST.getHours() * 60 + nowIST.getMinutes();
+    if (totalMin < 765 && !hasInitialTodayResults) return yesterdayDateStr;
+    return todayDateStr || getISTDateString();
+  };
+
+  const [activeDateStr, setActiveDateStr] = useState<string>(computeInitialDate);
+  const [activeSlot, setActiveSlot] = useState<'1PM' | '6PM' | '8PM'>(computeInitialSlot);
   const [drawsList, setDrawsList] = useState<DrawRecord[]>(draws);
   const [showImageModal, setShowImageModal] = useState<boolean>(false);
   const [selectedImageUrl, setSelectedImageUrl] = useState<string>('');
@@ -434,12 +443,13 @@ export default function LiveResultsTabs({
   const nagalandPrefix = activeSlot.includes('6') ? 'DN' : activeSlot.includes('8') ? 'EN' : 'MN';
   const nagalandDirectUrl = `https://www.nagalandlotteryresults.com/wp-content/uploads/${yearStr}/${monthStr}/${nagalandPrefix}${dayStr}${monthStr}${yearStr.slice(2)}_1.jpeg`;
   const cacheKey = currentDraw?.checksum ? encodeURIComponent(currentDraw.checksum) : (firstPrize.number ? `${activeDateStr}-${firstPrize.number}` : `${activeDateStr}-live`);
-  const directStaticUrl = `/results/${activeDateStr}/${activeSlot.toLowerCase()}.jpg?v=${cacheKey}`;
-  const directWebpUrl = `/results/${activeDateStr}/${activeSlot.toLowerCase()}.webp?v=${cacheKey}`;
+  const directStaticUrl = `/results/${activeDateStr}/${activeSlot.toLowerCase()}.jpg`;
+  const directWebpUrl = `/results/${activeDateStr}/${activeSlot.toLowerCase()}.webp`;
   const pdfUrl = `/pdf/${activeDateStr}/${activeSlot.toLowerCase()}.pdf`;
   const sheetSvgUrl = `/api/gazette-sheet.svg?date=${activeDateStr}&slot=${activeSlot.toLowerCase()}`;
-  const proxySheetUrl = `/api/sheet-image?date=${activeDateStr}&slot=${activeSlot.toLowerCase()}&v=${cacheKey}`;
-  const activeSheetUrl = directStaticUrl;
+  const proxySheetUrl = `/api/sheet-image?date=${activeDateStr}&slot=${activeSlot.toLowerCase()}`;
+  // activeSheetUrl uses WebP so both on-page and lightbox share the exact same cached image (0ms instant zoom)
+  const activeSheetUrl = directWebpUrl;
 
   const dateLabel = isToday
     ? (lang === 'bn' ? 'আজকের' : 'Today')
@@ -854,31 +864,28 @@ export default function LiveResultsTabs({
             style={{ minHeight: '360px' }}
             className="cursor-zoom-in relative rounded-xl overflow-hidden border border-slate-200 bg-[#fcfbf7] group shadow-inner aspect-[1/1.414] max-w-[480px] mx-auto"
           >
-            <picture className="w-full h-full flex items-center justify-center">
-              <source type="image/webp" srcSet={directWebpUrl} />
-              <img
-                key={`gazette-sheet-${activeDateStr}-${activeSlot}`}
-                src={directWebpUrl}
-                alt={`Official Gazette Result Sheet ${currentDraw?.draw_name || 'Dear Lottery'} ${currentSlotInfo.time}`}
-                width={550}
-                height={778}
-                decoding="async"
-                className="w-full h-full object-contain transition-transform group-hover:scale-[1.01]"
-                loading="eager"
-                onError={(e) => {
-                  const img = e.target as HTMLImageElement;
-                  if (img.src.includes('.webp')) {
-                    img.src = directStaticUrl;
-                  } else if (!img.src.includes('lottery.sambad.com') && !img.src.includes('nagalandlotteryresults.com') && !img.src.includes('/api/sheet-image')) {
-                    img.src = sambadDirectUrl;
-                  } else if (img.src.includes('lottery.sambad.com')) {
-                    img.src = nagalandDirectUrl;
-                  } else if (img.src.includes('nagalandlotteryresults.com')) {
-                    img.src = proxySheetUrl;
-                  }
-                }}
-              />
-            </picture>
+            <img
+              key={`gazette-sheet-${activeDateStr}-${activeSlot}`}
+              src={activeSheetUrl}
+              alt={`Official Gazette Result Sheet ${currentDraw?.draw_name || 'Dear Lottery'} ${currentSlotInfo.time}`}
+              width={550}
+              height={778}
+              decoding="async"
+              className="w-full h-full object-contain transition-transform group-hover:scale-[1.01]"
+              loading="eager"
+              onError={(e) => {
+                const img = e.target as HTMLImageElement;
+                if (img.src.includes('.webp')) {
+                  img.src = directStaticUrl;
+                } else if (!img.src.includes('lottery.sambad.com') && !img.src.includes('nagalandlotteryresults.com') && !img.src.includes('/api/sheet-image')) {
+                  img.src = sambadDirectUrl;
+                } else if (img.src.includes('lottery.sambad.com')) {
+                  img.src = nagalandDirectUrl;
+                } else if (img.src.includes('nagalandlotteryresults.com')) {
+                  img.src = proxySheetUrl;
+                }
+              }}
+            />
           </div>
 
           <p className="text-[11px] text-slate-500 font-medium mt-1.5">
