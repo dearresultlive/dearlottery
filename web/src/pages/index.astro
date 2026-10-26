@@ -41,7 +41,8 @@ if (isLiveDrawWindow) {
 
 // Preload the active LCP image above-the-fold for instant Core Web Vitals (<1.5s LCP)
 const totalMinutes = istHour * 60 + istMin;
-const isMorningEmpty = totalMinutes < 765 && draws.length === 0;
+const hasTodayDeclared = (draws || []).some(d => Boolean(d.parsed_data?.prizes?.first_prize?.number || d.prizes?.first_prize?.number));
+const isMorningEmpty = totalMinutes < 765 && !hasTodayDeclared;
 const lcpDate = isMorningEmpty ? yesterdayDateStr : todayDateStr;
 const lcpSlot = isMorningEmpty ? '8pm' : (totalMinutes >= 1170 ? '8pm' : totalMinutes >= 1050 ? '6pm' : '1pm');
 const lcpPreloadUrl = `/results/${lcpDate}/${lcpSlot}.webp`;
