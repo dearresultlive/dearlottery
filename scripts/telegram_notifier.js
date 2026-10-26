@@ -32,9 +32,11 @@ export async function sendTelegramResultPost({ dateStr, slot, prizeData }) {
     ? prizeData.second_prize.slice(0, 5).join(', ')
     : '';
 
+  const pdfUrl = `https://dearresultlive.in/pdf/${dateStr}/${slot.toLowerCase()}.pdf`;
   const targetUrl = `https://dearresultlive.in/results/${dateStr}/${slot.toLowerCase()}`;
 
-  // Formatted HTML message
+  // Formatted HTML message - Links are embedded directly in the message text
+  // so long-pressing "Copy" in Telegram copies 100% of the content with all clickable links!
   const messageText = `🎯 <b>Dear Lottery Sambad Result Out!</b>
 ⏰ <b>Draw Slot:</b> ${slotInfo.en} (${slotInfo.bn})
 📅 <b>Date:</b> ${dateStr}
@@ -42,7 +44,26 @@ export async function sendTelegramResultPost({ dateStr, slot, prizeData }) {
 🏆 <b>১ম পুরস্কার (১ কোটি টাকা):</b>
 👉 <code>${firstPrizeFull}</code> 👈
 ${secondPrizes ? `\n🥈 <b>২য় পুরস্কার (₹৯,০০০):</b>\n<code>${secondPrizes}</code>\n` : ''}
-⚡ ৩য়, ৪র্থ ও ৫ম পুরস্কারসহ পুরো রেজাল্ট শিট এবং অফিসিয়াল গেজেট PDF ডাউনলোড করতে নিচের বাটনে ক্লিক করুন:`;
+🔍 <b>১ সেকেন্ডে টিকিট চেক করুন ও সম্পূর্ণ রেজাল্ট দেখুন:</b>
+👉 ${targetUrl}
+
+📄 <b>অফিসিয়াল গেজেট PDF ডাউনলোড:</b>
+👉 ${pdfUrl}`;
+
+  // One-tap direct WhatsApp Share link (pre-populates WhatsApp with clean WhatsApp markdown)
+  const whatsappShareText = `🎯 *Dear Lottery Result Out! (${slotInfo.en})*
+📅 Date: ${dateStr}
+
+🏆 *১ম পুরস্কার (₹1 Crore Winner)*:
+👉 *${firstPrizeFull}* 👈
+${secondPrizes ? `\n🥈 *২য় পুরস্কার (₹9,000)*:\n${secondPrizes}\n` : ''}
+🔍 *১ সেকেন্ডে টিকিট চেক ও সম্পূর্ণ রেজাল্ট শিট*:
+👉 ${targetUrl}
+
+📄 *অফিসিয়াল গেজেট PDF*:
+👉 ${pdfUrl}`;
+
+  const whatsappShareUrl = `https://api.whatsapp.com/send?text=${encodeURIComponent(whatsappShareText)}`;
 
   const payload = {
     chat_id: chatId,
@@ -53,6 +74,12 @@ ${secondPrizes ? `\n🥈 <b>২য় পুরস্কার (₹৯,০০০):<
       inline_keyboard: [
         [
           {
+            text: '📲 Share to WhatsApp Channel',
+            url: whatsappShareUrl
+          }
+        ],
+        [
+          {
             text: '🔍 ১ সেকেন্ডে টিকিট চেক করুন (Check Ticket)',
             url: targetUrl
           }
@@ -60,13 +87,7 @@ ${secondPrizes ? `\n🥈 <b>২য় পুরস্কার (₹৯,০০০):<
         [
           {
             text: '📄 অফিসিয়াল গেজেট PDF ডাউনলোড',
-            url: `https://dearresultlive.in/pdf/${dateStr}/${slot.toLowerCase()}.pdf`
-          }
-        ],
-        [
-          {
-            text: '🌐 ভিজিট dearresultlive.in',
-            url: 'https://dearresultlive.in'
+            url: pdfUrl
           }
         ]
       ]

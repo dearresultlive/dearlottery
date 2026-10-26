@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { parseTicketInput, formatINR } from '../lib/lottery-utils';
+import { parseTicketInput, formatINR, getISTNow, getISTDateString } from '../lib/lottery-utils';
 import { useLanguage } from '../lib/i18n';
 import confetti from 'canvas-confetti';
 import { analyzeNumberHistory, type NumberHistoryAnalysis } from '../lib/history-analytics';
@@ -29,6 +29,13 @@ export default function TicketChecker({ initialDraws = [], variant = 'slim' }: T
   const [matches, setMatches] = useState<MatchResult[]>([]);
   const [historyAnalysis, setHistoryAnalysis] = useState<NumberHistoryAnalysis | null>(null);
   const debounceRef = useRef<any>(null);
+
+  const istNow = getISTNow();
+  const todayStr = getISTDateString(istNow);
+  const pendingTodayDraws = (initialDraws || []).filter(d => 
+    d.draw_date === todayStr && 
+    !(d.parsed_data?.prizes?.first_prize?.number || d.prizes?.first_prize?.number)
+  );
 
   const triggerConfetti = () => {
     try {
@@ -378,6 +385,19 @@ export default function TicketChecker({ initialDraws = [], variant = 'slim' }: T
                 <span><span className="font-mono font-bold text-slate-900">{ticketInput}</span> नंबर पर कोई पुरस्कार नहीं मिला। अन्य ड्रा या नंबर जांचें।</span>
               ) : (
                 <span>No winning match found for ticket <span className="font-mono font-bold text-slate-900">{ticketInput}</span>. Try checking another draw.</span>
+              )}
+
+              {pendingTodayDraws.length > 0 && (
+                <div className="mt-2.5 pt-2 border-t border-amber-200/80 text-[11px] text-amber-900 flex items-center justify-center gap-1.5 font-medium bg-amber-50/80 p-2 rounded-lg">
+                  <span className="text-sm">⏳</span>
+                  <span>
+                    {lang === 'bn'
+                      ? `আজকের (${pendingTodayDraws.map(d => d.draw_time || 'ড্র').join(', ')}) এখনো ঘোষিত/স্ক্যান হয়নি। রেজাল্ট প্রকাশের পর পুনরায় চেক করুন।`
+                      : lang === 'hi'
+                      ? `आज का (${pendingTodayDraws.map(d => d.draw_time || 'ड्रॉ').join(', ')}) अभी घोषित नहीं हुआ है। परिणाम जारी होने के बाद पुनः जांचें।`
+                      : `Today's (${pendingTodayDraws.map(d => d.draw_time || 'draw').join(', ')}) has not been declared yet. Please re-check after declaration.`}
+                  </span>
+                </div>
               )}
             </div>
           )}
