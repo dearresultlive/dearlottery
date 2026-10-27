@@ -59,7 +59,23 @@ export async function fetchLatestDraws(): Promise<DrawItem[]> {
         // We MUST verify that returned draws actually match today's date (todayStr).
         const todayDraws = data.draws.filter((d: any) => d.draw_date === todayStr);
         if (todayDraws.length > 0) {
-          return todayDraws;
+          const verifiedLocal = getVerifiedDrawsByDate(todayStr, istNow) as unknown as DrawItem[];
+          return todayDraws.map((d: any) => {
+            const verified = verifiedLocal.find(v => v.id === d.id);
+            const workerPrizes = d.parsed_data?.prizes || d.prizes;
+            const verifiedPrizes = verified?.parsed_data?.prizes || verified?.prizes;
+            if (verifiedPrizes?.second_prize?.length > 0 && (!workerPrizes?.second_prize || workerPrizes.second_prize.length === 0)) {
+              return {
+                ...d,
+                prizes: verifiedPrizes,
+                parsed_data: {
+                  ...d.parsed_data,
+                  prizes: verifiedPrizes
+                }
+              };
+            }
+            return d;
+          });
         }
       }
     }
@@ -133,6 +149,9 @@ export async function fetchDrawsByDate(dateStr: string): Promise<DrawItem[]> {
     return fetchLatestDraws();
   }
 
+  // Always load verified local records from live_draws.json as reliable ground truth
+  const verifiedDraws = getVerifiedDrawsByDate(dateStr, istNow) as unknown as DrawItem[];
+
   try {
     const res = await fetch(`${WORKER_BASE}/api/results/date/${dateStr}`, {
       headers: { 'Accept': 'application/json' },
@@ -141,14 +160,31 @@ export async function fetchDrawsByDate(dateStr: string): Promise<DrawItem[]> {
     if (res.ok) {
       const data = await res.json();
       if (data.draws && data.draws.length > 0) {
-        return data.draws;
+        // Merge worker draws with local verified records so full OCR prizes from live_draws.json are never overridden by empty arrays from worker edge cache
+        return data.draws.map((d: any) => {
+          const verified = verifiedDraws.find(v => v.id === d.id);
+          const workerPrizes = d.parsed_data?.prizes || d.prizes;
+          const verifiedPrizes = verified?.parsed_data?.prizes || verified?.prizes;
+
+          if (verifiedPrizes?.second_prize?.length > 0 && (!workerPrizes?.second_prize || workerPrizes.second_prize.length === 0)) {
+            return {
+              ...d,
+              prizes: verifiedPrizes,
+              parsed_data: {
+                ...d.parsed_data,
+                prizes: verifiedPrizes
+              }
+            };
+          }
+          return d;
+        });
       }
     }
   } catch (e) {
     // Fallback
   }
 
-  return getVerifiedDrawsByDate(dateStr, istNow) as unknown as DrawItem[];
+  return verifiedDraws;
 }
 
 /**
