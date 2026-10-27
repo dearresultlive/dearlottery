@@ -96,22 +96,28 @@ export async function getLatestDraws(
   slot?: string,
   limit: number = 3
 ): Promise<DrawRecord[]> {
-  if (slot) {
-    const norm = slot.toUpperCase().replace(/\s+/g, '');
-    const result = await db
-      .prepare('SELECT * FROM draws WHERE id LIKE ? OR draw_time LIKE ? ORDER BY draw_date DESC, id DESC LIMIT 1')
-      .bind(`%${norm}%`, `%${slot}%`)
-      .all<DrawRecord>();
-
-    return result.results || [];
-  }
-
+  // Query top recent draws using the primary/composite index.
+  // Reads only 10 rows from D1, eliminating full table scans.
+  const fetchLimit = slot ? 10 : limit;
   const result = await db
     .prepare('SELECT * FROM draws ORDER BY draw_date DESC, id DESC LIMIT ?')
-    .bind(limit)
+    .bind(fetchLimit)
     .all<DrawRecord>();
 
-  return result.results || [];
+  const draws = result.results || [];
+
+  if (slot) {
+    const norm = slot.toUpperCase().replace(/\s+/g, '');
+    const match = draws.find(d => {
+      const idUpper = (d.id || '').toUpperCase();
+      const timeUpper = (d.draw_time || '').toUpperCase();
+      return idUpper.includes(norm) || timeUpper.includes(norm);
+    });
+
+    return match ? [match] : [];
+  }
+
+  return draws;
 }
 
 /**

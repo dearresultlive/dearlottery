@@ -5,9 +5,27 @@ import { getISTDateString, getISTNow } from '../../../lib/lottery-utils';
 
 export const prerender = false;
 
+// Module-level in-memory cache for SSR runtime (15s TTL)
+let memoryCache: Record<string, { data: any; timestamp: number }> = {};
+
 export const GET: APIRoute = async ({ request, locals }) => {
   const url = new URL(request.url);
   const slot = url.searchParams.get('slot') || url.searchParams.get('time');
+  const cacheKeyStr = slot || 'ALL';
+
+  // 1. Return from in-memory cache if available (shields D1 from redundant hits)
+  const memCached = memoryCache[cacheKeyStr];
+  if (memCached && (Date.now() - memCached.timestamp < 15000)) {
+    return new Response(JSON.stringify(memCached.data), {
+      status: 200,
+      headers: {
+        'Content-Type': 'application/json',
+        'Cache-Control': 'public, max-age=5, s-maxage=15, stale-while-revalidate=60',
+        'X-SSR-Cache': 'HIT',
+        'Access-Control-Allow-Origin': '*'
+      }
+    });
+  }
   
   // Try to query D1 database if bound in Cloudflare runtime
   const db = (locals as any)?.runtime?.env?.DB;
@@ -15,11 +33,9 @@ export const GET: APIRoute = async ({ request, locals }) => {
   
   if (db) {
     try {
-      const query = slot
-        ? `SELECT id, draw_date, draw_time, draw_name, draw_number, source_url, checksum, raw_json FROM draws WHERE draw_time LIKE ? ORDER BY draw_date DESC LIMIT 3`
-        : `SELECT id, draw_date, draw_time, draw_name, draw_number, source_url, checksum, raw_json FROM draws ORDER BY draw_date DESC, created_at DESC LIMIT 6`;
-      
-      const stmt = slot ? db.prepare(query).bind(`%${slot}%`) : db.prepare(query);
+      // Read top 10 draws from index (reads only 10 rows from D1, no full table scans)
+      const query = 'SELECT id, draw_date, draw_time, draw_name, draw_number, source_url, checksum, raw_json FROM draws ORDER BY draw_date DESC, id DESC LIMIT 10';
+      const stmt = db.prepare(query);
       const res = await stmt.all();
       
       if (res.results && res.results.length > 0) {
@@ -105,13 +121,18 @@ export const GET: APIRoute = async ({ request, locals }) => {
     }
   }
 
-  return new Response(JSON.stringify({
+  const responseObj = {
     success: true,
     slot: slot || 'ALL',
     count: draws.length,
     timestamp: new Date().toISOString(),
     draws
-  }), {
+  };
+
+  // Cache in memory for 15 seconds
+  memoryCache[cacheKeyStr] = { data: responseObj, timestamp: Date.now() };
+
+  return new Response(JSON.stringify(responseObj), {
     status: 200,
     headers: {
       'Content-Type': 'application/json',

@@ -1,5 +1,6 @@
 import { Env, DrawRecord, PrizeRecord } from '../types';
 import { getDrawById, saveDrawTransaction } from '../db/queries';
+import { clearMemoryCaches } from '../cache';
 import { sendTelegramAlert } from './telegram';
 import { submitIndexNow } from './indexing';
 import { publishToGoogleIndexing } from './google_indexing';
@@ -407,6 +408,7 @@ export async function pollAndIngestLiveDraw(
   // 5. Atomic D1 save
   try {
     await saveDrawTransaction(env.DB, drawRecord, prizeRecords);
+    clearMemoryCaches();
     console.log(`[EdgePoller] ✅ Ingested ${drawId} into D1 database.`);
   } catch (d1Err: any) {
     console.error(`[EdgePoller] Failed to save to D1:`, d1Err?.message || d1Err);

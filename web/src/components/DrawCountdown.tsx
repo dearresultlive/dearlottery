@@ -25,10 +25,7 @@ export default function DrawCountdown({ onResultDetected, compact = false }: Dra
   const checkLatestResults = async () => {
     try {
       setPollAttempt(prev => prev + 1);
-      const res = await fetch(`/api/results/latest?slot=${nextDraw.slot}&t=${Date.now()}`, {
-        headers: { 'Accept': 'application/json' },
-        cache: 'no-store'
-      });
+      const res = await fetch(`/api/results/latest?slot=${nextDraw.slot}`, { headers: { 'Accept': 'application/json' } });
 
       if (res.ok) {
         const data = await res.json();
