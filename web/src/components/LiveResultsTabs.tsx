@@ -390,10 +390,9 @@ export default function LiveResultsTabs({
 
     const pollLiveResult = async () => {
       try {
-        const res = await fetch(`/api/results/latest?slot=${activeSlot}&t=${Date.now()}`, {
+        const res = await fetch(`/api/results/latest?slot=${activeSlot}`, {
           headers: { 'Accept': 'application/json' },
-          cache: 'no-store'
-        });
+          });
         if (res.ok && isPolling) {
           const data = await res.json();
           const draws = data.draws || [];

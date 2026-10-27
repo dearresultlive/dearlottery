@@ -157,20 +157,26 @@ export async function checkTicket(
   const cleanNumber = ticketQuery.trim();
   const cleanSeries = seriesQuery ? seriesQuery.trim().toUpperCase() : undefined;
 
+  const last4 = cleanNumber.slice(-4);
   let querySql = `
     SELECT p.ticket_number, p.last_digits, p.prize_rank, p.prize_amount, p.series, 
            d.id as draw_id, d.draw_name, d.draw_time, d.draw_date
     FROM prizes p
     JOIN draws d ON p.draw_id = d.id
-    WHERE (p.ticket_number = ? OR p.last_digits = ?)
+    WHERE p.ticket_number = ? ${drawId ? 'AND p.draw_id = ?' : ''}
+    UNION
+    SELECT p.ticket_number, p.last_digits, p.prize_rank, p.prize_amount, p.series, 
+           d.id as draw_id, d.draw_name, d.draw_time, d.draw_date
+    FROM prizes p
+    JOIN draws d ON p.draw_id = d.id
+    WHERE p.last_digits = ? ${drawId ? 'AND p.draw_id = ?' : ''}
   `;
 
-  const bindings: any[] = [cleanNumber, cleanNumber];
+  const bindings: any[] = drawId 
+    ? [cleanNumber, drawId, last4, drawId] 
+    : [cleanNumber, last4];
 
-  if (drawId) {
-    querySql += ' AND p.draw_id = ?';
-    bindings.push(drawId);
-  }
+  // drawId bound inside UNION query directly
 
   querySql += ' ORDER BY d.draw_date DESC, p.prize_amount DESC LIMIT 20';
 

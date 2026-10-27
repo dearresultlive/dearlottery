@@ -1,3 +1,6 @@
+let cachedAnalyticsData: any = null;
+let cachedAnalyticsTimestamp = 0;
+
 /**
  * API client to communicate with Cloudflare Worker API.
  * Provides fallback mock datasets for seamless local preview and SSR.
@@ -204,6 +207,10 @@ export async function fetchFrequencyAnalytics(days: number = 30): Promise<{
     least_frequent: { ending: string; frequency: number; last_seen_date: string }[];
   };
 }> {
+  if (cachedAnalyticsData && (Date.now() - cachedAnalyticsTimestamp < 12 * 3600 * 1000)) {
+    return cachedAnalyticsData;
+  }
+
   try {
     const res = await fetch(`${WORKER_BASE}/api/analytics/frequency?days=${days}`, {
       headers: { 'Accept': 'application/json' },
@@ -211,7 +218,7 @@ export async function fetchFrequencyAnalytics(days: number = 30): Promise<{
     });
     if (res.ok) {
       const data = await res.json();
-      return {
+      const analyticsResult = {
         days: data.days || days,
         matrix: data.digit_frequency_matrix,
         hotNumbers: data.hot_numbers,
@@ -219,6 +226,9 @@ export async function fetchFrequencyAnalytics(days: number = 30): Promise<{
         fourDigitEndings: data.four_digit_endings,
         twoDigitEndings: data.two_digit_endings
       };
+      cachedAnalyticsData = analyticsResult;
+      cachedAnalyticsTimestamp = Date.now();
+      return analyticsResult;
     }
   } catch (e) {}
 
