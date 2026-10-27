@@ -152,6 +152,15 @@ app.post('/api/results', async (c) => {
     // Atomic D1 storage
     await saveDrawTransaction(c.env.DB, draw, prizes);
 
+    // Invalidate edge cache immediately so updated OCR prizes show instantly
+    try {
+      const edgeCache = (caches as any).default;
+      const reqUrl = new URL(c.req.url);
+      c.executionCtx.waitUntil(edgeCache.delete(new Request(reqUrl.origin + "/api/results/date/" + draw.draw_date)));
+      c.executionCtx.waitUntil(edgeCache.delete(new Request(reqUrl.origin + "/api/results/latest")));
+      c.executionCtx.waitUntil(edgeCache.delete(new Request(reqUrl.origin + "/api/results/draw/" + draw.id)));
+    } catch (_) {}
+
     const firstPrize = prizes.find(p => p.prize_rank === '1st') || prizes[0];
 
     // Non-blocking background tasks via ExecutionContext
@@ -268,9 +277,18 @@ app.get('/api/results/date/:date', async (c) => {
   try {
     const draws = await getDrawsByDate(c.env.DB, dateStr);
 
+    // Dynamic edge caching: only cache for 24h if all draws have full OCR prizes. If still scanning, cache for only 15s!
+    const isFullyDeclared = draws.length > 0 && draws.every(d => {
+      try {
+        const p = JSON.parse(d.raw_json);
+        return Array.isArray(p.prizes?.second_prize) && p.prizes.second_prize.length >= 8;
+      } catch { return false; }
+    });
+    const sMaxAge = isFullyDeclared ? 86400 : 15;
+
     const headers = new Headers({
       'Content-Type': 'application/json',
-      'Cache-Control': 'public, max-age=3600, s-maxage=86400, stale-while-revalidate=604800',
+      'Cache-Control': "public, max-age=15, s-maxage=" + sMaxAge + ", stale-while-revalidate=120",
       'Access-Control-Allow-Origin': '*',
       'X-Edge-Cache': 'MISS'
     });
