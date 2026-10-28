@@ -183,8 +183,8 @@ function RealPaperTicket({
         {/* LEFT COUNTERFOIL STUB (Perforated) */}
         <div className={`w-[64px] sm:w-[78px] shrink-0 border-r-2 border-dashed border-slate-300 ${theme.stubBg} flex flex-col justify-between items-center py-2 px-1 text-center relative z-10`}>
           <div className="space-y-0.5">
-            <span className="text-[8px] font-black tracking-tighter text-slate-600 block uppercase">NAGALAND</span>
-            <span className="text-[7px] font-bold text-slate-500 block">STATE LOTTERIES</span>
+            <span className="text-[8px] font-black tracking-tighter text-amber-800 block uppercase">DEMO TICKET</span>
+            <span className="text-[6px] font-bold text-slate-500 block uppercase">VIRTUAL SLIP</span>
           </div>
 
           {/* Stamped Number & Sem Badge on Stub */}
@@ -205,20 +205,35 @@ function RealPaperTicket({
 
           <div className="opacity-60 leading-none">
             <span className="font-mono text-[7px] tracking-tighter text-slate-700 block">|||||||||||</span>
-            <span className="text-[6px] font-mono text-slate-500 block">STUB</span>
+            <span className="text-[6px] font-mono text-slate-500 block uppercase">DEMO STUB</span>
           </div>
         </div>
 
         {/* RIGHT MAIN TICKET SLIP */}
         <div className="flex-1 flex flex-col justify-between p-2 sm:p-3 min-w-0 relative">
           
+          {/* Prominent Diagonal Watermark for Legal Protection */}
+          <div className="absolute inset-0 flex items-center justify-center pointer-events-none select-none z-0 overflow-hidden">
+            <div className="rotate-[-13deg] border-2 border-dashed border-red-500/25 bg-red-500/[0.03] px-3 py-1 rounded-xl text-center">
+              <span className="text-xs sm:text-sm font-black tracking-widest text-red-600/30 uppercase block font-mono">
+                DEMO SAMPLE • NOT A REAL TICKET
+              </span>
+              <span className="text-[8px] font-bold text-slate-600/30 block font-sans">
+                ভার্চুয়াল ডেমো সিমুলেটর • বিক্রয়ের জন্য নয়
+              </span>
+            </div>
+          </div>
+          
           {/* 1. Header with Government Title & Controls */}
           <div className="flex items-start justify-between gap-1 border-b border-black/10 pb-1.5">
             <div className="min-w-0">
               <div className="flex items-center gap-1.5">
-                <span className="text-xs sm:text-sm leading-none">🏛️</span>
+                <span className="text-xs sm:text-sm leading-none">🎮</span>
                 <span className="text-[10px] sm:text-xs font-black tracking-wider uppercase text-slate-900 truncate">
-                  NAGALAND STATE LOTTERIES
+                  DEAR LOTTERY DEMO SIMULATOR
+                </span>
+                <span className="bg-red-600 text-white font-black text-[8px] px-1.5 py-0.2 rounded shrink-0 shadow-2xs">
+                  DEMO (নমুনা)
                 </span>
                 <span className="bg-amber-500 text-white font-black text-[8px] px-1.5 py-0.2 rounded shrink-0">
                   {sem} SEM
@@ -1304,7 +1319,7 @@ export default function DemoPlayModule({ initialDraws = [] }: DemoPlayModuleProp
               <span>
                 {activeGameTickets.length >= 12
                   ? (lang === 'bn' ? '১২/১২ বুকলেট পূর্ণ (নিচে সেম বৃদ্ধি করুন)' : '12/12 Booklets Full (Add Sem below)')
-                  : (lang === 'bn' ? 'কুইক লাকি টিকিট নিন (৫ সেম • ₹৩৫)' : 'Print Quick Lucky Ticket (5 Sem • ₹35)')}
+                  : (lang === 'bn' ? 'কুইক লাকি ডেমো টিকিট নিন (৫ সেম)' : 'Generate Lucky Demo Ticket (5 Sem • Virtual)')}
               </span>
             </button>
 
@@ -1369,7 +1384,7 @@ export default function DemoPlayModule({ initialDraws = [] }: DemoPlayModuleProp
                 disabled={activeGameTickets.length >= 12}
                 className="bg-blue-700 hover:bg-blue-800 disabled:bg-slate-300 disabled:cursor-not-allowed text-white font-black text-xs sm:text-sm px-3.5 py-2 rounded-xl shadow-xs transition-all active:scale-95 shrink-0 cursor-pointer"
               >
-                {lang === 'bn' ? '+ প্রিন্ট' : '+ Print'}
+                {lang === 'bn' ? '+ যোগ করুন' : '+ Add Demo'}
               </button>
             </form>
 
@@ -1396,7 +1411,7 @@ export default function DemoPlayModule({ initialDraws = [] }: DemoPlayModuleProp
                             ? (purchaseFeedback.semAdded > 0
                                 ? (lang === 'bn' ? `+${purchaseFeedback.semAdded} সেম বৃদ্ধি সফল!` : `+${purchaseFeedback.semAdded} Sem Added!`)
                                 : (lang === 'bn' ? `${Math.abs(purchaseFeedback.semAdded)} সেম কমানো হয়েছে` : `${Math.abs(purchaseFeedback.semAdded)} Sem Reduced`))
-                            : (lang === 'bn' ? 'টিকিট প্রিন্ট সম্পন্ন!' : 'Ticket Printed!')}
+                            : (lang === 'bn' ? 'ডেমো টিকিট তৈরি সম্পন্ন!' : 'Demo Ticket Added!')}
                         </span>
                         <span className="bg-white/20 font-mono text-[10px] font-bold px-1.5 py-0.2 rounded text-white">
                           {purchaseFeedback.ticket.series} {purchaseFeedback.ticket.number}
@@ -1605,8 +1620,8 @@ export default function DemoPlayModule({ initialDraws = [] }: DemoPlayModuleProp
                 </p>
                 <p className="text-[11px] text-slate-400">
                   {lang === 'bn'
-                    ? 'উপরে "কুইক লাকি টিকিট" বা মিডিল বোতামে ক্লিক করে টিকিট প্রিন্ট করুন!'
-                    : 'Click "Print Quick Lucky Ticket" or tap a Middle chip above!'}
+                    ? 'উপরে "কুইক লাকি টিকিট" বা মিডিল বোতামে ক্লিক করে ডেমো টিকিট তৈরি করুন!'
+                    : 'Click "Generate Lucky Demo Ticket" or tap a Middle chip above!'}
                 </p>
               </div>
             ) : (
