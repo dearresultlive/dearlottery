@@ -22,15 +22,31 @@ export const GET: APIRoute = async ({ request, locals }) => {
   }
 
   const istNow = getISTNow();
-  let matches: any[] = [];
+  
+  // 1. Instant sub-millisecond search from in-memory verified gazettes (0 D1 rows read)
+  let matches = searchVerifiedPrizes(number, series, drawId, istNow);
 
-  // 1. Try D1 database if bound in Cloudflare runtime
+  // 2. Fallback to D1 database with indexed exact lookup if in-memory returned empty
   const db = (locals as any)?.runtime?.env?.DB;
-  if (db) {
+  if (matches.length === 0 && db) {
     try {
       const cleanNum = number.replace(/\D/g, '');
-      const query = `SELECT * FROM prize_tickets WHERE ticket_number LIKE ? LIMIT 20`;
-      const stmt = db.prepare(query).bind(`%${cleanNum}%`);
+      const last4 = cleanNum.slice(-4);
+      const query = `
+        SELECT p.prize_rank, p.prize_amount, p.ticket_number, p.last_digits, p.series,
+               d.draw_name, d.draw_time, d.draw_date
+        FROM prizes p
+        JOIN draws d ON p.draw_id = d.id
+        WHERE p.ticket_number = ?
+        UNION ALL
+        SELECT p.prize_rank, p.prize_amount, p.ticket_number, p.last_digits, p.series,
+               d.draw_name, d.draw_time, d.draw_date
+        FROM prizes p
+        JOIN draws d ON p.draw_id = d.id
+        WHERE p.last_digits = ?
+        LIMIT 20
+      `;
+      const stmt = db.prepare(query).bind(cleanNum, last4);
       const res = await stmt.all();
       if (res.results && res.results.length > 0) {
         matches = res.results.map((r: any) => ({
@@ -45,13 +61,8 @@ export const GET: APIRoute = async ({ request, locals }) => {
         }));
       }
     } catch (e) {
-      console.error('D1 ticket search error:', e);
+      console.error('D1 ticket search fallback error:', e);
     }
-  }
-
-  // 2. Query verified official gazette database
-  if (matches.length === 0) {
-    matches = searchVerifiedPrizes(number, series, drawId, istNow);
   }
 
   return new Response(JSON.stringify({
