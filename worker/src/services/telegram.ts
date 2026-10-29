@@ -2,6 +2,7 @@
  * Automated Telegram Channel Broadcaster for Dear Lottery Results
  * Sends instant, beautifully formatted draw results and interactive ticket checking buttons
  * to the official @dearresultlive channel directly from Cloudflare Workers edge.
+ * Balanced bilingual (English + Bengali) copy for nationwide audience (Bengal, Patna/Bihar, Northeast & all regions).
  */
 
 export interface TelegramAlertPayload {
@@ -29,9 +30,9 @@ export async function sendTelegramAlert(
   }
 
   const slotMap = {
-    '1PM': { en: '1:00 PM Morning', bn: '১:০০ দুপুর (Morning)' },
-    '6PM': { en: '6:00 PM Day', bn: '৬:০০ সন্ধ্যা (Day)' },
-    '8PM': { en: '8:00 PM Night', bn: '৮:০০ রাত (Night)' }
+    '1PM': { en: '1:00 PM Morning', bn: 'দুপুর ১:০০ (মর্নিং)' },
+    '6PM': { en: '6:00 PM Day', bn: 'সন্ধ্যা ৬:০০ (ডে)' },
+    '8PM': { en: '8:00 PM Night', bn: 'রাত ৮:০০ (নাইট)' }
   };
 
   const slotInfo = slotMap[payload.slot] || { en: payload.slot, bn: payload.slot };
@@ -39,15 +40,21 @@ export async function sendTelegramAlert(
   const targetUrl = `${frontend}/results/${payload.dateStr}/${payload.slot.toLowerCase()}`;
   const pdfUrl = `${frontend}/pdf/${payload.dateStr}/${payload.slot.toLowerCase()}.pdf`;
 
-  const messageText = `🎯 <b>Dear Lottery Sambad Result Out!</b>
-⏰ <b>Draw Slot:</b> ${slotInfo.en} (${slotInfo.bn})
+  const messageText = `🎯 <b>Dear Lottery Sambad • Today's Draw Result</b>
+📢 <i>লটারি সংবাদ আজকের লাইভ রেজাল্ট</i>
+⏰ <b>Draw Slot:</b> ${slotInfo.en} • ${slotInfo.bn}
 📅 <b>Date:</b> ${payload.dateStr}
-🏆 <b>Draw Name:</b> ${payload.drawName}
-
-👑 <b>১ম পুরস্কার (১ কোটি টাকা):</b>
+${payload.drawName ? `🏷️ <b>Draw Name:</b> ${payload.drawName}\n` : ''}
+🏆 <b>1st Prize Winner • ১ম পুরস্কার (₹1 Crore / ১ কোটি টাকা):</b>
 👉 <code>${firstPrizeFull}</code> 👈
 
-⚡ ৩য়, ৪র্থ ও ৫ম পুরস্কারসহ পুরো রেজাল্ট শিট এবং অফিসিয়াল গেজেট PDF দেখতে নিচের বাটনে ক্লিক করুন:`;
+🔍 <b>Check Ticket Online • ১ সেকেন্ডে টিকিট চেক করুন:</b>
+👉 ${targetUrl}
+
+📄 <b>Official Gazette PDF • সম্পূর্ণ রেজাল্ট শিট ডাউনলোড:</b>
+👉 ${pdfUrl}
+
+⚡ <i>Live Official Results from Nagaland & Sikkim State Lotteries</i>`;
 
   const body = {
     chat_id: chatId,
@@ -58,19 +65,19 @@ export async function sendTelegramAlert(
       inline_keyboard: [
         [
           {
-            text: '🔍 ১ সেকেন্ডে টিকিট চেক করুন (Check Ticket)',
+            text: '🔍 Check Ticket Online • টিকিট চেক করুন',
             url: targetUrl
           }
         ],
         [
           {
-            text: '📄 অফিসিয়াল গেজেট PDF ডাউনলোড',
+            text: '📄 Download Official PDF • গেজেট ডাউনলোড',
             url: pdfUrl
           }
         ],
         [
           {
-            text: '🌐 ভিজিট dearresultlive.in',
+            text: '🌐 Visit dearresultlive.in',
             url: frontend
           }
         ]

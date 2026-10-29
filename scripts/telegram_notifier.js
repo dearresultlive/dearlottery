@@ -3,6 +3,8 @@
  * Automated Telegram Channel Broadcaster for Dear Lottery Results
  * Automatically sends instant, beautifully formatted draw results and interactive
  * ticket checking buttons to @dearresultlive channel.
+ * Designed with balanced bilingual (English + Bengali) copy for nationwide audience
+ * (West Bengal, Patna/Bihar, Northeast & all regions).
  */
 
 export async function sendTelegramResultPost({ dateStr, slot, prizeData }) {
@@ -15,9 +17,9 @@ export async function sendTelegramResultPost({ dateStr, slot, prizeData }) {
   }
 
   const slotMap = {
-    '1PM': { en: '1:00 PM Morning', bn: '১:০০ দুপুর (Morning)' },
-    '6PM': { en: '6:00 PM Day', bn: '৬:০০ সন্ধ্যা (Day)' },
-    '8PM': { en: '8:00 PM Night', bn: '৮:০০ রাত (Night)' }
+    '1PM': { en: '1:00 PM Morning', bn: 'দুপুর ১:০০ (মর্নিং)' },
+    '6PM': { en: '6:00 PM Day', bn: 'সন্ধ্যা ৬:০০ (ডে)' },
+    '8PM': { en: '8:00 PM Night', bn: 'রাত ৮:০০ (নাইট)' }
   };
 
   const slotInfo = slotMap[slot] || { en: slot, bn: slot };
@@ -35,33 +37,38 @@ export async function sendTelegramResultPost({ dateStr, slot, prizeData }) {
   const pdfUrl = `https://dearresultlive.in/pdf/${dateStr}/${slot.toLowerCase()}.pdf`;
   const targetUrl = `https://dearresultlive.in/results/${dateStr}/${slot.toLowerCase()}`;
 
-  // Formatted HTML message - Links are embedded directly in the message text
-  // so long-pressing "Copy" in Telegram copies 100% of the content with all clickable links!
-  const messageText = `🎯 <b>Dear Lottery Sambad Result Out!</b>
-⏰ <b>Draw Slot:</b> ${slotInfo.en} (${slotInfo.bn})
+  // Formatted HTML message - Clear English for nationwide clarity (Patna/Bihar/All India) + authentic Bengali touch
+  const messageText = `🎯 <b>Dear Lottery Sambad • Today's Draw Result</b>
+📢 <i>লটারি সংবাদ আজকের লাইভ রেজাল্ট</i>
+⏰ <b>Draw Slot:</b> ${slotInfo.en} • ${slotInfo.bn}
 📅 <b>Date:</b> ${dateStr}
 
-🏆 <b>১ম পুরস্কার (১ কোটি টাকা):</b>
+🏆 <b>1st Prize Winner • ১ম পুরস্কার (₹1 Crore / ১ কোটি টাকা):</b>
 👉 <code>${firstPrizeFull}</code> 👈
-${secondPrizes ? `\n🥈 <b>২য় পুরস্কার (₹৯,০০০):</b>\n<code>${secondPrizes}</code>\n` : ''}
-🔍 <b>১ সেকেন্ডে টিকিট চেক করুন ও সম্পূর্ণ রেজাল্ট দেখুন:</b>
+${secondPrizes ? `\n🥈 <b>2nd Prize • ২য় পুরস্কার (₹9,000 / ₹৯,০০০):</b>\n<code>${secondPrizes}</code>\n` : ''}
+🔍 <b>Check Ticket Online • ১ সেকেন্ডে টিকিট চেক করুন:</b>
 👉 ${targetUrl}
 
-📄 <b>অফিসিয়াল গেজেট PDF ডাউনলোড:</b>
-👉 ${pdfUrl}`;
+📄 <b>Official Gazette PDF • সম্পূর্ণ রেজাল্ট শিট ডাউনলোড:</b>
+👉 ${pdfUrl}
+
+⚡ <i>Live Official Results from Nagaland & Sikkim State Lotteries</i>`;
 
   // One-tap direct WhatsApp Share link (pre-populates WhatsApp with clean WhatsApp markdown)
-  const whatsappShareText = `🎯 *Dear Lottery Result Out! (${slotInfo.en})*
+  const whatsappShareText = `🎯 *Dear Lottery Result Out!*
+⏰ Slot: ${slotInfo.en} • ${slotInfo.bn}
 📅 Date: ${dateStr}
 
-🏆 *১ম পুরস্কার (₹1 Crore Winner)*:
+🏆 *1st Prize Winner • ১ম পুরস্কার (₹1 Crore / ১ কোটি)*:
 👉 *${firstPrizeFull}* 👈
-${secondPrizes ? `\n🥈 *২য় পুরস্কার (₹9,000)*:\n${secondPrizes}\n` : ''}
-🔍 *১ সেকেন্ডে টিকিট চেক ও সম্পূর্ণ রেজাল্ট শিট*:
+${secondPrizes ? `\n🥈 *2nd Prize • ২য় পুরস্কার (₹9,000)*:\n${secondPrizes}\n` : ''}
+🔍 *Check Ticket Online • ১ সেকেন্ডে টিকিট চেক*:
 👉 ${targetUrl}
 
-📄 *অফিসিয়াল গেজেট PDF*:
-👉 ${pdfUrl}`;
+📄 *Official Gazette PDF • সম্পূর্ণ রেজাল্ট শিট*:
+👉 ${pdfUrl}
+
+⚡ Official Gazette Portal: https://dearresultlive.in`;
 
   const whatsappShareUrl = `https://api.whatsapp.com/send?text=${encodeURIComponent(whatsappShareText)}`;
 
@@ -74,20 +81,26 @@ ${secondPrizes ? `\n🥈 *২য় পুরস্কার (₹9,000)*:\n${second
       inline_keyboard: [
         [
           {
-            text: '📲 Share to WhatsApp Channel',
-            url: whatsappShareUrl
-          }
-        ],
-        [
-          {
-            text: '🔍 ১ সেকেন্ডে টিকিট চেক করুন (Check Ticket)',
+            text: '🔍 Check Ticket Online • টিকিট চেক করুন',
             url: targetUrl
           }
         ],
         [
           {
-            text: '📄 অফিসিয়াল গেজেট PDF ডাউনলোড',
+            text: '📄 Download Official PDF • গেজেট ডাউনলোড',
             url: pdfUrl
+          }
+        ],
+        [
+          {
+            text: '📲 Share to WhatsApp • শেয়ার করুন',
+            url: whatsappShareUrl
+          }
+        ],
+        [
+          {
+            text: '🌐 Visit dearresultlive.in',
+            url: 'https://dearresultlive.in'
           }
         ]
       ]
