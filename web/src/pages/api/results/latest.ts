@@ -15,25 +15,25 @@ export const GET: APIRoute = async ({ request, locals }) => {
 
   // 1. Return from in-memory cache if available (shields D1 from redundant hits)
   const memCached = memoryCache[cacheKeyStr];
-  if (memCached && (Date.now() - memCached.timestamp < 15000)) {
+  if (memCached && (Date.now() - memCached.timestamp < 30000)) {
     return new Response(JSON.stringify(memCached.data), {
       status: 200,
       headers: {
         'Content-Type': 'application/json',
-        'Cache-Control': 'public, max-age=5, s-maxage=15, stale-while-revalidate=60',
+        'Cache-Control': 'public, max-age=10, s-maxage=30, stale-while-revalidate=120',
         'X-SSR-Cache': 'HIT',
         'Access-Control-Allow-Origin': '*'
       }
     });
   }
   
-  // Try to query D1 database if bound in Cloudflare runtime
+  // 1. Fetch from in-memory verified draws first (0 D1 reads)
+  let draws: any[] = await fetchLatestDraws();
+
+  // 2. Only query D1 if verified in-memory draws returned empty (Fallback protection)
   const db = (locals as any)?.runtime?.env?.DB;
-  let draws: any[] = [];
-  
-  if (db) {
+  if ((!draws || draws.length === 0) && db) {
     try {
-      // Read top 10 draws from index (reads only 10 rows from D1, no full table scans)
       const query = 'SELECT id, draw_date, draw_time, draw_name, draw_number, source_url, checksum, raw_json FROM draws ORDER BY draw_date DESC, id DESC LIMIT 10';
       const stmt = db.prepare(query);
       const res = await stmt.all();
@@ -47,11 +47,6 @@ export const GET: APIRoute = async ({ request, locals }) => {
     } catch (e) {
       console.error('D1 fetch error in API route:', e);
     }
-  }
-
-  // Fallback to api.ts fetchLatestDraws()
-  if (!draws || draws.length === 0) {
-    draws = await fetchLatestDraws();
   }
 
   // Autonomous on-demand live check: if active slot has passed scheduled draw time and is not yet declared

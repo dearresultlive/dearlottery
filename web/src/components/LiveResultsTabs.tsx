@@ -419,7 +419,7 @@ export default function LiveResultsTabs({
     };
 
     pollLiveResult();
-    const interval = setInterval(pollLiveResult, 5000);
+    const interval = setInterval(pollLiveResult, 10000);
 
     return () => {
       isPolling = false;
