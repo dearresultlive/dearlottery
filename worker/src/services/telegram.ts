@@ -16,6 +16,9 @@ export interface TelegramAlertPayload {
   pdfUrl?: string;
 }
 
+// Global isolate dedup set
+const SENT_KEYS = new Set<string>();
+
 export async function sendTelegramAlert(
   env: { TELEGRAM_BOT_TOKEN?: string; TELEGRAM_CHAT_ID?: string; FRONTEND_URL?: string },
   payload: TelegramAlertPayload
@@ -28,6 +31,13 @@ export async function sendTelegramAlert(
     console.log('[Telegram] Missing token or chatId, skipping broadcast.');
     return false;
   }
+
+  const dedupKey = `${payload.dateStr}-${payload.slot}-${payload.number}`;
+  if (SENT_KEYS.has(dedupKey)) {
+    console.log(`[Telegram] ℹ️ Duplicate alert blocked by safety key: ${dedupKey}`);
+    return true;
+  }
+  SENT_KEYS.add(dedupKey);
 
   const slotMap = {
     '1PM': { en: '1:00 PM Morning', bn: 'দুপুর ১:০০ (মর্নিং)' },

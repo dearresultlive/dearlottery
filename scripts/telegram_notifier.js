@@ -7,6 +7,8 @@
  * (West Bengal, Patna/Bihar, Northeast & all regions).
  */
 
+const SENT_NOTIFIER_KEYS = new Set();
+
 export async function sendTelegramResultPost({ dateStr, slot, prizeData }) {
   const botToken = process.env.TELEGRAM_BOT_TOKEN || '8838063468:AAEJ3qJsSDsf1WB-kJA35Iy3rw0lwKhBPYg';
   const chatId = process.env.TELEGRAM_CHAT_ID || '@dearresultlive';
@@ -14,6 +16,16 @@ export async function sendTelegramResultPost({ dateStr, slot, prizeData }) {
   if (!botToken) {
     console.log('[Telegram] ℹ️ TELEGRAM_BOT_TOKEN not configured. Skipping Telegram broadcast.');
     return false;
+  }
+
+  const firstNum = prizeData?.first_prize?.number || '';
+  const notifierDedupKey = `${dateStr}-${slot}-${firstNum}`;
+  if (firstNum && SENT_NOTIFIER_KEYS.has(notifierDedupKey)) {
+    console.log(`[Telegram] ℹ️ Duplicate broadcast suppressed by notifier memory lock: ${notifierDedupKey}`);
+    return true;
+  }
+  if (firstNum) {
+    SENT_NOTIFIER_KEYS.add(notifierDedupKey);
   }
 
   const slotMap = {

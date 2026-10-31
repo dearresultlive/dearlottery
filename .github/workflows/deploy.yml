@@ -1,6 +1,11 @@
 name: Deploy to Cloudflare Ecosystem (Pages & Worker)
 
 on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'worker/**'
   workflow_dispatch:
 
 jobs:

@@ -5,6 +5,9 @@ import { sendTelegramAlert } from './telegram';
 import { submitIndexNow } from './indexing';
 import { publishToGoogleIndexing } from './google_indexing';
 
+// Module-level in-memory cache to prevent duplicate Telegram alerts across cron executions in the same worker isolate
+const BROADCASTED_DRAWS_MEMORY = new Set<string>();
+
 export interface EdgePollerResult {
   ingested: boolean;
   dateStr: string;
@@ -161,14 +164,52 @@ export async function pollAndIngestLiveDraw(
 
   console.log(`[EdgePoller] Checking slot: ${slot} for ${dateStr}...`);
 
-  // 1. Check if draw is already declared in D1
+  // 1. Check if draw is already declared in D1, Isolate Memory, or Live Website
   let existingPrizes: any = null;
-  const existing = await getDrawById(env.DB, drawId);
-  if (existing) {
-    try {
+  let websitePrizes: any = null;
+
+  // 1a. Check in-memory isolate memory
+  if (BROADCASTED_DRAWS_MEMORY.has(drawId)) {
+    console.log(`[EdgePoller] ℹ️ Draw ${drawId} already locked in isolate memory.`);
+  }
+
+  // 1b. Check live frontend API (D1-independent ground truth)
+  try {
+    const frontendBase = env.FRONTEND_URL || 'https://dearresultlive.in';
+    const siteRes = await fetch(`${frontendBase}/api/results/latest?slot=${slot}`, {
+      headers: { 'Accept': 'application/json' },
+      signal: AbortSignal.timeout(2000)
+    });
+    if (siteRes.ok) {
+      const siteJson = await siteRes.json() as any;
+      const matching = (siteJson?.draws || []).find((d: any) =>
+        d.id === drawId || (d.draw_date === dateStr && d.draw_time?.includes(slot.replace('PM', '')))
+      );
+      if (matching?.parsed_data?.prizes?.first_prize?.number || matching?.prizes?.first_prize?.number) {
+        websitePrizes = matching.parsed_data?.prizes || matching.prizes;
+        if (matching.parsed_data?.telegram_sent || websitePrizes.fifth_prize?.length >= 50) {
+          BROADCASTED_DRAWS_MEMORY.add(drawId);
+          return {
+            ingested: false,
+            dateStr,
+            slot,
+            message: `Draw ${drawId} already declared on live website with 1st Prize ${websitePrizes.first_prize?.series || ''} ${websitePrizes.first_prize?.number}`,
+            first_prize: websitePrizes.first_prize
+          };
+        }
+      }
+    }
+  } catch (siteErr) {
+    // Non-blocking fallback
+  }
+
+  try {
+    const existing = await getDrawById(env.DB, drawId);
+    if (existing) {
       const parsed = JSON.parse(existing.raw_json);
       if (parsed.status === 'DECLARED' && parsed.prizes?.first_prize?.number) {
         if (parsed.prizes?.fifth_prize?.length >= 50) {
+          BROADCASTED_DRAWS_MEMORY.add(drawId);
           return {
             ingested: false,
             dateStr,
@@ -179,9 +220,9 @@ export async function pollAndIngestLiveDraw(
         }
         existingPrizes = parsed.prizes;
       }
-    } catch (e) {
-      // Ignore JSON parse error and proceed
     }
+  } catch (e) {
+    // Ignore D1 read errors (e.g. daily row read limit)
   }
 
   // 2. Fetch from Nagaland Lottery Results, SambadLottery mirror & Lottery Sambad in parallel
@@ -414,11 +455,16 @@ export async function pollAndIngestLiveDraw(
     console.error(`[EdgePoller] Failed to save to D1:`, d1Err?.message || d1Err);
   }
 
-  // 6. Broadcast to Telegram immediately ONLY on first detection
+  // 6. Broadcast to Telegram immediately ONLY on first detection (Multi-layer dedup)
   let telegramSent = false;
-  const alreadyTelegrammed = Boolean(existingPrizes?.first_prize?.number);
+  const alreadyTelegrammed =
+    BROADCASTED_DRAWS_MEMORY.has(drawId) ||
+    Boolean(existingPrizes?.first_prize?.number) ||
+    Boolean(websitePrizes?.first_prize?.number);
+
   if (number && !alreadyTelegrammed) {
     try {
+      BROADCASTED_DRAWS_MEMORY.add(drawId);
       telegramSent = await sendTelegramAlert(env, {
         dateStr,
         slot,
@@ -434,6 +480,7 @@ export async function pollAndIngestLiveDraw(
       console.error(`[EdgePoller] Telegram error:`, tgErr?.message || tgErr);
     }
   } else if (alreadyTelegrammed) {
+    BROADCASTED_DRAWS_MEMORY.add(drawId);
     console.log(`[EdgePoller] ℹ️ Telegram alert already sent for ${drawId}. Suppressing duplicate cron broadcast.`);
   }
 
