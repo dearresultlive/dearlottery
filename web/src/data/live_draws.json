@@ -11385,6 +11385,18 @@
         "9969"
       ],
       "telegram_sent": true
+    },
+    "8PM": {
+      "first_prize": {
+        "series": "38E",
+        "number": "09360"
+      },
+      "consolation_prize_amount": 1000,
+      "second_prize": [],
+      "third_prize": [],
+      "fourth_prize": [],
+      "fifth_prize": [],
+      "telegram_sent": true
     }
   }
 }
