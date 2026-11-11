@@ -11398,5 +11398,19 @@
       "fifth_prize": [],
       "telegram_sent": true
     }
+  },
+  "2026-11-11": {
+    "1PM": {
+      "first_prize": {
+        "series": "77E",
+        "number": "73025"
+      },
+      "consolation_prize_amount": 1000,
+      "second_prize": [],
+      "third_prize": [],
+      "fourth_prize": [],
+      "fifth_prize": [],
+      "telegram_sent": true
+    }
   }
 }
