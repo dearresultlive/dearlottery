@@ -1,0 +1,90 @@
+---
+interface Props {
+  variant?: 'banner' | 'card' | 'compact';
+}
+
+const { variant = 'banner' } = Astro.props;
+
+// Official Cuelinks Money View Affiliate Tracking URL
+const affiliateUrl = 'https://linksredirect.com/?cid=335306&source=linkkit&url=https%3A%2F%2Fplay.google.com%2Fstore%2Fapps%2Fdetails%3Fid%3Dcom.whizdm.moneyview.loans';
+---
+
+<aside
+  aria-label="Sponsored Partner Offer - Money View Personal Loan"
+  class="relative overflow-hidden bg-gradient-to-br from-emerald-50/90 via-white to-blue-50/80 text-slate-900 p-3.5 sm:p-4 rounded-2xl shadow-xs border border-emerald-200/90 group"
+>
+  {/* Ambient subtle glow effects */}
+  <div class="absolute -right-8 -bottom-8 w-36 h-36 bg-emerald-400/10 rounded-full blur-2xl pointer-events-none group-hover:scale-110 transition-transform duration-500"></div>
+  <div class="absolute -left-8 -top-8 w-32 h-32 bg-blue-400/10 rounded-full blur-2xl pointer-events-none"></div>
+
+  {/* Header Section: Logo + Title + Sponsored Badge (Google & ASCI Compliant) */}
+  <div class="relative z-10 flex items-start gap-3 mb-2.5">
+    {/* Icon Badge */}
+    <div class="w-10 h-10 sm:w-11 sm:h-11 rounded-2xl bg-gradient-to-br from-emerald-600 to-teal-700 text-white flex items-center justify-center shadow-md ring-2 ring-white flex-shrink-0 group-hover:scale-105 transition-transform">
+      <span class="text-xl sm:text-2xl leading-none">💰</span>
+    </div>
+
+    <div class="min-w-0 flex-1">
+      <div class="flex items-center justify-between gap-2 flex-wrap">
+        <span class="text-xs sm:text-sm font-black uppercase tracking-tight block text-slate-900">
+          <span class="lang-en">Money View Instant Personal Loan</span>
+          <span class="lang-bn">মানি ভিউ ইনস্ট্যান্ট পার্সোনাল লোন</span>
+          <span class="lang-hi">मनी व्यू इंस्टेंट पर्सनल लोन</span>
+        </span>
+        <span class="bg-amber-100 text-amber-900 text-[9px] font-black px-2 py-0.5 rounded-full uppercase tracking-wider border border-amber-300 flex-shrink-0">
+          <span class="lang-en">Sponsored Partner</span>
+          <span class="lang-bn">বিজ্ঞাপন / পার্টনার অফার</span>
+          <span class="lang-hi">प्रायोजित ऑफर</span>
+        </span>
+      </div>
+
+      <p class="text-[11px] sm:text-xs text-slate-600 font-semibold mt-0.5 leading-snug">
+        <span class="lang-en">Need urgent funds? Get instant personal loan from ₹5,000 up to ₹10 Lakhs in 10 mins!</span>
+        <span class="lang-bn">জরুরি টাকার প্রয়োজন? ১০ মিনিটের মধ্যে সরাসরি ব্যাংক অ্যাকাউন্টে ₹৫,০০০ থেকে ₹১০ লাখ পর্যন্ত লোন নিন!</span>
+        <span class="lang-hi">तुरंत पैसे चाहिए? सिर्फ 10 मिनट में सीधे बैंक खाते में ₹5,000 से ₹10 लाख तक का लोन पाएं!</span>
+      </p>
+    </div>
+  </div>
+
+  {/* 3 Value Pillars */}
+  <div class="relative z-10 grid grid-cols-3 gap-1.5 text-center my-2.5 text-[10px] sm:text-[11px] font-bold text-slate-700">
+    <div class="bg-white/80 border border-slate-200/80 rounded-xl py-1.5 px-1 shadow-2xs">
+      <span class="text-emerald-700 block font-black">⚡ 10 Mins</span>
+      <span class="text-slate-500 text-[10px]">Quick Disbursal</span>
+    </div>
+    <div class="bg-white/80 border border-slate-200/80 rounded-xl py-1.5 px-1 shadow-2xs">
+      <span class="text-blue-700 block font-black">📄 100% Online</span>
+      <span class="text-slate-500 text-[10px]">Zero Paperwork</span>
+    </div>
+    <div class="bg-white/80 border border-slate-200/80 rounded-xl py-1.5 px-1 shadow-2xs">
+      <span class="text-purple-700 block font-black">₹10 Lakhs</span>
+      <span class="text-slate-500 text-[10px]">Max Amount</span>
+    </div>
+  </div>
+
+  {/* SEO Safe Outbound Affiliate Link: rel="sponsored nofollow noopener noreferrer" */}
+  <div class="relative z-10">
+    <a
+      href={affiliateUrl}
+      target="_blank"
+      rel="sponsored nofollow noopener noreferrer"
+      class="w-full bg-gradient-to-r from-emerald-600 via-teal-600 to-emerald-700 hover:from-emerald-700 hover:to-teal-700 active:scale-[0.99] text-white font-black text-xs sm:text-sm py-2.5 px-4 rounded-xl shadow-xs transition-all flex items-center justify-between gap-2 group/btn cursor-pointer"
+    >
+      <div class="flex items-center gap-2">
+        <span>📲</span>
+        <span>
+          <span class="lang-en">Check Eligibility &amp; Apply Now</span>
+          <span class="lang-bn">লোনের যোগ্যতা চেক করুন ও আবেদন করুন</span>
+          <span class="lang-hi">अपनी पात्रता चेक करें और अप्लाई करें</span>
+        </span>
+      </div>
+      <span class="bg-white/20 px-2 py-0.5 rounded-lg text-xs font-black group-hover/btn:translate-x-0.5 transition-transform flex-shrink-0">
+        ➔
+      </span>
+    </a>
+  </div>
+
+  <p class="relative z-10 text-[9px] text-slate-400 text-center mt-2">
+    * Standard partner terms &amp; conditions apply. Loan approval at sole discretion of RBI-registered lending partners.
+  </p>
+</aside>

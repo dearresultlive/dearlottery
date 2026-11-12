@@ -2,6 +2,7 @@
 import Layout from '../layouts/Layout.astro';
 import TicketChecker from '../components/TicketChecker';
 import TelegramBanner from '../components/TelegramBanner.astro';
+import MoneyViewBanner from '../components/MoneyViewBanner.astro';
 import { fetchLatestDraws, fetchDrawsByDate } from '../lib/api';
 import { getISTNow, getISTDateString } from '../lib/lottery-utils';
 
@@ -73,6 +74,9 @@ Astro.response.headers.set('Cache-Control', 'public, max-age=30, s-maxage=120, s
 
     {/* Official WhatsApp & Telegram Channels Join CTA */}
     <TelegramBanner />
+
+    {/* Money View Instant Personal Loan Partner Offer (rel="sponsored nofollow") */}
+    <MoneyViewBanner />
 
     {/* Educational Content to Boost SEO & Dwell-Time (Trilingual) */}
     <div class="bg-white border border-slate-200 rounded-2xl p-4 sm:p-5 space-y-4 text-slate-700 shadow-sm text-xs leading-relaxed">

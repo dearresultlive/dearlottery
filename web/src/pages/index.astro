@@ -5,6 +5,7 @@ import TicketChecker from '../components/TicketChecker';
 import LiveResultsTabs from '../components/LiveResultsTabs';
 import PushNotifyBanner from '../components/PushNotifyBanner';
 import TelegramBanner from '../components/TelegramBanner.astro';
+import MoneyViewBanner from '../components/MoneyViewBanner.astro';
 import { fetchLatestDraws, fetchDrawsByDate, fetchFrequencyAnalytics } from '../lib/api';
 import { getISTNow, getISTDateString } from '../lib/lottery-utils';
 
@@ -68,6 +69,7 @@ const lcpPreloadUrl = `/results/${lcpDate}/${lcpSlot}.avif`;
 
     {/* Official Telegram Channel Join CTA */}
     <TelegramBanner />
+    <MoneyViewBanner />
 
     {/* OneSignal Push Notification Opt-in Prompt (Strictly 1-Time, Auto-Dismisses Forever) */}
     <PushNotifyBanner client:idle />
