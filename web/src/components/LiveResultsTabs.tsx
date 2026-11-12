@@ -77,32 +77,20 @@ export default function LiveResultsTabs({
     Boolean(d.parsed_data?.prizes?.first_prize?.number || d.prizes?.first_prize?.number)
   );
 
-  // Smart Morning Mode check (midnight 00:00 to 12:45 PM IST and no today results declared yet)
-  const isMorningWindow = (d: Date = getISTNow()): boolean => {
-    const totalMin = d.getHours() * 60 + d.getMinutes();
-    return totalMin < 765; // Before 12:45 PM IST
-  };
-
-  const isSmartMorningInitial = !isYesterdayPage && !initialSlot && isMorningWindow() && !hasInitialTodayResults;
-
   // Immediate SSR/Mount slot calculation - Prevents slot flipping & double-fetch
   const computeInitialSlot = (): '1PM' | '6PM' | '8PM' => {
     if (initialSlot) return initialSlot;
     if (isYesterdayPage) return '8PM';
     const ist = getISTNow();
     const totalMin = ist.getHours() * 60 + ist.getMinutes();
-    if (totalMin < 765 && !hasInitialTodayResults) return '8PM';
     if (totalMin >= 1170) return '8PM'; // 7:30 PM onwards
     if (totalMin >= 1050) return '6PM'; // 5:30 PM to 7:30 PM
-    return '1PM'; // 12:45 PM to 5:30 PM
+    return '1PM'; // 12:00 AM to 5:30 PM (focus on 1PM upcoming or declared)
   };
 
   const computeInitialDate = (): string => {
     if (initialSlot) return todayDateStr || getISTDateString();
     if (isYesterdayPage) return todayDateStr || yesterdayDateStr;
-    const ist = getISTNow();
-    const totalMin = ist.getHours() * 60 + ist.getMinutes();
-    if (totalMin < 765 && !hasInitialTodayResults) return yesterdayDateStr;
     return todayDateStr || getISTDateString();
   };
 
@@ -179,8 +167,7 @@ export default function LiveResultsTabs({
     Boolean(d.parsed_data?.prizes?.first_prize?.number || d.prizes?.first_prize?.number)
   );
 
-  // Auto-detect Morning mode / Slot selection:
-  // Before 12:45 PM, if today has no results yet, default to Last Night 8PM!
+  // Auto-detect Slot selection based on current IST time (when not manually overridden by user)
   useEffect(() => {
     if (initialSlot) {
       if (todayDateStr) setActiveDateStr(todayDateStr);
@@ -199,11 +186,7 @@ export default function LiveResultsTabs({
     const min = istNow.getMinutes();
     const totalMin = hour * 60 + min;
 
-    // Morning window: before 12:45 PM and today has no results yet
-    if (totalMin < 765 && !hasTodayResults) {
-      setActiveDateStr(yesterdayDateStr);
-      setActiveSlot('8PM');
-    } else if (totalMin >= 1170) {
+    if (totalMin >= 1170) {
       // 7:30 PM onwards: focus on 8PM
       setActiveDateStr(todayStr);
       setActiveSlot('8PM');
@@ -212,11 +195,11 @@ export default function LiveResultsTabs({
       setActiveDateStr(todayStr);
       setActiveSlot('6PM');
     } else {
-      // 12:45 PM to 5:30 PM: focus on 1PM
+      // 12:00 AM to 5:30 PM: focus on 1PM (Today's upcoming morning draw or declared result)
       setActiveDateStr(todayStr);
       setActiveSlot('1PM');
     }
-  }, [hasTodayResults, isYesterdayPage, initialSlot, todayDateStr, yesterdayDateStr, todayStr]);
+  }, [hasTodayResults, isYesterdayPage, initialSlot, todayDateStr, todayStr]);
 
   // Auto-transition to current drawing slot when draw time arrives without manual refresh
   useEffect(() => {
@@ -360,6 +343,68 @@ export default function LiveResultsTabs({
     d.draw_time?.includes('8') || d.id?.includes('8PM')
   );
   const yesterday8pmPrize = yesterday8pmDraw?.parsed_data?.prizes?.first_prize || yesterday8pmDraw?.prizes?.first_prize;
+
+  // Reference prize for upcoming draws:
+  // In morning (no today results declared yet): shows Yesterday's 8:00 PM winner
+  // Later in the day: shows the latest declared prize of today (1PM or 6PM)
+  const referencePrizeInfo = useMemo(() => {
+    // 1. If today has declared 6PM:
+    const today6pm = drawsList.find(d => d.draw_date === todayStr && (d.draw_time?.includes('6') || d.id?.includes('6PM')));
+    const p6 = today6pm?.parsed_data?.prizes?.first_prize || today6pm?.prizes?.first_prize;
+    if (activeSlot === '8PM' && p6?.number) {
+      return {
+        labelBn: `আজকের ৬:০০ PM ডে ড্র বিজয়ী (${todayStr.split('-').reverse().join('/')})`,
+        labelHi: `आज का 6:00 PM डे ड्रॉ विजेता (${todayStr.split('-').reverse().join('/')})`,
+        labelEn: `Today's 6:00 PM Day Winner (${todayStr.split('-').reverse().join('/')})`,
+        subBn: 'নাগাল্যান্ড রাজ্য লটারি সরকারি গেজেট শিট',
+        subHi: 'नागालैंड राज्य लॉटरी आधिकारिक गजट शीट',
+        subEn: 'Nagaland State Lotteries Official Directorate Gazette',
+        prize: p6,
+        sheetUrl: `/results/${todayStr}/6pm.avif`,
+        dateStr: todayStr,
+        slot: '6PM' as const,
+        isYesterday: false
+      };
+    }
+
+    // 2. If today has declared 1PM:
+    const today1pm = drawsList.find(d => d.draw_date === todayStr && (d.draw_time?.includes('1') || d.id?.includes('1PM')));
+    const p1 = today1pm?.parsed_data?.prizes?.first_prize || today1pm?.prizes?.first_prize;
+    if ((activeSlot === '6PM' || activeSlot === '8PM') && p1?.number) {
+      return {
+        labelBn: `আজকের ১:০০ PM মর্নিং ড্র বিজয়ী (${todayStr.split('-').reverse().join('/')})`,
+        labelHi: `आज का 1:00 PM मॉर्निंग ड्रॉ विजेता (${todayStr.split('-').reverse().join('/')})`,
+        labelEn: `Today's 1:00 PM Morning Winner (${todayStr.split('-').reverse().join('/')})`,
+        subBn: 'সিকিম / নাগাল্যান্ড রাজ্য লটারি সরকারি গেজেট শিট',
+        subHi: 'सिक्किम / नागालैंड राज्य लॉटरी आधिकारिक गजट शीट',
+        subEn: 'Sikkim / Nagaland State Lotteries Official Gazette',
+        prize: p1,
+        sheetUrl: `/results/${todayStr}/1pm.avif`,
+        dateStr: todayStr,
+        slot: '1PM' as const,
+        isYesterday: false
+      };
+    }
+
+    // 3. Fallback to Yesterday's 8:00 PM Winner (default for morning mode)
+    if (yesterday8pmPrize?.number) {
+      return {
+        labelBn: `সর্বশেষ অফিশিয়াল রেজাল্ট • গতরাতের ৮:০০ নাইট ড্র (${yesterdayDateStr.split('-').reverse().join('/')})`,
+        labelHi: `नवीनतम आधिकारिक परिणाम • कल रात 8:00 बजे नाइट ड्रॉ (${yesterdayDateStr.split('-').reverse().join('/')})`,
+        labelEn: `Latest Declared Official Result • Last Night 8:00 PM (${yesterdayDateStr.split('-').reverse().join('/')})`,
+        subBn: 'নাগাল্যান্ড রাজ্য লটারি সরকারি গেজেট শিট',
+        subHi: 'नागालैंड राज्य लॉटरी आधिकारिक गजट शीट',
+        subEn: 'Nagaland State Lotteries Official Directorate Gazette',
+        prize: yesterday8pmPrize,
+        sheetUrl: `/results/${yesterdayDateStr}/8pm.avif`,
+        dateStr: yesterdayDateStr,
+        slot: '8PM' as const,
+        isYesterday: true
+      };
+    }
+
+    return null;
+  }, [drawsList, todayStr, activeSlot, yesterday8pmPrize, yesterdayDateStr]);
 
   // Find active draw matching activeDateStr and activeSlot strictly
   const currentSlotNumber = activeSlot.replace('PM', '');
@@ -560,10 +605,8 @@ export default function LiveResultsTabs({
         const url = new URL(window.location.href);
         url.searchParams.delete('date');
         window.history.replaceState({}, '', url.toString());
-        if (!isSmartMorningInitial) {
-          setActiveDateStr(todayStr);
-          setActiveSlot(getSmartTodaySlot());
-        }
+        setActiveDateStr(todayStr);
+        setActiveSlot(getSmartTodaySlot());
         return;
       }
       if (qDate && qDate !== todayStr && /^\d{4}-\d{2}-\d{2}$/.test(qDate)) {
@@ -762,44 +805,118 @@ export default function LiveResultsTabs({
           lang={lang}
         />
       ) : (
-        /* UPCOMING PENDING CARD */
-        <div className="bg-slate-50 border border-slate-200 rounded-2xl p-5 text-center space-y-3">
-          <div className="inline-flex items-center gap-1.5 bg-slate-200 text-slate-800 text-xs font-black px-3 py-1 rounded-full">
-            <span>⏰</span>
-            <span>{lang === 'bn' ? `আসন্ন ড্র • UPCOMING DRAW (${currentSlotInfo.time})` : lang === 'hi' ? `आगामी ड्रा • UPCOMING DRAW (${currentSlotInfo.time})` : `UPCOMING DRAW (${currentSlotInfo.time})`}</span>
+        /* UPCOMING PENDING CARD (Semantic Today Hub + Latest Declared Winner Reference) */
+        <div className="bg-gradient-to-b from-white via-amber-50/20 to-emerald-50/30 border-2 border-amber-200/90 rounded-2xl p-4 sm:p-5 text-center space-y-4 shadow-sm relative overflow-hidden">
+          
+          {/* Top Live Countdown Header */}
+          <div className="space-y-2">
+            <div className="inline-flex items-center gap-2 bg-emerald-100 text-emerald-900 text-xs font-black px-3.5 py-1 rounded-full border border-emerald-300 uppercase tracking-wider shadow-2xs">
+              <span className="w-2 h-2 rounded-full bg-emerald-600 animate-pulse"></span>
+              <span>
+                {lang === 'bn'
+                  ? `আজকের (${todayStr.split('-').reverse().join('/')}) ${currentSlotInfo.time} লাইভ ড্র`
+                  : lang === 'hi'
+                  ? `आज का (${todayStr.split('-').reverse().join('/')}) ${currentSlotInfo.time} लाइव ड्रॉ`
+                  : `Today's (${todayStr.split('-').reverse().join('/')}) ${currentSlotInfo.time} Live Draw`}
+              </span>
+            </div>
+
+            <div className="font-mono text-3xl sm:text-4xl font-black text-slate-900 tracking-tight flex items-center justify-center gap-2">
+              <span className="bg-slate-100 border border-slate-200 px-2.5 py-1 rounded-xl shadow-2xs">
+                {String(slotCountdown.hours).padStart(2, '0')}<span className="text-xs text-slate-400 font-sans ml-1">h</span>
+              </span>
+              <span className="text-slate-400">:</span>
+              <span className="bg-slate-100 border border-slate-200 px-2.5 py-1 rounded-xl shadow-2xs">
+                {String(slotCountdown.minutes).padStart(2, '0')}<span className="text-xs text-slate-400 font-sans ml-1">m</span>
+              </span>
+              <span className="text-slate-400">:</span>
+              <span className="bg-slate-100 border border-slate-200 px-2.5 py-1 rounded-xl shadow-2xs text-amber-600">
+                {String(slotCountdown.seconds).padStart(2, '0')}<span className="text-xs text-slate-400 font-sans ml-1">s</span>
+              </span>
+            </div>
+
+            <p className="text-xs text-slate-600 max-w-md mx-auto">
+              {lang === 'bn'
+                ? `আজকের ${currentSlotInfo.time} ড্র সম্পন্ন হওয়ার সাথে সাথে অফিশিয়াল ১ম পুরস্কার ১ কোটি টাকা ও সম্পূর্ণ গেজেট শিট এখানে স্বয়ংক্রিয়ভাবে লাইভ দেখতে পাবেন।`
+                : lang === 'hi'
+                ? `आज के ${currentSlotInfo.time} ड्रॉ पूरा होते ही प्रथम पुरस्कार ₹1 करोड़ एवं पूरी गजट शीट यहाँ स्वचालित रूप से लाइव दिखेगी।`
+                : `Official 1st Prize ₹1 Crore winning ticket and complete gazette sheet will be published live immediately following today's ${currentSlotInfo.time} draw.`}
+            </p>
+
+            <span className="sr-only speakable-summary">
+              Dear Lottery {activeSlot} draw for today {todayStr} is scheduled at {currentSlotInfo.time} IST. Results will be published live immediately following the official draw.
+            </span>
           </div>
-          <div className="font-mono text-3xl font-black text-slate-900">
-            {String(slotCountdown.hours).padStart(2, '0')}h : {String(slotCountdown.minutes).padStart(2, '0')}m : {String(slotCountdown.seconds).padStart(2, '0')}s
-          </div>
-          <p className="text-xs text-slate-600">
-            {lang === 'bn'
-              ? `আজকের ${currentSlotInfo.time} ড্র সম্পন্ন হওয়ার পর অফিশিয়াল গেজেট রেজাল্ট প্রকাশিত হবে।`
-              : lang === 'hi'
-              ? `आज के ${currentSlotInfo.time} ड्रा पूरा होने के बाद आधिकारिक गजट रिजल्ट घोषित होगा।`
-              : `Official gazette result will be declared immediately following today's ${currentSlotInfo.time} draw.`}
-          </p>
-          {/* Interactive Quick View for Last Night 8:00 PM */}
-          {yesterday8pmPrize?.number && (
-            <div className="mt-3 pt-3 border-t border-slate-200 bg-amber-50/80 border border-amber-300 rounded-xl p-3 text-left flex items-center justify-between gap-3 shadow-2xs">
-              <div>
-                <span className="text-[10px] font-black text-amber-800 uppercase tracking-wider block">
-                  {lang === 'bn' ? '🌙 গতরাতের ৮:০০ নাইট ড্র বিজয়ী নম্বর:' : lang === 'hi' ? '🌙 कल रात 8 बजे नाइट ड्रॉ विजेता:' : '🌙 Last Night 8:00 PM Winner:'}
-                </span>
-                <span className="font-mono font-black text-slate-900 text-sm sm:text-base">
-                  {yesterday8pmPrize.series} {yesterday8pmPrize.number}
-                </span>
-                <span className="text-[10px] text-slate-500 block">
-                  {lang === 'bn' ? '১ম পুরস্কার ₹১ কোটি • অফিসিয়াল গেজেট' : lang === 'hi' ? 'प्रथम पुरस्कार ₹1 करोड़ • आधिकारिक गजट' : '1st Prize ₹1 Crore • Official Gazette'}
+
+          {/* Prominent "Latest Declared Official Result" Ticket Reference */}
+          {referencePrizeInfo?.prize?.number && (
+            <div className="border border-amber-300 bg-gradient-to-br from-amber-50/90 via-white to-amber-50/60 rounded-2xl p-3.5 sm:p-4 text-center shadow-xs space-y-2.5">
+              <div className="flex items-center justify-between gap-2 border-b border-amber-200/80 pb-2">
+                <div className="flex items-center gap-1.5 text-left">
+                  <span className="text-base sm:text-lg">🌙</span>
+                  <div>
+                    <span className="text-[11px] sm:text-xs font-black text-amber-950 uppercase tracking-tight block">
+                      {lang === 'bn' ? referencePrizeInfo.labelBn : lang === 'hi' ? referencePrizeInfo.labelHi : referencePrizeInfo.labelEn}
+                    </span>
+                    <span className="text-[10px] text-slate-500 font-medium block">
+                      {lang === 'bn' ? referencePrizeInfo.subBn : lang === 'hi' ? referencePrizeInfo.subHi : referencePrizeInfo.subEn}
+                    </span>
+                  </div>
+                </div>
+                <span className="bg-amber-100 text-amber-900 text-[10px] font-black px-2 py-0.5 rounded-md border border-amber-300 flex-shrink-0">
+                  {lang === 'bn' ? 'যাচাইকৃত' : lang === 'hi' ? 'सत्यापित' : 'VERIFIED'}
                 </span>
               </div>
-              <button
-                type="button"
-                onClick={() => { handleDateChange(yesterdayDateStr); setActiveSlot('8PM'); }}
-                className="bg-amber-500 hover:bg-amber-600 active:scale-95 text-white text-xs font-black px-3 py-2 rounded-xl shadow-xs transition-all flex-shrink-0 flex items-center gap-1"
-              >
-                <span>{lang === 'bn' ? 'শিট দেখুন' : lang === 'hi' ? 'शीट देखें' : 'View Sheet'}</span>
-                <span>➔</span>
-              </button>
+
+              {/* Big 1st Prize Ticket */}
+              <div>
+                <span className="text-[10px] sm:text-[11px] font-black uppercase tracking-wider text-slate-600 block">
+                  {lang === 'bn' ? '১ম পুরস্কার • 1st Prize ₹1 Crore Winner' : lang === 'hi' ? 'प्रथम पुरस्कार • 1st Prize ₹1 Crore Winner' : '1st Prize • ₹1 Crore Winner'}
+                </span>
+                <div className="font-mono font-black text-3xl sm:text-5xl tracking-widest text-[#138808] my-1">
+                  {referencePrizeInfo.prize.series} {referencePrizeInfo.prize.number}
+                </div>
+                <span className="text-[11px] font-bold text-slate-500 block">
+                  {lang === 'bn'
+                    ? `সান্ত্বনা পুরস্কার: ₹১,০০০ • ${referencePrizeInfo.prize.number} অন্য সব সিরিজ`
+                    : lang === 'hi'
+                    ? `सांत्वना पुरस्कार: ₹1,000 • ${referencePrizeInfo.prize.number} अन्य सभी सीरीज`
+                    : `Consolation Prize: ₹1,000 • ${referencePrizeInfo.prize.number} Remaining Series`}
+                </span>
+              </div>
+
+              {/* Action Buttons: View Sheet, Full Draw Results, Check Ticket */}
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 pt-1 text-xs">
+                <button
+                  type="button"
+                  onClick={() => openImageLightbox(referencePrizeInfo.sheetUrl)}
+                  className="bg-emerald-600 hover:bg-emerald-700 active:scale-95 text-white font-black py-2 px-2.5 rounded-xl shadow-xs transition-all flex items-center justify-center gap-1.5 cursor-pointer"
+                >
+                  <span>📄</span>
+                  <span>{lang === 'bn' ? 'গেজেট শিট দেখুন' : lang === 'hi' ? 'गजट शीट देखें' : 'View Gazette Sheet'}</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => { handleDateChange(referencePrizeInfo.dateStr); setActiveSlot(referencePrizeInfo.slot); }}
+                  className="bg-amber-500 hover:bg-amber-600 active:scale-95 text-white font-black py-2 px-2.5 rounded-xl shadow-xs transition-all flex items-center justify-center gap-1.5 cursor-pointer"
+                >
+                  <span>📋</span>
+                  <span>
+                    {referencePrizeInfo.isYesterday
+                      ? (lang === 'bn' ? 'গতকালের পুরো রেজাল্ট' : lang === 'hi' ? 'कल का पूरा रिजल्ट' : 'Full Yesterday Draw')
+                      : (lang === 'bn' ? 'এই ড্র-এর সব রেজাল্ট' : lang === 'hi' ? 'इस ड्रॉ का पूरा रिजल्ट' : 'Full Draw Sheet')}
+                  </span>
+                </button>
+
+                <a
+                  href="#checker"
+                  className="col-span-2 sm:col-span-1 bg-slate-800 hover:bg-slate-900 active:scale-95 text-white font-black py-2 px-2.5 rounded-xl shadow-xs transition-all flex items-center justify-center gap-1.5 text-center"
+                >
+                  <span>🔍</span>
+                  <span>{lang === 'bn' ? 'টিকিট চেক করুন' : lang === 'hi' ? 'टिकट चेक करें' : 'Check Ticket'}</span>
+                </a>
+              </div>
             </div>
           )}
         </div>
