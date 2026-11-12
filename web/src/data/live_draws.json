@@ -11851,6 +11851,18 @@
         "9996"
       ],
       "telegram_sent": true
+    },
+    "6PM": {
+      "first_prize": {
+        "series": "97J",
+        "number": "44774"
+      },
+      "consolation_prize_amount": 1000,
+      "second_prize": [],
+      "third_prize": [],
+      "fourth_prize": [],
+      "fifth_prize": [],
+      "telegram_sent": true
     }
   }
 }
