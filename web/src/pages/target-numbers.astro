@@ -8,6 +8,7 @@ import { getISTDateString, getISTNow } from '../lib/lottery-utils';
 
 const istNow = getISTNow();
 const todayDateStr = getISTDateString(istNow);
+const todayFormatted = todayDateStr.split('-').reverse().join('-');
 
 const analytics = await fetchFrequencyAnalytics();
 
@@ -31,8 +32,8 @@ Astro.response.headers.set('Cache-Control', 'public, max-age=60, s-maxage=300, s
 ---
 
 <Layout
-  title={`Dear Lottery Target Number Today 1PM, 6PM, 8PM (${todayDateStr}) • ডিয়ার লটারি টার্গেট নাম্বার | Lottery Sambad`}
-  description={`Today's Dear Lottery target numbers (${todayDateStr}) for 1:00 PM Morning, 6:00 PM Day, and 8:00 PM Night. Hot middle pairs (মিডিল নম্বর), 2-digit endings & repeat winning patterns for Nagaland & Sikkim lotteries.`}
+  title={`Dear Lottery Target Number Today 1PM, 6PM, 8PM (${todayFormatted}) • ডিয়ার লটারি টার্গেট নাম্বার | Lottery Sambad`}
+  description={`Today's Dear Lottery target numbers (${todayFormatted}) for 1:00 PM Morning, 6:00 PM Day, and 8:00 PM Night. Hot middle pairs (মিডিল নম্বর), 2-digit endings & repeat winning patterns for Nagaland & Sikkim lotteries.`}
   drawDate={todayDateStr}
   faqItems={targetFaqItems}
 >
@@ -54,9 +55,9 @@ Astro.response.headers.set('Cache-Control', 'public, max-age=60, s-maxage=300, s
         <span class="lang-hi">टारगेट और हॉट नंबर</span>
       </span>
       <h1 class="text-base sm:text-xl font-black text-slate-900 mt-1.5">
-        <span class="lang-en">Dear Lottery Target & Hot Numbers Today ({todayDateStr})</span>
-        <span class="lang-bn">আজকের ডিয়ার লটারি টার্গেট ও হট নম্বর ({todayDateStr})</span>
-        <span class="lang-hi">आज का डियर लॉटरी टारगेट और हॉट नंबर ({todayDateStr})</span>
+        <span class="lang-en">Dear Lottery Target & Hot Numbers Today ({todayFormatted})</span>
+        <span class="lang-bn">আজকের ডিয়ার লটারি টার্গেট ও হট নম্বর ({todayFormatted})</span>
+        <span class="lang-hi">आज का डियर लॉटरी टारगेट और हॉट नंबर ({todayFormatted})</span>
       </h1>
       <p class="text-[11px] sm:text-xs text-slate-600 mt-1 max-w-xl mx-auto">
         <span class="lang-en">Official statistical middle pairs, high-frequency endings, 30-day repeats, and digit heatmaps.</span>
@@ -64,6 +65,39 @@ Astro.response.headers.set('Cache-Control', 'public, max-age=60, s-maxage=300, s
         <span class="lang-hi">सांख्यिकी आधारित मिडिल नंबर, अंतिम 2-अंक, हॉट नंबर्स और हीटमैप।</span>
       </p>
     </div>
+
+    {/* High-Intent Internal Authority Banner Funneling Traffic to Homepage */}
+    <a
+      href="/"
+      class="bg-gradient-to-r from-red-600 via-rose-600 to-red-700 hover:from-red-700 hover:to-rose-700 text-white p-3 sm:p-3.5 rounded-2xl flex items-center justify-between shadow-xs transition-all group border border-red-500/30"
+    >
+      <div class="flex items-center gap-2.5 sm:gap-3 min-w-0">
+        <div class="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-white/20 flex items-center justify-center text-xl flex-shrink-0 group-hover:scale-110 transition-transform">
+          🏆
+        </div>
+        <div class="min-w-0">
+          <div class="flex items-center gap-1.5 flex-wrap">
+            <span class="bg-white/20 text-white text-[9px] font-black px-2 py-0.5 rounded-full uppercase tracking-wider">
+              LIVE DRAW
+            </span>
+            <span class="text-xs sm:text-sm font-black uppercase tracking-wide block text-white drop-shadow-xs truncate">
+              <span class="lang-en">Today's Official Result ({todayFormatted})</span>
+              <span class="lang-bn">আজকের অফিসিয়াল রেজাল্ট ({todayFormatted})</span>
+              <span class="lang-hi">आज का आधिकारिक रिजल्ट ({todayFormatted})</span>
+            </span>
+          </div>
+          <p class="text-[10px] sm:text-[11px] text-red-100 font-medium mt-0.5 truncate">
+            <span class="lang-en">1:00 PM, 6:00 PM &amp; 8:00 PM 1st Prize ₹1 Crore numbers &amp; PDF sheet</span>
+            <span class="lang-bn">দুপুর ১:০০, সন্ধ্যা ৬:০০ ও রাত ৮:০০ ১ম পুরস্কার ১ কোটি টাকার বিজয়ী শিট</span>
+            <span class="lang-hi">दोपहर 1:00, शाम 6:00 व रात 8:00 प्रथम पुरस्कार ₹1 करोड़ रिजल्ट शीट</span>
+          </p>
+        </div>
+      </div>
+      <span class="bg-white text-red-700 font-black text-xs px-3 py-1.5 rounded-xl shadow-2xs group-hover:bg-red-50 transition-all flex items-center gap-1 flex-shrink-0 ml-2">
+        <span>Check</span>
+        <span>➔</span>
+      </span>
+    </a>
 
     {/* Primary Unified Target & Intelligence Tool */}
     <section id="target-tool">

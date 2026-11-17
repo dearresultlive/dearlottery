@@ -11,6 +11,7 @@ import { getISTNow, getISTDateString } from '../lib/lottery-utils';
 
 const istNow = getISTNow();
 const todayDateStr = getISTDateString(istNow);
+const todayFormatted = todayDateStr.split('-').reverse().join('-');
 
 const yesterday = new Date(istNow);
 yesterday.setDate(yesterday.getDate() - 1);
@@ -50,8 +51,8 @@ const lcpPreloadUrl = `/results/${lcpDate}/${lcpSlot}.avif`;
 ---
 
 <Layout
-  title={`Dear Lottery Result Today ${todayDateStr} Live (1PM, 6PM, 8PM) • আজকের রেজাল্ট | Lottery Sambad`}
-  description={`Official Dear Lottery Result Today (${todayDateStr}) for 1:00 PM Morning, 6:00 PM Day, and 8:00 PM Night. 1st Prize ₹1 Crore winning ticket number, official gazette sheet JPG/PDF, and all prize tables.`}
+  title={`Dear Lottery Result Today ${todayFormatted} Live (1PM, 6PM, 8PM) • আজকের রেজাল্ট | Lottery Sambad`}
+  description={`Official Dear Lottery Result Today (${todayFormatted}) for 1:00 PM Morning, 6:00 PM Day, and 8:00 PM Night. 1st Prize ₹1 Crore winning ticket number, official gazette sheet JPG/PDF, and all prize tables.`}
   drawDate={todayDateStr}
   preloadImage={{ url: lcpPreloadUrl, type: 'image/avif' }}
 >
@@ -150,9 +151,9 @@ const lcpPreloadUrl = `/results/${lcpDate}/${lcpSlot}.avif`;
         </div>
         
         <h1 class="text-base sm:text-xl font-black text-slate-900 leading-snug" id="status-title">
-          <span class="lang-en">Dear Lottery Result Today • {todayDateStr} Live (1PM, 6PM, 8PM) | Lottery Sambad</span>
-          <span class="lang-bn">আজকের ডিয়ার লটারি রেজাল্ট • {todayDateStr} লাইভ (দুপুর ১টা, সন্ধ্যা ৬টা, রাত ৮টা) | লটারি সংবাদ</span>
-          <span class="lang-hi">आज का डियर लॉटरी रिजल्ट • {todayDateStr} लाइव (1:00 PM, 6:00 PM, 8:00 PM) | लॉटरी संबाद</span>
+          <span class="lang-en">Dear Lottery Result Today • {todayFormatted} Live (1PM, 6PM, 8PM) | Lottery Sambad</span>
+          <span class="lang-bn">আজকের ডিয়ার লটারি রেজাল্ট • {todayFormatted} লাইভ (দুপুর ১টা, সন্ধ্যা ৬টা, রাত ৮টা) | লটারি সংবাদ</span>
+          <span class="lang-hi">आज का डियर लॉटरी रिजल्ट • {todayFormatted} लाइव (1:00 PM, 6:00 PM, 8:00 PM) | लॉटरी संबाद</span>
         </h1>
 
         <p class="text-xs sm:text-sm text-slate-600 leading-relaxed">
