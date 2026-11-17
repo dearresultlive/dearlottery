@@ -366,48 +366,7 @@ const speakableSchema = {
     });
   </script>
 
-  <!-- OneSignal Web Push SDK - Deferred to Idle Time for High Mobile PageSpeed -->
-  <script is:inline>
-    window.addEventListener('load', function() {
-      function initOneSignal() {
-        if (window._oneSignalInitialized) return;
-        window._oneSignalInitialized = true;
-        var s = document.createElement('script');
-        s.src = "https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js";
-        s.defer = true;
-        document.head.appendChild(s);
-        window.OneSignalDeferred = window.OneSignalDeferred || [];
-        window.OneSignalDeferred.push(async function(OneSignal) {
-          await OneSignal.init({
-            appId: "7ede11f8-0188-4e67-88b0-d3947320982a",
-            notifyButton: { enable: false },
-            allowLocalhostAsSecureOrigin: true,
-            autoResubscribe: true,
-            promptOptions: {
-              slidedown: {
-                prompts: []
-              }
-            }
-          });
-
-          // Silent background subscription sync when permission is already granted (No popups)
-          if ('Notification' in window && Notification.permission === 'granted') {
-            try {
-              if (OneSignal.User && OneSignal.User.PushSubscription && !OneSignal.User.PushSubscription.optedIn) {
-                await OneSignal.User.PushSubscription.optIn();
-              }
-              localStorage.setItem('dear_push_subscribed', 'true');
-            } catch (e) {}
-          }
-        });
-      }
-      if ('requestIdleCallback' in window) {
-        requestIdleCallback(initOneSignal, { timeout: 3000 });
-      } else {
-        setTimeout(initOneSignal, 2000);
-      }
-    });
-  </script>
+  
 
   <!-- Precision Structured Data Schemas -->
   <script type="application/ld+json" set:html={JSON.stringify(websiteSchema)} />

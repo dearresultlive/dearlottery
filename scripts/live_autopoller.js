@@ -15,7 +15,7 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import { createWorker } from 'tesseract.js';
 import { pingSearchEngines } from './seo_pinger.js';
-import { sendOneSignalResultPush } from './onesignal_notifier.js';
+// OneSignal push notifications removed
 import { sendTelegramResultPost } from './telegram_notifier.js';
 
 dns.setDefaultResultOrder('ipv4first');
@@ -584,7 +584,7 @@ async function processSlot(dateStr, slot) {
 
       // Trigger instant OneSignal push for 1st Prize
       try {
-        await sendOneSignalResultPush({ dateStr, slot, prizeData: db[dateStr][slot] });
+        // OneSignal push omitted
       } catch (pushErr) {
         console.warn('[Poller] Fast-release push warning:', pushErr.message);
       }
@@ -690,7 +690,7 @@ async function processSlot(dateStr, slot) {
 
   // Automatically broadcast push notification to all subscribed users via OneSignal
   try {
-    await sendOneSignalResultPush({ dateStr, slot, prizeData });
+    // OneSignal push omitted
   } catch (pushErr) {
     console.warn('[Poller] OneSignal push warning:', pushErr.message);
   }

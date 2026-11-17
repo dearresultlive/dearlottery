@@ -20,8 +20,3 @@
 
 /manifest.json
   Cache-Control: public, max-age=86400, stale-while-revalidate=86400
-
-/OneSignalSDKWorker.js
-  Content-Type: application/javascript; charset=utf-8
-  Service-Worker-Allowed: /
-  Cache-Control: public, max-age=0, must-revalidate
