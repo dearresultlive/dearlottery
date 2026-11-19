@@ -171,7 +171,7 @@ async function checkNagalandLotteryResults(dateStr, slot) {
             (slot === '1PM' && (imgUrl.includes('/DN') || imgUrl.includes('/EN') || imgUrl.includes('6pm') || imgUrl.includes('8pm'))) ||
             (slot === '6PM' && (imgUrl.includes('/MN') || imgUrl.includes('/EN') || imgUrl.includes('1pm') || imgUrl.includes('8pm'))) ||
             (slot === '8PM' && (imgUrl.includes('/MN') || imgUrl.includes('/DN') || imgUrl.includes('1pm') || imgUrl.includes('6pm')));
-          if (isWrongSlot || imgUrl.includes('WA00') || imgUrl.includes('logo')) {
+          if (isWrongSlot || imgUrl.includes('logo')) {
             continue;
           }
           const nameMatch = b.match(/Dear\s*<strong>(.*?)<\/strong>/i) || b.match(/Dear\s*([a-zA-Z]+)\s*Weekly/i);

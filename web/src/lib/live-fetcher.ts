@@ -139,7 +139,7 @@ export async function checkAndFetchLiveSlot(
                 (slot === '1PM' && (imgUrl.includes('/DN') || imgUrl.includes('/EN') || imgUrl.includes('6pm') || imgUrl.includes('8pm'))) ||
                 (slot === '6PM' && (imgUrl.includes('/MN') || imgUrl.includes('/EN') || imgUrl.includes('1pm') || imgUrl.includes('8pm'))) ||
                 (slot === '8PM' && (imgUrl.includes('/MN') || imgUrl.includes('/DN') || imgUrl.includes('1pm') || imgUrl.includes('6pm')));
-              if (!isWrongSlot && !imgUrl.includes('WA00') && !imgUrl.includes('logo')) {
+              if (!isWrongSlot && !imgUrl.includes('logo')) {
                 const existing = DYNAMIC_DRAWS_CACHE[dateStr]?.[slot] || {};
                 existing.image_r2_url = imgUrl;
                 if (!DYNAMIC_DRAWS_CACHE[dateStr]) DYNAMIC_DRAWS_CACHE[dateStr] = {};
