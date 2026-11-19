@@ -12494,5 +12494,19 @@
       "fifth_prize": [],
       "telegram_sent": true
     }
+  },
+  "2026-11-19": {
+    "8PM": {
+      "first_prize": {
+        "series": "81K",
+        "number": "61195"
+      },
+      "consolation_prize_amount": 1000,
+      "second_prize": [],
+      "third_prize": [],
+      "fourth_prize": [],
+      "fifth_prize": [],
+      "telegram_sent": true
+    }
   }
 }
