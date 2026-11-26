@@ -3,14 +3,14 @@ name: Scheduled Dear Lottery Ingestion Pipeline
 on:
   schedule:
     # 1:00 PM IST draw: Results drop ~1:08-1:15 PM IST (07:38-07:45 UTC)
-    - cron: '38,42,46,50,55 7 * * *'
-    - cron: '0,5,15 8 * * *'
+    - cron: '40,50 7 * * *'
+    - cron: '5,20 8 * * *'
     # 6:00 PM IST draw: Results drop ~6:08-6:15 PM IST (12:38-12:45 UTC)
-    - cron: '38,42,46,50,55 12 * * *'
-    - cron: '0,5,15 13 * * *'
+    - cron: '40,50 12 * * *'
+    - cron: '5,20 13 * * *'
     # 8:00 PM IST draw: Results drop ~8:08-8:15 PM IST (14:38-14:45 UTC)
-    - cron: '38,42,46,50,55 14 * * *'
-    - cron: '0,5,15 15 * * *'
+    - cron: '40,50 14 * * *'
+    - cron: '5,20 15 * * *'
   workflow_dispatch:
     inputs:
       slot:
@@ -29,8 +29,8 @@ on:
         default: ''
 
 concurrency:
-  group: dearlottery-scrape
-  cancel-in-progress: true
+  group: dearlottery-scrape-${{ github.event.inputs.slot || 'cron' }}
+  cancel-in-progress: false
 
 jobs:
   scrape-and-publish:

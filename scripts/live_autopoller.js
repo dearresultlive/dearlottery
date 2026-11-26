@@ -42,7 +42,7 @@ function getISTDateString(d = getISTDate()) {
   return `${y}-${m}-${day}`;
 }
 
-function getAutoSlot(istDate = getISTDate(), dateStr = getISTDateString(istDate)) {
+function getPendingSlots(istDate = getISTDate(), dateStr = getISTDateString(istDate)) {
   const h = istDate.getHours();
   const m = istDate.getMinutes();
   const totalMin = h * 60 + m;
@@ -50,19 +50,39 @@ function getAutoSlot(istDate = getISTDate(), dateStr = getISTDateString(istDate)
   const db = loadLiveDraws();
   const dayDb = db[dateStr] || {};
 
-  const is1pmVerified = Boolean(dayDb['1PM']?.first_prize?.number && dayDb['1PM']?.second_prize?.length >= 8);
-  const is6pmVerified = Boolean(dayDb['6PM']?.first_prize?.number && dayDb['6PM']?.second_prize?.length >= 8);
+  const pending = [];
+  // 1PM: due at 13:00 (780 min)
+  if (totalMin >= 775) {
+    if (!dayDb['1PM']?.second_prize?.length || dayDb['1PM'].second_prize.length < 8) {
+      pending.push('1PM');
+    }
+  }
+  // 6PM: due at 18:00 (1080 min)
+  if (totalMin >= 1075) {
+    if (!dayDb['6PM']?.second_prize?.length || dayDb['6PM'].second_prize.length < 8) {
+      pending.push('6PM');
+    }
+  }
+  // 8PM: due at 20:00 (1200 min)
+  if (totalMin >= 1195) {
+    if (!dayDb['8PM']?.second_prize?.length || dayDb['8PM'].second_prize.length < 8) {
+      pending.push('8PM');
+    }
+  }
 
-  // If before 1:00 PM draw (or 1PM not yet verified and time < 17:50)
-  if (!is1pmVerified && totalMin < 1070) {
-    return '1PM';
+  // If all due slots are verified, return next upcoming slot
+  if (pending.length === 0) {
+    if (totalMin < 775) pending.push('1PM');
+    else if (totalMin < 1075) pending.push('6PM');
+    else pending.push('8PM');
   }
-  // If 1PM verified and before 6PM draw (or 6PM not yet verified and time < 1190)
-  if (!is6pmVerified && totalMin < 1190) {
-    return '6PM';
-  }
-  // Otherwise check 8PM
-  return '8PM';
+
+  return pending;
+}
+
+function getAutoSlot(istDate = getISTDate(), dateStr = getISTDateString(istDate)) {
+  const pending = getPendingSlots(istDate, dateStr);
+  return pending[0] || '1PM';
 }
 
 function loadLiveDraws() {
@@ -418,26 +438,25 @@ async function processSlot(dateStr, slot) {
     }
   }
 
-  // Cross-system deduplication: check if Cloudflare Worker Edge Poller already declared & sent Telegram
+  // Cross-system deduplication & edge data retrieval: check if Cloudflare Worker Edge Poller already declared
   let alreadyTelegrammed = Boolean(dayDb[slot]?.telegram_sent);
-  if (!alreadyTelegrammed) {
-    try {
-      const edgeRes = await fetch(`https://dear-lottery-api.dearresultlive.workers.dev/api/results/draw/${dateStr}-${slot}`, {
-        signal: AbortSignal.timeout(3000)
-      });
-      if (edgeRes.ok) {
-        const edgeJson = await edgeRes.json();
-        const edgeDraw = edgeJson?.draw?.parsed_data;
-        if (edgeDraw?.status === 'DECLARED' && edgeDraw?.prizes?.first_prize?.number) {
-          console.log(`[Poller] ℹ️ Cloudflare Edge has already declared 1st Prize: ${edgeDraw.prizes.first_prize.series} ${edgeDraw.prizes.first_prize.number}.`);
-          if (edgeDraw.telegram_sent) {
-            alreadyTelegrammed = true;
-            console.log(`[Poller] ℹ️ Cloudflare Edge has already broadcasted this draw to Telegram. Suppressing duplicate.`);
-          }
+  let edgeDraw = null;
+  try {
+    const edgeRes = await fetch(`https://dear-lottery-api.dearresultlive.workers.dev/api/results/draw/${dateStr}-${slot}`, {
+      signal: AbortSignal.timeout(4000)
+    });
+    if (edgeRes.ok) {
+      const edgeJson = await edgeRes.json();
+      edgeDraw = edgeJson?.draw?.parsed_data;
+      if (edgeDraw?.status === 'DECLARED' && edgeDraw?.prizes?.first_prize?.number) {
+        console.log(`[Poller] ℹ️ Cloudflare Edge has already declared 1st Prize: ${edgeDraw.prizes.first_prize.series} ${edgeDraw.prizes.first_prize.number}.`);
+        if (edgeDraw.telegram_sent) {
+          alreadyTelegrammed = true;
+          console.log(`[Poller] ℹ️ Cloudflare Edge has already broadcasted this draw to Telegram. Suppressing duplicate.`);
         }
       }
-    } catch (edgeErr) {}
-  }
+    }
+  } catch (edgeErr) {}
 
   console.log(`[Poller] Querying upstream portals for ${dateStr} [${slot}]...`);
   const [sambadRes, nagalandRes] = await Promise.all([
@@ -445,7 +464,7 @@ async function processSlot(dateStr, slot) {
     checkNagalandLotteryResults(dateStr, slot)
   ]);
 
-  const isPublished = (sambadRes && sambadRes.declared) || (nagalandRes && nagalandRes.declared);
+  const isPublished = (sambadRes && sambadRes.declared) || (nagalandRes && nagalandRes.declared) || Boolean(edgeDraw?.source_url);
 
   if (!isPublished) {
     console.log(`[Poller] Result for ${dateStr} [${slot}] has NOT been declared yet by state directorate. State: DRAWING / PENDING.`);
@@ -470,6 +489,17 @@ async function processSlot(dateStr, slot) {
       fs.writeFileSync(localImgPath, imageBuffer);
     } catch (e) {
       console.warn('[Poller] Failed to download Nagaland image:', e.message);
+    }
+  }
+
+  if (!imageBuffer && edgeDraw && edgeDraw.source_url) {
+    try {
+      console.log(`[Poller] Downloading official sheet from Edge source_url: ${edgeDraw.source_url}`);
+      imageBuffer = await downloadBuffer(edgeDraw.source_url);
+      sourceUrl = edgeDraw.source_url;
+      fs.writeFileSync(localImgPath, imageBuffer);
+    } catch (e) {
+      console.warn('[Poller] Failed to download Edge source_url image:', e.message);
     }
   }
 
@@ -542,8 +572,11 @@ async function processSlot(dateStr, slot) {
   let sambadFirstPrize = null;
   if (sambadRes && sambadRes.number) {
     sambadFirstPrize = { series: sambadRes.series, number: sambadRes.number };
+  } else if (edgeDraw?.prizes?.first_prize?.number) {
+    sambadFirstPrize = { series: edgeDraw.prizes.first_prize.series, number: edgeDraw.prizes.first_prize.number };
+  }
 
-    // FAST-RELEASE STAGE 1: Publish 1st Prize immediately to live_draws.json
+  if (sambadFirstPrize) {
     // so users and Cloudflare see the ₹1 Crore winner instantly without waiting for OCR!
     if (!dayDb[slot]?.first_prize?.number) {
       console.log(`[Poller] ⚡ FAST RELEASE: Ingesting 1st Prize ${sambadFirstPrize.series} ${sambadFirstPrize.number} immediately!`);
@@ -756,32 +789,36 @@ async function main() {
 
   for (let attempt = 1; attempt <= maxAttempts; attempt++) {
     const currentDateStr = targetDate || getISTDateString();
-    const slot = targetSlot || getAutoSlot(getISTDate(), currentDateStr);
+    const slotsToCheck = targetSlot ? [targetSlot] : getPendingSlots(getISTDate(), currentDateStr);
     const timeLabel = new Date().toLocaleTimeString('en-US', { timeZone: 'Asia/Kolkata' });
-    console.log(`\n[${timeLabel} IST] [Surveillance ${attempt}/${maxAttempts}] Date: ${currentDateStr} | Slot: ${slot}...`);
 
-    const res = await processSlot(currentDateStr, slot);
-    const status = typeof res === 'object' ? res.status : (res ? 'VERIFIED' : 'PENDING');
-    const diffMin = (typeof res === 'object' && res.diffMin) || 0;
+    let allVerifiedOrUpcoming = true;
 
-    if (status === 'SUCCESS' || status === 'VERIFIED') {
-      console.log(`[Poller] ✅ Verified result secured for ${currentDateStr} [${slot}].`);
-      if (!isWatch) {
-        process.exit(0);
+    for (const slot of slotsToCheck) {
+      console.log(`\n[${timeLabel} IST] [Surveillance ${attempt}/${maxAttempts}] Date: ${currentDateStr} | Slot: ${slot}...`);
+
+      const res = await processSlot(currentDateStr, slot);
+      const status = typeof res === 'object' ? res.status : (res ? 'VERIFIED' : 'PENDING');
+
+      if (status === 'SUCCESS' || status === 'VERIFIED') {
+        console.log(`[Poller] ✅ Verified result secured for ${currentDateStr} [${slot}].`);
+      } else if (status === 'UPCOMING') {
+        console.log(`[Poller] Slot ${slot} is upcoming.`);
       } else {
-        console.log('[Poller] 🕒 Standing by for next slot...');
-        await new Promise(r => setTimeout(r, 60000));
-        continue;
+        // PENDING
+        allVerifiedOrUpcoming = false;
       }
     }
 
-    if (status === 'UPCOMING') {
+    if (allVerifiedOrUpcoming) {
+      console.log(`[Poller] All active slots for ${currentDateStr} are verified or upcoming.`);
       if (!isWatch) {
         process.exit(0);
+      } else {
+        console.log('[Poller] 🕒 Standing by for next slot check in 60s...');
+        await new Promise(r => setTimeout(r, 60000));
+        continue;
       }
-      const waitTime = diffMin > 10 ? 60000 : sleepMs;
-      await new Promise(r => setTimeout(r, waitTime));
-      continue;
     }
 
     if (attempt < maxAttempts) {
